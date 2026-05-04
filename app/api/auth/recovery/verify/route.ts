@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { AppError, handleApiError } from "@/services/monitoring/errorService";
 import { readCookieValue, sanitizeText } from "@/lib/security";
 import { verifyRecoveryCode } from "@/services/auth/passwordRecoveryService";
+import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
   try {
@@ -20,9 +21,9 @@ export async function POST(request: Request) {
       userAgent: requestHeaders.get("x-qoc-user-agent")
     });
     if (!result.ok || !result.resetToken) {
-      return NextResponse.redirect(new URL("/verify-recovery-code?error=invalid", request.url));
+      return NextResponse.redirect(publicUrl("/verify-recovery-code?error=invalid", request));
     }
-    return NextResponse.redirect(new URL(`/reset-password?token=${encodeURIComponent(result.resetToken)}`, request.url));
+    return NextResponse.redirect(publicUrl(`/reset-password?token=${encodeURIComponent(result.resetToken)}`, request));
   } catch (error) {
     return handleApiError(error, {
       scope: "password_recovery.verify",

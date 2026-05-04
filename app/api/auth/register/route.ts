@@ -6,6 +6,7 @@ import { logAction } from "@/lib/audit";
 import { AppError, handleApiError } from "@/services/monitoring/errorService";
 import { readCookieValue, sanitizeEmail, sanitizeText } from "@/lib/security";
 import { storeApplicantIdentityPhoto, validateIdentityPhoto } from "@/services/identityPhotoService";
+import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
       throw new AppError("Security check failed. Refresh the page and try again.", { statusCode: 403, code: "CSRF_INVALID" });
     }
     if (!email || !password || password.length < 8) {
-      return NextResponse.redirect(new URL("/register?error=invalid", request.url));
+      return NextResponse.redirect(publicUrl("/register?error=invalid", request));
     }
     if (photoConsent !== "yes") {
       throw new AppError("Photo consent is required before account creation.", { statusCode: 400, code: "PHOTO_CONSENT_REQUIRED" });
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      return NextResponse.redirect(new URL("/register?error=exists", request.url));
+      return NextResponse.redirect(publicUrl("/register?error=exists", request));
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
     await logAction(user.id, "auth.register", "user", user.id, { role: "applicant" });
     await createSession({ id: user.id, email: user.email, name: user.name, role: user.role });
 
-    return NextResponse.redirect(new URL("/applicant/start", request.url));
+    return NextResponse.redirect(publicUrl("/applicant/start", request));
   } catch (error) {
     return handleApiError(error, {
       scope: "auth.register",

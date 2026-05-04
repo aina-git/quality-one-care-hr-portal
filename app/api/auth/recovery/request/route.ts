@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { AppError, handleApiError } from "@/services/monitoring/errorService";
 import { readCookieValue, sanitizeText } from "@/lib/security";
 import { requestPasswordRecovery } from "@/services/auth/passwordRecoveryService";
+import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
   try {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
       ipAddress: requestHeaders.get("x-qoc-ip"),
       userAgent: requestHeaders.get("x-qoc-user-agent")
     });
-    return NextResponse.redirect(new URL(`/verify-recovery-code?notice=${encodeURIComponent(result.message)}`, request.url));
+    return NextResponse.redirect(publicUrl(`/verify-recovery-code?notice=${encodeURIComponent(result.message)}`, request));
   } catch (error) {
     return handleApiError(error, {
       scope: "password_recovery.request",

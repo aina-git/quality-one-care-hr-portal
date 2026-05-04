@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { AppError, handleApiError } from "@/services/monitoring/errorService";
 import { readCookieValue, sanitizeText } from "@/lib/security";
 import { resetPasswordWithToken } from "@/services/auth/passwordRecoveryService";
+import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
   try {
@@ -14,14 +15,14 @@ export async function POST(request: Request) {
     const password = sanitizeText(body.get("password"), 256);
     const confirmPassword = sanitizeText(body.get("confirmPassword"), 256);
     if (password !== confirmPassword || password.length < 8) {
-      return NextResponse.redirect(new URL(`/reset-password?token=${encodeURIComponent(sanitizeText(body.get("resetToken"), 200))}&error=invalid`, request.url));
+      return NextResponse.redirect(publicUrl(`/reset-password?token=${encodeURIComponent(sanitizeText(body.get("resetToken"), 200))}&error=invalid`, request));
     }
     const result = await resetPasswordWithToken({
       resetToken: sanitizeText(body.get("resetToken"), 200),
       password
     });
-    if (!result.ok) return NextResponse.redirect(new URL("/reset-password?error=invalid", request.url));
-    return NextResponse.redirect(new URL("/login?reset=success", request.url));
+    if (!result.ok) return NextResponse.redirect(publicUrl("/reset-password?error=invalid", request));
+    return NextResponse.redirect(publicUrl("/login?reset=success", request));
   } catch (error) {
     return handleApiError(error, {
       scope: "password_recovery.reset",

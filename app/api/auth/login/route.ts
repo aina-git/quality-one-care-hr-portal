@@ -5,6 +5,7 @@ import { createSession, getRoleHome } from "@/lib/auth";
 import { logAction } from "@/lib/audit";
 import { AppError, handleApiError } from "@/services/monitoring/errorService";
 import { readCookieValue, sanitizeEmail, sanitizeText } from "@/lib/security";
+import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
   try {
@@ -21,23 +22,23 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       await logAction(null, "auth.login_failed", "auth", null, { email, reason: "unknown_user" });
-      return NextResponse.redirect(new URL("/login?error=invalid", request.url));
+      return NextResponse.redirect(publicUrl("/login?error=invalid", request));
     }
     if (!user.isActive) {
       await logAction(user.id, "auth.login_failed", "user", user.id, { role: user.role, reason: "inactive_user" });
-      return NextResponse.redirect(new URL("/login?error=invalid", request.url));
+      return NextResponse.redirect(publicUrl("/login?error=invalid", request));
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       await logAction(user.id, "auth.login_failed", "user", user.id, { role: user.role, reason: "invalid_password" });
-      return NextResponse.redirect(new URL("/login?error=invalid", request.url));
+      return NextResponse.redirect(publicUrl("/login?error=invalid", request));
     }
 
     await logAction(user.id, "auth.login", "user", user.id, { role: user.role });
     await createSession({ id: user.id, email: user.email, name: user.name, role: user.role });
 
-    return NextResponse.redirect(new URL(getRoleHome(user.role), request.url));
+    return NextResponse.redirect(publicUrl(getRoleHome(user.role), request));
   } catch (error) {
     return handleApiError(error, {
       scope: "auth.login",
