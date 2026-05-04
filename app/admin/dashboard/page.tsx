@@ -83,6 +83,7 @@ export default async function AdminDashboardPage() {
       nav={user.role === "executive_view_only" ? adminNav.filter((item) => item.href !== "/admin/users") : adminNav}
     >
       <div className="grid gap-6">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">Admin Verification Dashboard</div>
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 bg-slate-950 p-6 text-white">
             <p className="text-sm font-medium text-orange-300">Admin Command Center</p>

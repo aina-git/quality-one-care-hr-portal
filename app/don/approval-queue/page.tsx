@@ -79,6 +79,7 @@ export default async function DonApprovalQueuePage() {
   return (
     <DashboardShell user={user} nav={DON_NAV}>
       <div className="grid gap-5">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">DON Final Approval Dashboard</div>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-pink-700">DON Final Approval Queue</p>

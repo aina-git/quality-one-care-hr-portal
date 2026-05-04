@@ -32,6 +32,7 @@ export default async function SchedulerDashboardPage() {
   return (
     <DashboardShell user={user} nav={[{ href: "/scheduler/dashboard", label: "Dashboard" }]}>
       <div className="grid gap-6">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">Scheduler — Approved Staff Dashboard</div>
         <section className="rounded-lg border bg-white p-6 shadow-sm">
           <p className="text-sm font-medium text-orange-600">Scheduler Dashboard</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">Approved applicant readiness</h1>

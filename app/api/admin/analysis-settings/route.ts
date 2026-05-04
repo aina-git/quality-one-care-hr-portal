@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth";
 import { logAction } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { sanitizeText } from "@/lib/security";
+import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
   const user = await requireRole(["admin", "super_admin_hr"]);
@@ -38,5 +39,5 @@ export async function POST(request: Request) {
     provider,
     cloudUsageEnabled: data.cloudUsageEnabled
   });
-  return NextResponse.redirect(new URL(`/admin/analysis-settings?tested=${encodeURIComponent(tested)}`, request.url));
+  return NextResponse.redirect(publicUrl(`/admin/analysis-settings?tested=${encodeURIComponent(tested)}`, request));
 }

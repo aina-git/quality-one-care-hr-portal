@@ -421,6 +421,11 @@ export default async function HrApplicationReviewPage({ params }: { params: Prom
               <CardTitle className="text-lg">AI Analysis — review the results before deciding</CardTitle>
             </CardHeader>
             <CardContent>
+              {!process.env.AI_API_KEY && !process.env.GROQ_API_KEY && !process.env.OPENROUTER_API_KEY ? (
+                <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  <strong>AI review unavailable.</strong> Add an API key (AI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY) to enable AI analysis. Rule-based review is still active.
+                </div>
+              ) : null}
               <AiAnalysisPanel applicationId={fullApplication.id} initialAiReport={aiReport ? {
                 id: aiReport.id,
                 status: aiReport.status,

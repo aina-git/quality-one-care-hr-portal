@@ -99,9 +99,17 @@ export default async function HrDashboardPage() {
 
   const isReadOnly = user.role === "executive_view_only";
 
+  const dashboardLabel =
+    user.role === "executive_view_only"
+      ? "Director Oversight Dashboard"
+      : user.role === "don_approver"
+      ? "DON Final Approval Dashboard"
+      : "HR Verification Dashboard";
+
   return (
     <DashboardShell user={user} nav={HR_NAV}>
       <div className="grid gap-5">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">{dashboardLabel}</div>
 
         {/* HEADER */}
         <Card className="border-slate-200">

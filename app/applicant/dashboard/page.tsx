@@ -12,6 +12,8 @@ import { prisma } from "@/lib/prisma";
 import { getLatestApplicantApplication } from "@/services/applicationService";
 import { validateApplication } from "@/services/validation/applicationValidationService";
 import { outcomeColorFor, colorClasses, colorLabel, stageLabel } from "@/lib/outcomeColor";
+import { ApplicantProgressTimeline } from "@/components/ApplicantProgressTimeline";
+import { getApplicationProgress } from "@/services/applicantProgressService";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
@@ -76,6 +78,7 @@ export default async function ApplicantDashboardPage() {
   if (!application) {
     return (
       <DashboardShell user={user} nav={APPLICANT_NAV.slice(0, 3)}>
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">Applicant Application Dashboard</div>
         <Card className="border-orange-200 bg-orange-50/40">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-orange-700">Welcome to Quality One Care</p>
@@ -91,13 +94,14 @@ export default async function ApplicantDashboardPage() {
     );
   }
 
-  const [validation, documents, messages, profilePhoto, onboardingChecklist, openLicenseAlerts] = await Promise.all([
+  const [validation, documents, messages, profilePhoto, onboardingChecklist, openLicenseAlerts, progress] = await Promise.all([
     validateApplication(application.id, user.id),
     prisma.uploadedDocument.findMany({ where: { applicationId: application.id }, orderBy: { createdAt: "desc" } }),
     prisma.applicantMessage.findMany({ where: { applicationId: application.id, visibleToApplicant: true }, orderBy: { createdAt: "desc" }, take: 3 }),
     prisma.uploadedDocument.findFirst({ where: { applicantProfileId: application.applicantProfileId, documentType: "profile_photo" }, orderBy: { createdAt: "desc" } }),
     prisma.onboardingChecklist.findUnique({ where: { applicationId: application.id }, include: { items: { orderBy: { createdAt: "asc" } } } }),
-    prisma.licenseAlert.findMany({ where: { applicationId: application.id, resolved: false }, orderBy: { createdAt: "desc" }, take: 3 })
+    prisma.licenseAlert.findMany({ where: { applicationId: application.id, resolved: false }, orderBy: { createdAt: "desc" }, take: 3 }),
+    getApplicationProgress(application.id)
   ]);
 
   const action = nextActionFor(application.status, validation.canSubmit);
@@ -109,6 +113,18 @@ export default async function ApplicantDashboardPage() {
   return (
     <DashboardShell user={user} nav={APPLICANT_NAV}>
       <div className="grid gap-5">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">Applicant Application Dashboard</div>
+
+        {progress?.stages?.length ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Where you are in the process</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ApplicantProgressTimeline stages={progress.stages} compact />
+            </CardContent>
+          </Card>
+        ) : null}
 
         {/* HEADER + Next Action */}
         {(() => {
