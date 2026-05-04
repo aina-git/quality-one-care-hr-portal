@@ -75,11 +75,14 @@ function isUnsafeMethod(method: string) {
 function isSameOrigin(request: NextRequest) {
   const origin = request.headers.get("origin");
   const referer = request.headers.get("referer");
-  const expectedOrigin = request.nextUrl.origin;
-  if (origin) return origin === expectedOrigin;
+  const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
+  const expectedOrigins = new Set<string>([request.nextUrl.origin]);
+  if (forwardedHost) expectedOrigins.add(`${forwardedProto}://${forwardedHost}`);
+  if (origin) return expectedOrigins.has(origin);
   if (referer) {
     try {
-      return new URL(referer).origin === expectedOrigin;
+      return expectedOrigins.has(new URL(referer).origin);
     } catch {
       return false;
     }
