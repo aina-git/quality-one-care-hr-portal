@@ -93,7 +93,7 @@ function applySecurityHeaders(response: NextResponse, request: NextRequest) {
     "base-uri 'self'",
     "frame-ancestors 'none'",
     "img-src 'self' data: blob:",
-    `script-src 'self'${process.env.NODE_ENV === "development" ? " 'unsafe-eval' 'unsafe-inline'" : ""}`,
+    `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     `connect-src 'self' ${process.env.NODE_ENV === "development" ? "ws: wss:" : ""}`.trim(),
     "object-src 'none'"
