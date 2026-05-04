@@ -1,0 +1,8 @@
+# Nixpacks build hints for Railway
+# Force Node 22 + extra build deps for native modules.
+
+[phases.setup]
+nixPkgs = ["nodejs_22", "npm-10_x"]
+
+[variables]
+NPM_CONFIG_PRODUCTION = "false"
