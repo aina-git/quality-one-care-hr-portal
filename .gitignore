@@ -1,0 +1,37 @@
+# Secrets — NEVER commit these
+.env
+.env.local
+.env.production
+.env.development.local
+.env.test.local
+
+# Build output
+.next
+out
+dist
+coverage
+
+# Dependencies
+node_modules
+
+# Logs
+*.log
+dev-server*.err
+dev-server*.out
+phase*-dev-server.*
+
+# Local protected storage (uploads + cached datasets)
+storage/protected
+storage/verification
+
+# Local backups
+backups
+
+# Tooling
+*.tsbuildinfo
+.vercel
+.railway
+
+# OS
+.DS_Store
+Thumbs.db

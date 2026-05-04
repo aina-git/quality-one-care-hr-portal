@@ -1,0 +1,1396 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  applicant
+  hr
+  admin
+  super_admin_hr
+  don_approver
+  executive_view_only
+  scheduler_limited
+}
+
+enum ApplicationStatus {
+  draft
+  application_uploaded
+  submitted
+  intake_review_started
+  applicant_correction_required
+  resubmitted
+  hr_review_pending
+  hr_review_started
+  ai_analysis_in_progress
+  ai_issues_found
+  applicant_response_required
+  hr_resolution_required
+  ready_for_verification
+  under_review
+  correction_requested
+  verification_pending
+  verification_in_progress
+  verification_issues_found
+  verification_passed
+  ready_for_don_review
+  don_review
+  don_review_started
+  don_approved
+  don_rejected
+  more_information_required
+  final_outcome_sent
+  completed
+  ready_for_interview
+  rejected
+  approved
+  final_not_approved
+  archived
+}
+
+enum ProcessingStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum ExtractedFieldStatus {
+  pending_review
+  accepted
+  corrected
+  rejected
+  needs_manual_entry
+}
+
+enum ValidationSeverity {
+  info
+  warning
+  blocking
+}
+
+enum AIReviewStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum RiskLevel {
+  low
+  moderate
+  high
+  incomplete_review
+}
+
+enum ReviewRecommendation {
+  proceed_to_interview
+  request_clarification
+  hold_for_review
+  not_recommended_at_this_stage
+}
+
+enum FindingCategory {
+  pediatric_experience
+  license
+  employment_history
+  document_consistency
+  missing_information
+  certification
+  reference
+  general
+}
+
+enum FindingSeverity {
+  info
+  warning
+  concern
+  critical
+}
+
+enum HRDecisionAction {
+  proceed_to_interview
+  request_clarification
+  place_on_hold
+  mark_not_selected
+  approve_for_onboarding
+}
+
+enum MessageSenderRole {
+  applicant
+  hr
+  admin
+  system
+}
+
+enum InterviewStatus {
+  pending
+  scheduled
+  completed
+  cancelled
+}
+
+enum EmailQueueStatus {
+  queued
+  sent
+  failed
+}
+
+enum OnboardingChecklistStatus {
+  not_started
+  in_progress
+  completed
+}
+
+enum OnboardingItemStatus {
+  pending
+  completed
+  waived
+}
+
+enum EmployeeOnboardingStatus {
+  not_started
+  in_progress
+  completed
+}
+
+enum OnboardingTaskStatus {
+  pending
+  completed
+  waived
+}
+
+enum TrainingPriority {
+  low
+  normal
+  high
+  critical
+}
+
+enum TrainingRecommendationStatus {
+  recommended
+  assigned
+  completed
+  waived
+}
+
+enum CalendarEventType {
+  interview
+  onboarding
+  training
+  license_followup
+  document_followup
+  hr_task
+  meeting
+  reminder
+  other
+}
+
+enum CalendarEventVisibility {
+  internal
+  applicant_visible
+  executive_visible
+}
+
+enum CalendarEventStatus {
+  scheduled
+  completed
+  cancelled
+  missed
+  rescheduled
+}
+
+enum TaskCategory {
+  application_review
+  verification
+  onboarding
+  training
+  license_followup
+  document_request
+  interview
+  general
+}
+
+enum TaskPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+enum TaskStatus {
+  open
+  in_progress
+  completed
+  overdue
+  cancelled
+}
+
+enum ReminderType {
+  task_due
+  interview
+  training
+  license_expiry
+  document_missing
+  follow_up
+  general
+}
+
+enum ReminderStatus {
+  scheduled
+  triggered
+  dismissed
+  snoozed
+  cancelled
+}
+
+enum MessageChannel {
+  in_app
+  email
+  sms
+  whatsapp
+}
+
+enum DeliveryStatus {
+  queued
+  sent
+  failed
+}
+
+enum NotificationType {
+  message
+  reminder
+  task
+  calendar
+  system_alert
+}
+
+enum LicenseAlertType {
+  expired
+  expiring_soon
+  expiring_30_days
+  expiring_7_days
+}
+
+enum AlertPriority {
+  critical
+  high
+  normal
+}
+
+enum JobRunStatus {
+  pending
+  running
+  succeeded
+  failed
+  skipped
+}
+
+enum FinalVerificationStatus {
+  draft
+  in_progress
+  ready_for_don_review
+  approved_by_don
+  rejected_by_don
+  returned_for_correction
+}
+
+enum DonDecision {
+  approved_for_hire
+  not_approved
+  returned_for_correction
+}
+
+enum VerificationItemStatus {
+  not_started
+  pending
+  pending_external_check
+  verified
+  failed
+  expired
+  not_applicable
+  needs_followup
+}
+
+enum VerificationCategory {
+  employment_history
+  professional_employment_verification
+  character_reference
+  background_check_cgis
+  oig_exclusion
+  maryland_case_search
+  nursys
+  maryland_board_of_nursing
+  annual_physical_health
+  tb_test_or_chest_xray
+  liability_insurance_nso
+  cpr
+  id_or_work_authorization
+  sanitation_training
+  final_decision
+}
+
+enum ExternalVerificationType {
+  maryland_board_of_nursing
+  nursys
+  maryland_case_search
+  oig
+  cgis
+  nso
+  cpr
+  other
+}
+
+model User {
+  id                               String                       @id @default(cuid())
+  email                            String                       @unique
+  passwordHash                     String
+  name                             String?
+  role                             Role                         @default(applicant)
+  isActive                         Boolean                      @default(true)
+  applicant                        ApplicantProfile?
+  auditLogs                        AuditLog[]
+  hrDecisions                      HRDecision[]                 @relation("DecisionCreatedBy")
+  statusChanges                    ApplicationStatusHistory[]   @relation("StatusChangedBy")
+  sentMessages                     ApplicantMessage[]           @relation("MessageSender")
+  createdCalendarEvents            CalendarEvent[]              @relation("CalendarEventCreatedBy")
+  assignedCalendarEvents           CalendarEvent[]              @relation("CalendarEventAssignedTo")
+  applicantCalendarEvents          CalendarEvent[]              @relation("CalendarEventApplicantUser")
+  createdTasks                     Task[]                       @relation("TaskCreatedBy")
+  assignedTasks                    Task[]                       @relation("TaskAssignedTo")
+  applicantTasks                   Task[]                       @relation("TaskApplicantUser")
+  reminders                        Reminder[]
+  notifications                    Notification[]
+  communicationLogs                CommunicationLog[]           @relation("CommunicationLogSender")
+  hrNotes                          HRNote[]                     @relation("NoteCreatedBy")
+  interviews                       InterviewRecord[]            @relation("InterviewCreatedBy")
+  completedOnboardingItems         OnboardingItem[]             @relation("OnboardingItemCompletedBy")
+  preparedFinalVerifications       FinalVerificationChecklist[] @relation("FinalVerificationPreparedBy")
+  reviewedFinalVerifications       FinalVerificationChecklist[] @relation("FinalVerificationReviewedBy")
+  approvedFinalVerifications       FinalVerificationChecklist[] @relation("FinalVerificationApprovedBy")
+  verifiedChecklistItems           VerificationChecklistItem[]  @relation("VerificationItemVerifiedBy")
+  externalVerificationSearches     ExternalVerificationRecord[] @relation("ExternalVerificationSearchedBy")
+  assignedOnboardingTasks          OnboardingTask[]             @relation("OnboardingTaskAssignedTo")
+  completedEmployeeOnboardingTasks OnboardingTask[]             @relation("OnboardingTaskCompletedBy")
+  passwordRecoveryTokens           PasswordRecoveryToken[]
+  createdAt                        DateTime                     @default(now())
+  updatedAt                        DateTime                     @updatedAt
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model ApplicantProfile {
+  id                       String              @id @default(cuid())
+  userId                   String              @unique
+  user                     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone                    String?
+  dateOfBirth              DateTime?
+  address                  String?
+  city                     String?
+  state                    String?
+  zip                      String?
+  pediatricExperience      String?
+  profilePhotoDocumentId   String?
+  profilePhotoConsentAt    DateTime?
+  identityPhotoStatus      String?             @default("pending")
+  identityPhotoNotes       String?
+  identityPhotoFlaggedAt   DateTime?
+  identityPhotoFlaggedById String?
+  applications             Application[]
+  employmentHistory        EmploymentHistory[]
+  licenses                 License[]
+  certifications           Certification[]
+  references               Reference[]
+  documents                UploadedDocument[]
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+
+  @@index([profilePhotoDocumentId])
+  @@index([identityPhotoStatus])
+  @@index([phone])
+  @@index([dateOfBirth])
+}
+
+model PasswordRecoveryToken {
+  id               String         @id @default(cuid())
+  userId           String?
+  user             User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  role             Role?
+  channel          MessageChannel
+  identifierHash   String
+  codeHash         String
+  resetTokenHash   String?
+  expiresAt        DateTime
+  verifiedAt       DateTime?
+  usedAt           DateTime?
+  attempts         Int            @default(0)
+  requestIp        String?
+  requestUserAgent String?
+  approvalRequired Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([identifierHash, createdAt])
+  @@index([codeHash])
+  @@index([resetTokenHash])
+  @@index([expiresAt])
+  @@index([requestIp, createdAt])
+}
+
+model Application {
+  id                          String                       @id @default(cuid())
+  applicantProfileId          String
+  applicantProfile            ApplicantProfile             @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  status                      ApplicationStatus            @default(draft)
+  currentStatus               ApplicationStatus            @default(draft)
+  previousStatus              ApplicationStatus?
+  desiredRole                 String?
+  intakeMode                  String?
+  intakeType                  String?
+  createdById                 String?
+  lastActionById              String?
+  lastActionAt                DateTime?
+  outcomeColor                String?
+  applicationCreatedAt        DateTime                     @default(now())
+  firstUploadAt               DateTime?
+  applicationSubmittedAt      DateTime?
+  hrReviewStartedAt           DateTime?
+  verificationStartedAt       DateTime?
+  verificationCompletedAt     DateTime?
+  submittedToDonAt            DateTime?
+  donReviewStartedAt          DateTime?
+  donDecisionAt               DateTime?
+  onboardingStartedAt         DateTime?
+  hiredAt                     DateTime?
+  rejectedAt                  DateTime?
+  submittedAt                 DateTime?
+  employmentHistory           EmploymentHistory[]
+  licenses                    License[]
+  certifications              Certification[]
+  references                  Reference[]
+  documents                   UploadedDocument[]
+  processingJobs              DocumentProcessingJob[]
+  extractions                 DocumentExtraction[]
+  extractedFields             ExtractedField[]
+  validationIssues            ValidationIssue[]
+  aiReviewReports             AIReviewReport[]
+  reviewFindings              ReviewFinding[]
+  decisions                   HRDecision[]
+  statusHistory               ApplicationStatusHistory[]
+  applicantMessages           ApplicantMessage[]
+  calendarEvents              CalendarEvent[]
+  tasks                       Task[]
+  reminders                   Reminder[]
+  notifications               Notification[]
+  communicationLogs           CommunicationLog[]
+  hrNotes                     HRNote[]
+  interviewRecords            InterviewRecord[]
+  hrReviewQueue               HRReviewQueue?
+  fieldAssertions             ApplicantFieldAssertion[]
+  emailQueue                  EmailQueue[]
+  onboardingChecklist         OnboardingChecklist?
+  employeeOnboarding          EmployeeOnboarding?
+  trainingRecommendations     TrainingRecommendation[]
+  finalVerificationChecklist  FinalVerificationChecklist?
+  licenseAlerts               LicenseAlert[]
+  systemAlerts                SystemAlert[]
+  externalVerificationRecords ExternalVerificationRecord[]
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+
+  @@index([status])
+  @@index([currentStatus])
+  @@index([submittedAt])
+  @@index([applicationCreatedAt])
+  @@index([lastActionAt])
+  @@index([status, submittedAt])
+  @@index([updatedAt])
+}
+
+model HRReviewQueue {
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        String      @default("pending")
+  assignedToId  String?
+  taskId        String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  lastActivityAt DateTime   @default(now())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([lastActivityAt])
+}
+
+model EmploymentHistory {
+  id                 String           @id @default(cuid())
+  applicantProfileId String
+  applicationId      String?
+  applicantProfile   ApplicantProfile @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  application        Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  employerName       String
+  roleTitle          String
+  supervisorName     String?
+  supervisorPhone    String?
+  duties             String?
+  startDate          DateTime?
+  endDate            DateTime?
+  pediatricCare      Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model License {
+  id                 String           @id @default(cuid())
+  applicantProfileId String
+  applicationId      String?
+  applicantProfile   ApplicantProfile @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  application        Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  type               String
+  licenseNumber      String?
+  issuingState       String?
+  issueDate          DateTime?
+  expiresAt          DateTime?
+  licenseAlerts      LicenseAlert[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model Certification {
+  id                 String           @id @default(cuid())
+  applicantProfileId String
+  applicationId      String?
+  applicantProfile   ApplicantProfile @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  application        Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  name               String
+  issuer             String?
+  issueDate          DateTime?
+  expiresAt          DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model Reference {
+  id                 String           @id @default(cuid())
+  applicantProfileId String
+  applicationId      String?
+  applicantProfile   ApplicantProfile @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  application        Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  name               String
+  relationship       String?
+  phone              String?
+  email              String?
+  employer           String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model UploadedDocument {
+  id                           String                       @id @default(cuid())
+  applicantProfileId           String
+  applicationId                String?
+  applicantProfile             ApplicantProfile             @relation(fields: [applicantProfileId], references: [id], onDelete: Cascade)
+  application                  Application?                 @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  documentType                 String
+  fileName                     String
+  storageKey                   String
+  storageProvider              String?
+  mimeType                     String?
+  fileSize                     Int?
+  metadataJson                 Json?
+  processingStatus             ProcessingStatus             @default(pending)
+  detectedDocumentType         String?
+  extractionConfidence         Float?
+  verificationItems            VerificationChecklistItem[]
+  externalVerificationEvidence ExternalVerificationRecord[]
+  processingJobs               DocumentProcessingJob[]
+  extractions                  DocumentExtraction[]
+  extractedFields              ExtractedField[]
+  fieldAssertions              ApplicantFieldAssertion[]
+  createdAt                    DateTime                     @default(now())
+  updatedAt                    DateTime                     @updatedAt
+}
+
+model DocumentProcessingJob {
+  id            String           @id @default(cuid())
+  documentId    String
+  applicationId String
+  document      UploadedDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        ProcessingStatus @default(pending)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  errorMessage  String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([documentId])
+  @@index([applicationId])
+  @@index([status])
+}
+
+model DocumentExtraction {
+  id                   String           @id @default(cuid())
+  documentId           String
+  applicationId        String
+  document             UploadedDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  application          Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  documentTypeDetected String
+  confidence           Float
+  rawText              String
+  extractedJson        Json?
+  fields               ExtractedField[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([documentId])
+  @@index([applicationId])
+}
+
+model ExtractedField {
+  id                      String               @id @default(cuid())
+  extractionId            String
+  applicationId           String
+  sourceDocumentId        String
+  extraction              DocumentExtraction   @relation(fields: [extractionId], references: [id], onDelete: Cascade)
+  application             Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  sourceDocument          UploadedDocument     @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+  fieldKey                String
+  fieldLabel              String
+  extractedValue          String
+  mappedSection           String
+  confidence              Float
+  reviewReason            String?
+  sourceSnippet           String?
+  sourceDocumentName      String?
+  flaggedAt               DateTime?
+  correctedAt             DateTime?
+  correctedByUserId       String?
+  hrOverrideNote          String?
+  hrOverrideByUserId      String?
+  hrOverrideAt            DateTime?
+  applicantConfirmed      Boolean              @default(false)
+  applicantCorrectedValue String?
+  status                  ExtractedFieldStatus @default(pending_review)
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+
+  @@index([applicationId])
+  @@index([extractionId])
+  @@index([status])
+  @@index([flaggedAt])
+  @@index([confidence])
+}
+
+model ValidationIssue {
+  id                    String             @id @default(cuid())
+  applicationId         String
+  application           Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  severity              ValidationSeverity
+  section               String
+  fieldKey              String?
+  documentId            String?
+  issueType             String             @default("validation")
+  message               String
+  reason                String?
+  requiredAction        String?
+  responsibleParty      String?
+  severityLabel         String?
+  flaggedAt             DateTime           @default(now())
+  sourcesJson           Json?
+  applicantNote         String?
+  applicantActionStatus String?
+  resolved              Boolean            @default(false)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([applicationId])
+  @@index([severity])
+  @@index([resolved])
+  @@index([responsibleParty])
+  @@index([flaggedAt])
+  @@index([fieldKey, issueType])
+}
+
+model ApplicantFieldAssertion {
+  id               String            @id @default(cuid())
+  applicationId    String
+  application      Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fieldKey         String
+  issueType        String            @default("applicant_claims_present")
+  note             String
+  sourceDocumentId String?
+  sourceDocument   UploadedDocument? @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  status           String            @default("hr_review_requested")
+  createdById      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([applicationId, fieldKey, issueType, sourceDocumentId])
+  @@index([applicationId])
+  @@index([fieldKey])
+  @@index([status])
+}
+
+model DocumentAnalysisSetting {
+  id                       String   @id @default(cuid())
+  provider                 String   @default("none")
+  confidenceThreshold      Float    @default(0.9)
+  lmstudioBaseUrl          String?
+  lmstudioModel            String?
+  ollamaBaseUrl            String?
+  ollamaModel              String?
+  groqModel                String?
+  openrouterModel          String?
+  localDocumentAnalyzerUrl String?
+  cloudUsageEnabled        Boolean  @default(false)
+  lastAnalysisResult       Json?
+  updatedByUserId          String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model AIReviewReport {
+  id                      String               @id @default(cuid())
+  applicationId           String
+  application             Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status                  AIReviewStatus       @default(pending)
+  overallRiskLevel        RiskLevel            @default(incomplete_review)
+  recommendation          ReviewRecommendation @default(hold_for_review)
+  summary                 String?
+  strengthsJson           Json?
+  concernsJson            Json?
+  discrepancyJson         Json?
+  pediatricExperienceJson Json?
+  licenseReviewJson       Json?
+  employmentReviewJson    Json?
+  documentReviewJson      Json?
+  hrActionItemsJson       Json?
+  generatedBy             String
+  generatedAt             DateTime?
+  findings                ReviewFinding[]
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([overallRiskLevel])
+}
+
+model ReviewFinding {
+  id            String          @id @default(cuid())
+  reportId      String
+  applicationId String
+  report        AIReviewReport  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  category      FindingCategory
+  severity      FindingSeverity
+  title         String
+  description   String
+  source        String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([reportId])
+  @@index([applicationId])
+  @@index([category])
+  @@index([severity])
+}
+
+model HRDecision {
+  id            String            @id @default(cuid())
+  applicationId String
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  action        HRDecisionAction
+  fromStatus    ApplicationStatus
+  toStatus      ApplicationStatus
+  note          String
+  createdById   String
+  createdBy     User              @relation("DecisionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([applicationId])
+  @@index([action])
+  @@index([createdById])
+}
+
+model ApplicationStatusHistory {
+  id            String             @id @default(cuid())
+  applicationId String
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  reason        String
+  changedById   String?
+  changedBy     User?              @relation("StatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime           @default(now())
+
+  @@index([applicationId])
+  @@index([toStatus])
+  @@index([createdAt])
+}
+
+model ApplicantMessage {
+  id                 String            @id @default(cuid())
+  applicationId      String
+  application        Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  senderId           String?
+  sender             User?             @relation("MessageSender", fields: [senderId], references: [id], onDelete: SetNull)
+  senderRole         MessageSenderRole
+  templateKey        String?
+  subject            String
+  body               String
+  visibleToApplicant Boolean           @default(true)
+  readAt             DateTime?
+  retryCount         Int               @default(0)
+  lastAttemptAt      DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([applicationId])
+  @@index([visibleToApplicant])
+  @@index([templateKey])
+  @@index([createdAt])
+  @@index([retryCount, lastAttemptAt])
+}
+
+model HRNote {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  note          String
+  createdById   String
+  createdBy     User        @relation("NoteCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([applicationId])
+  @@index([createdById])
+}
+
+model InterviewRecord {
+  id             String          @id @default(cuid())
+  applicationId  String
+  application    Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status         InterviewStatus @default(pending)
+  proposedWindow String?
+  scheduledAt    DateTime?
+  location       String?
+  notes          String?
+  createdById    String
+  createdBy      User            @relation("InterviewCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([createdById])
+}
+
+model EmailQueue {
+  id                 String           @id @default(cuid())
+  applicationId      String?
+  application        Application?     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicantMessageId String?
+  toEmail            String
+  subject            String
+  body               String
+  provider           String?
+  providerMessageId  String?
+  status             EmailQueueStatus @default(queued)
+  attempts           Int              @default(0)
+  errorMessage       String?
+  queuedAt           DateTime         @default(now())
+  sentAt             DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([queuedAt])
+  @@index([status, attempts])
+}
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  category  String
+  subject   String
+  body      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([active])
+}
+
+model CommunicationLog {
+  id               String         @id @default(cuid())
+  applicationId    String?
+  application      Application?   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  senderId         String?
+  sender           User?          @relation("CommunicationLogSender", fields: [senderId], references: [id], onDelete: SetNull)
+  recipientUserId  String?
+  recipientEmail   String?
+  channel          MessageChannel
+  subject          String
+  body             String
+  status           DeliveryStatus @default(queued)
+  provider         String?
+  providerResponse Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([applicationId])
+  @@index([recipientUserId])
+  @@index([channel, status])
+  @@index([createdAt])
+}
+
+model SmsQueue {
+  id                String           @id @default(cuid())
+  applicationId     String?
+  toPhone           String
+  body              String
+  provider          String?
+  providerMessageId String?
+  status            EmailQueueStatus @default(queued)
+  attempts          Int              @default(0)
+  errorMessage      String?
+  queuedAt          DateTime         @default(now())
+  sentAt            DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([queuedAt])
+}
+
+model WhatsAppQueue {
+  id                String           @id @default(cuid())
+  applicationId     String?
+  toPhone           String
+  body              String
+  provider          String?
+  providerMessageId String?
+  status            EmailQueueStatus @default(queued)
+  attempts          Int              @default(0)
+  errorMessage      String?
+  queuedAt          DateTime         @default(now())
+  sentAt            DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([queuedAt])
+}
+
+model CalendarEvent {
+  id                     String                  @id @default(cuid())
+  title                  String
+  description            String?
+  eventType              CalendarEventType       @default(other)
+  startDateTime          DateTime
+  endDateTime            DateTime
+  location               String?
+  meetingLink            String?
+  relatedApplicationId   String?
+  relatedApplication     Application?            @relation(fields: [relatedApplicationId], references: [id], onDelete: Cascade)
+  relatedApplicantUserId String?
+  relatedApplicantUser   User?                   @relation("CalendarEventApplicantUser", fields: [relatedApplicantUserId], references: [id], onDelete: SetNull)
+  createdByUserId        String?
+  createdByUser          User?                   @relation("CalendarEventCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  assignedToUserId       String?
+  assignedToUser         User?                   @relation("CalendarEventAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  visibility             CalendarEventVisibility @default(internal)
+  status                 CalendarEventStatus     @default(scheduled)
+  reminderMinutesBefore  Int?
+  reminders              Reminder[]
+  notifications          Notification[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  @@index([startDateTime])
+  @@index([eventType])
+  @@index([status])
+  @@index([visibility])
+  @@index([relatedApplicationId])
+  @@index([relatedApplicantUserId])
+  @@index([assignedToUserId])
+}
+
+model Task {
+  id                     String         @id @default(cuid())
+  title                  String
+  description            String?
+  category               TaskCategory   @default(general)
+  priority               TaskPriority   @default(normal)
+  status                 TaskStatus     @default(open)
+  dueDate                DateTime?
+  assignedToUserId       String?
+  assignedToUser         User?          @relation("TaskAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  createdByUserId        String?
+  createdByUser          User?          @relation("TaskCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  relatedApplicationId   String?
+  relatedApplication     Application?   @relation(fields: [relatedApplicationId], references: [id], onDelete: Cascade)
+  relatedApplicantUserId String?
+  relatedApplicantUser   User?          @relation("TaskApplicantUser", fields: [relatedApplicantUserId], references: [id], onDelete: SetNull)
+  reminderDateTime       DateTime?
+  completedAt            DateTime?
+  reminders              Reminder[]
+  notifications          Notification[]
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([assignedToUserId])
+  @@index([relatedApplicationId])
+  @@index([relatedApplicantUserId])
+}
+
+model Reminder {
+  id                     String         @id @default(cuid())
+  title                  String
+  message                String
+  reminderType           ReminderType   @default(general)
+  triggerDateTime        DateTime
+  status                 ReminderStatus @default(scheduled)
+  priority               TaskPriority   @default(normal)
+  userId                 String
+  user                   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedTaskId          String?
+  relatedTask            Task?          @relation(fields: [relatedTaskId], references: [id], onDelete: Cascade)
+  relatedCalendarEventId String?
+  relatedCalendarEvent   CalendarEvent? @relation(fields: [relatedCalendarEventId], references: [id], onDelete: Cascade)
+  relatedApplicationId   String?
+  relatedApplication     Application?   @relation(fields: [relatedApplicationId], references: [id], onDelete: Cascade)
+  deliveryChannels       Json?
+  notifications          Notification[]
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([triggerDateTime])
+  @@index([relatedTaskId])
+  @@index([relatedCalendarEventId])
+  @@index([relatedApplicationId])
+}
+
+model Notification {
+  id                     String           @id @default(cuid())
+  userId                 String
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applicationId          String?
+  application            Application?     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  notificationType       NotificationType
+  priority               TaskPriority     @default(normal)
+  title                  String
+  body                   String
+  route                  String?
+  readAt                 DateTime?
+  relatedTaskId          String?
+  relatedTask            Task?            @relation(fields: [relatedTaskId], references: [id], onDelete: Cascade)
+  relatedCalendarEventId String?
+  relatedCalendarEvent   CalendarEvent?   @relation(fields: [relatedCalendarEventId], references: [id], onDelete: Cascade)
+  relatedReminderId      String?
+  relatedReminder        Reminder?        @relation(fields: [relatedReminderId], references: [id], onDelete: Cascade)
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  @@index([userId, readAt])
+  @@index([notificationType])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([applicationId])
+}
+
+model OnboardingChecklist {
+  id            String                    @id @default(cuid())
+  applicationId String                    @unique
+  application   Application               @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        OnboardingChecklistStatus @default(not_started)
+  items         OnboardingItem[]
+  createdAt     DateTime                  @default(now())
+  completedAt   DateTime?
+  updatedAt     DateTime                  @updatedAt
+
+  @@index([status])
+}
+
+model OnboardingItem {
+  id            String               @id @default(cuid())
+  checklistId   String
+  checklist     OnboardingChecklist  @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  status        OnboardingItemStatus @default(pending)
+  dueDate       DateTime?
+  completedAt   DateTime?
+  completedById String?
+  completedBy   User?                @relation("OnboardingItemCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([checklistId])
+  @@index([status])
+}
+
+model EmployeeOnboarding {
+  id            String                   @id @default(cuid())
+  applicationId String                   @unique
+  application   Application              @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        EmployeeOnboardingStatus @default(in_progress)
+  startDate     DateTime                 @default(now())
+  completedDate DateTime?
+  tasks         OnboardingTask[]
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  @@index([status])
+  @@index([startDate])
+}
+
+model OnboardingTask {
+  id            String               @id @default(cuid())
+  onboardingId  String
+  onboarding    EmployeeOnboarding   @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  assignedToId  String?
+  assignedTo    User?                @relation("OnboardingTaskAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  status        OnboardingTaskStatus @default(pending)
+  dueDate       DateTime?
+  completedAt   DateTime?
+  completedById String?
+  completedBy   User?                @relation("OnboardingTaskCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([onboardingId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model TrainingRecommendation {
+  id            String                       @id @default(cuid())
+  applicationId String
+  application   Application                  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  trainingTitle String
+  reason        String
+  priority      TrainingPriority             @default(normal)
+  status        TrainingRecommendationStatus @default(recommended)
+  createdAt     DateTime                     @default(now())
+  updatedAt     DateTime                     @updatedAt
+
+  @@unique([applicationId, trainingTitle])
+  @@index([applicationId])
+  @@index([priority])
+  @@index([status])
+}
+
+model LicenseAlert {
+  id             String           @id @default(cuid())
+  applicationId  String
+  application    Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  licenseId      String
+  license        License          @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  alertType      LicenseAlertType
+  priority       AlertPriority    @default(normal)
+  message        String
+  resolved       Boolean          @default(false)
+  lastNotifiedAt DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([licenseId, alertType])
+  @@index([applicationId])
+  @@index([alertType])
+  @@index([resolved])
+  @@index([priority, resolved])
+}
+
+model SystemAlert {
+  id             String        @id @default(cuid())
+  applicationId  String?
+  application    Application?  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  category       String
+  priority       AlertPriority @default(normal)
+  title          String
+  message        String
+  route          String?
+  targetRole     Role?
+  dedupeKey      String?       @unique
+  resolved       Boolean       @default(false)
+  lastNotifiedAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([targetRole, resolved, createdAt])
+  @@index([applicationId, resolved])
+  @@index([priority, resolved, createdAt])
+}
+
+model JobDefinition {
+  key               String       @id
+  name              String
+  scheduleLabel     String
+  enabled           Boolean      @default(true)
+  intervalMinutes   Int
+  maxRuntimeSeconds Int          @default(300)
+  lastStartedAt     DateTime?
+  lastCompletedAt   DateTime?
+  lastSucceededAt   DateTime?
+  lastFailedAt      DateTime?
+  lastStatus        JobRunStatus @default(pending)
+  lastError         String?
+  nextRunAt         DateTime?
+  lockId            String?
+  lockExpiresAt     DateTime?
+  runs              JobRun[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([enabled, nextRunAt])
+  @@index([lastStatus, updatedAt])
+}
+
+model JobRun {
+  id             String        @id @default(cuid())
+  jobKey         String
+  job            JobDefinition @relation(fields: [jobKey], references: [key], onDelete: Cascade)
+  status         JobRunStatus  @default(pending)
+  attempt        Int           @default(1)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  durationMs     Int?
+  processedCount Int?
+  errorMessage   String?
+  detailsJson    Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([jobKey, createdAt])
+  @@index([status, createdAt])
+}
+
+model FinalVerificationChecklist {
+  id               String                      @id @default(cuid())
+  applicationId    String                      @unique
+  application      Application                 @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status           FinalVerificationStatus     @default(draft)
+  preparedByUserId String?
+  preparedByUser   User?                       @relation("FinalVerificationPreparedBy", fields: [preparedByUserId], references: [id], onDelete: SetNull)
+  reviewedByUserId String?
+  reviewedByUser   User?                       @relation("FinalVerificationReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  approvedByUserId String?
+  approvedByUser   User?                       @relation("FinalVerificationApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  donDecision      DonDecision?
+  donComment       String?
+  submittedToDonAt DateTime?
+  approvedAt       DateTime?
+  rejectedAt       DateTime?
+  items            VerificationChecklistItem[]
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+
+  @@index([status])
+  @@index([preparedByUserId])
+  @@index([reviewedByUserId])
+  @@index([approvedByUserId])
+}
+
+model VerificationChecklistItem {
+  id                      String                       @id @default(cuid())
+  checklistId             String
+  checklist               FinalVerificationChecklist   @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  category                VerificationCategory
+  title                   String
+  requirement             String
+  status                  VerificationItemStatus       @default(not_started)
+  result                  String?
+  source                  String?
+  verifiedByUserId        String?
+  verifiedByUser          User?                        @relation("VerificationItemVerifiedBy", fields: [verifiedByUserId], references: [id], onDelete: SetNull)
+  verifiedAt              DateTime?
+  expirationDate          DateTime?
+  documentId              String?
+  document                UploadedDocument?            @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  externalReferenceNumber String?
+  notes                   String?
+  externalRecords         ExternalVerificationRecord[]
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+
+  @@unique([checklistId, category])
+  @@index([checklistId])
+  @@index([category])
+  @@index([status])
+  @@index([expirationDate])
+  @@index([documentId])
+  @@index([verifiedByUserId])
+}
+
+model ExternalVerificationRecord {
+  id                 String                     @id @default(cuid())
+  applicationId      String
+  application        Application                @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  checklistItemId    String?
+  checklistItem      VerificationChecklistItem? @relation(fields: [checklistItemId], references: [id], onDelete: SetNull)
+  verificationType   ExternalVerificationType
+  providerName       String
+  searchUrl          String?
+  searchDate         DateTime?
+  searchedByUserId   String?
+  searchedByUser     User?                      @relation("ExternalVerificationSearchedBy", fields: [searchedByUserId], references: [id], onDelete: SetNull)
+  applicantNameUsed  String?
+  licenseNumberUsed  String?
+  trackingNumber     String?
+  result             String?
+  notes              String?
+  evidenceDocumentId String?
+  evidenceDocument   UploadedDocument?          @relation(fields: [evidenceDocumentId], references: [id], onDelete: SetNull)
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  @@index([applicationId])
+  @@index([checklistItemId])
+  @@index([verificationType])
+  @@index([searchedByUserId])
+  @@index([evidenceDocumentId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  entityType  String
+  entityId    String?
+  ipAddress   String?
+  userAgent   String?
+  requestPath String?
+  requestId   String?
+  details     Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([action, createdAt])
+}
