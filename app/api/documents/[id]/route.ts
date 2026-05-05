@@ -46,9 +46,17 @@ h1{color:#ea580c;font-size:24px;margin:0 0 8px} p{line-height:1.6;color:#475569}
     }
 
     const absolutePath = await resolveDocumentPath(document.storageKey);
-    let file: Uint8Array;
     try {
-      file = await fs.readFile(absolutePath);
+      const file = await fs.readFile(absolutePath);
+      await logAction(session.id, "document_accessed", "uploaded_document", document.id, { storageKey: document.storageKey });
+      return new NextResponse(file, {
+        status: 200,
+        headers: {
+          "Content-Type": document.mimeType ?? "application/octet-stream",
+          "Content-Disposition": `inline; filename="${document.fileName}"`,
+          "Cache-Control": "private, no-store"
+        }
+      });
     } catch {
       // File metadata exists but binary is missing — usually means the upload predates the
       // current persistent volume mount. Return a friendly HTML page instead of a JSON error
@@ -64,15 +72,6 @@ h1{color:#ea580c;font-size:24px;margin:0 0 8px} p{line-height:1.6;color:#475569}
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" }
       });
     }
-    await logAction(session.id, "document_accessed", "uploaded_document", document.id, { storageKey: document.storageKey });
-    return new NextResponse(file, {
-      status: 200,
-      headers: {
-        "Content-Type": document.mimeType ?? "application/octet-stream",
-        "Content-Disposition": `inline; filename="${document.fileName}"`,
-        "Cache-Control": "private, no-store"
-      }
-    });
   } catch (error) {
     return handleApiError(error, {
       scope: "documents.read",
