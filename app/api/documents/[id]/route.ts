@@ -46,7 +46,24 @@ h1{color:#ea580c;font-size:24px;margin:0 0 8px} p{line-height:1.6;color:#475569}
     }
 
     const absolutePath = await resolveDocumentPath(document.storageKey);
-    const file = await fs.readFile(absolutePath);
+    let file: Buffer;
+    try {
+      file = await fs.readFile(absolutePath);
+    } catch {
+      // File metadata exists but binary is missing — usually means the upload predates the
+      // current persistent volume mount. Return a friendly HTML page instead of a JSON error
+      // so reviewers understand the document needs re-uploading rather than seeing a crash.
+      const friendly = `<!doctype html><html><head><meta charset="utf-8"><title>${document.fileName} — file unavailable</title>
+        <style>body{font-family:system-ui,sans-serif;max-width:640px;margin:60px auto;padding:0 24px;color:#0f172a}h1{font-size:20px;margin-bottom:4px}p{color:#475569;line-height:1.6}.box{border:1px solid #fcd34d;background:#fffbeb;padding:16px;border-radius:8px;margin-top:16px}</style></head>
+        <body><h1>${document.fileName}</h1><p>Document record · uploaded ${document.createdAt.toLocaleString()}</p>
+        <div class="box"><strong>This file's binary content is no longer on disk.</strong>
+        <p>The metadata is intact in the database, but the file itself was lost during a previous deploy that ran before persistent storage was attached. Ask the applicant to re-upload — new uploads from now on are durable.</p></div></body></html>`;
+      await logAction(session.id, "document_missing", "uploaded_document", document.id, { storageKey: document.storageKey });
+      return new NextResponse(friendly, {
+        status: 410,
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" }
+      });
+    }
     await logAction(session.id, "document_accessed", "uploaded_document", document.id, { storageKey: document.storageKey });
     return new NextResponse(file, {
       status: 200,
