@@ -46,7 +46,7 @@ h1{color:#ea580c;font-size:24px;margin:0 0 8px} p{line-height:1.6;color:#475569}
     }
 
     const absolutePath = await resolveDocumentPath(document.storageKey);
-    let file: Buffer;
+    let file: Uint8Array;
     try {
       file = await fs.readFile(absolutePath);
     } catch {
