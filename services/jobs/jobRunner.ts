@@ -11,6 +11,7 @@ import { ensureHrReviewQueueForApplication } from "@/services/workflow/hrReviewQ
 import { refreshOigDataset } from "@/services/verification/oigService";
 import { scanCredentialExpirations } from "@/services/verification/credentialExpirationService";
 import { runInterviewReminderScan } from "@/services/interview/interviewReminderService";
+import { runExcelCredentialMonitor } from "@/services/excel/excelCredentialMonitorService";
 
 type JobContext = {
   attempt: number;
@@ -78,6 +79,14 @@ async function runInterviewReminders() {
   return {
     processedCount: result.remindersSent24h + result.remindersSent2h,
     details: { ...result }
+  };
+}
+
+async function runExcelCredentialMonitorJob() {
+  const result = await runExcelCredentialMonitor();
+  return {
+    processedCount: result.scanned,
+    details: result
   };
 }
 
@@ -217,7 +226,42 @@ async function runPendingReviewReminder() {
   };
 }
 
+async function runStaleAnalysisRecovery() {
+  const staleThresholdMs = 10 * 60 * 1000;
+  const staleApps = await prisma.application.findMany({
+    where: {
+      status: "ai_analysis_in_progress",
+      lastActionAt: { lt: new Date(Date.now() - staleThresholdMs) }
+    },
+    select: { id: true }
+  });
+  for (const app of staleApps) {
+    await prisma.application.update({
+      where: { id: app.id },
+      data: { status: "ai_issues_found", currentStatus: "ai_issues_found", lastActionAt: new Date() }
+    });
+    await createSystemAlert({
+      category: "system",
+      priority: "high",
+      title: "Stuck AI analysis recovered",
+      message: `Application ${app.id} was stuck in ai_analysis_in_progress for >10 minutes and was automatically moved to ai_issues_found.`,
+      applicationId: app.id,
+      targetRole: "admin"
+    });
+  }
+  return { processedCount: staleApps.length, details: { recovered: staleApps.length } };
+}
+
 const jobs: JobDefinition[] = [
+  {
+    key: "stale_analysis_recovery",
+    name: "Stale AI Analysis Recovery",
+    scheduleLabel: "Every 5 minutes",
+    intervalMinutes: 5,
+    maxRuntimeSeconds: 60,
+    maxAttempts: 2,
+    handler: runStaleAnalysisRecovery
+  },
   {
     key: "license_expiration_scan",
     name: "License Expiration Scan",
@@ -280,6 +324,15 @@ const jobs: JobDefinition[] = [
     maxRuntimeSeconds: 180,
     maxAttempts: 2,
     handler: runInterviewReminders
+  },
+  {
+    key: "excel_credential_monitor",
+    name: "Excel Credential Monitor",
+    scheduleLabel: "Hourly",
+    intervalMinutes: 60,
+    maxRuntimeSeconds: 300,
+    maxAttempts: 2,
+    handler: runExcelCredentialMonitorJob
   }
 ];
 

@@ -1,4 +1,6 @@
 import { DashboardShell } from "@/components/DashboardShell";
+import { DashboardClock } from "@/components/DashboardClock";
+import { PersonalTodoList } from "@/components/PersonalTodoList";
 import { MetricCard } from "@/components/MetricCard";
 import { OperationalPulse } from "@/components/OperationalPulse";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -115,6 +117,12 @@ export default async function AdminDashboardPage() {
           <OperationalPulse label="Overdue Tasks" value={overdueTasks} icon="alert" color="red" />
           <OperationalPulse label="Events Today" value={todayEvents} icon="calendar" color="blue" />
           <OperationalPulse label="Queued Messages" value={queuedMessages} icon="message" color="purple" />
+        </div>
+
+        {/* Clock + Personal To-Do */}
+        <div className="grid gap-4 lg:grid-cols-[auto_1fr]">
+          <DashboardClock />
+          <PersonalTodoList />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

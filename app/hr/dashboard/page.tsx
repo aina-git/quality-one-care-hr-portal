@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, AlertTriangle, Clock, ShieldCheck, UserCheck } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
+import { DashboardClock } from "@/components/DashboardClock";
+import { PersonalTodoList } from "@/components/PersonalTodoList";
 import { AlertPriorityBadge } from "@/components/AlertPriorityBadge";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -161,6 +163,12 @@ export default async function HrDashboardPage() {
             <p className="mt-1 text-sm font-semibold text-purple-900">Awaiting DON</p>
             <p className="text-xs text-purple-700">final approval</p>
           </Link>
+        </div>
+
+        {/* Clock + Personal To-Do */}
+        <div className="grid gap-4 lg:grid-cols-[auto_1fr]">
+          <DashboardClock />
+          <PersonalTodoList />
         </div>
 
         {/* Secondary stats — single row */}

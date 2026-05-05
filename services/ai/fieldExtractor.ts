@@ -82,7 +82,7 @@ export function extractFields(rawText: string, detectedType: DetectedDocumentTyp
   add(fields, "supervisorName", match(text, [/(?:supervisor)\s*[:\-]\s*([^\n]+)/i]), 0.58);
   add(fields, "supervisorPhone", match(text, [/(?:supervisor phone)\s*[:\-]\s*([^\n]+)/i]), 0.58);
 
-  if (/pediatric|children|child/i.test(text)) add(fields, "hasPediatricExperience", "yes", 0.64);
+  if (/pediatric\s*(care|nursing|home\s*health|patient|experience|skilled|unit|ward)/i.test(text) || /care\s*(of|for)\s*(pediatric\s+)?children/i.test(text)) add(fields, "hasPediatricExperience", "yes", 0.64);
   add(fields, "pediatricExperienceYears", match(text, [/(?:pediatric experience|pediatric)\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:years|yrs)/i]), 0.58);
   add(fields, "pediatricCareDuties", match(text, [/(?:pediatric duties|care duties|duties)\s*[:\-]\s*([^\n]+)/i]), 0.54);
 

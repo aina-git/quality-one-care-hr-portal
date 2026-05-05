@@ -70,6 +70,8 @@ export function UserRoleControl({
   const [active, setActive] = useState(isActive);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [showReset, setShowReset] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
 
   async function save(nextActive = active) {
     setBusy(true);
@@ -86,6 +88,30 @@ export function UserRoleControl({
       return;
     }
     window.location.reload();
+  }
+
+  async function resetPassword() {
+    if (newPassword.length < 8) {
+      setMessage("Password must be at least 8 characters.");
+      return;
+    }
+    setBusy(true);
+    setMessage("");
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: getCsrfHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ newPassword })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setMessage(payload.error ?? "Password could not be reset.");
+      setBusy(false);
+      return;
+    }
+    setMessage("Password reset successfully.");
+    setShowReset(false);
+    setNewPassword("");
+    setBusy(false);
   }
 
   return (
@@ -107,7 +133,22 @@ export function UserRoleControl({
         >
           {active ? "Deactivate" : "Activate"}
         </Button>
+        <Button size="sm" type="button" variant="outline" onClick={() => setShowReset(!showReset)} disabled={busy}>
+          Reset Password
+        </Button>
       </div>
+      {showReset && (
+        <div className="flex gap-2 mt-1">
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="New password (8+ chars)"
+            className="h-8 flex-1 rounded-md border bg-white px-2 text-sm"
+          />
+          <Button size="sm" type="button" onClick={resetPassword} disabled={busy || newPassword.length < 8}>Set</Button>
+        </div>
+      )}
       {message ? <p className="text-xs text-orange-700">{message}</p> : null}
     </div>
   );

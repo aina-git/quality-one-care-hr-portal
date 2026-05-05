@@ -231,7 +231,8 @@ export async function runApplicationReview(applicationId: string, reviewerId: st
       license.licensePresent && !license.expired ? "License record is present and not expired based on entered data." : null
     ].filter(Boolean);
     const concerns = findings.filter((finding) => finding.severity === "concern" || finding.severity === "critical").map((finding) => finding.title);
-    const summary = `Machine-learning-assisted review completed by ${generatedBy}. Final approval must be completed by the authorized DON reviewer.`;
+    const engineLabel = generatedBy === "provider_ready_ai_engine" ? "AI-assisted" : "Rule-based automated";
+    const summary = `${engineLabel} review completed. Final approval must be completed by the authorized DON reviewer.`;
 
     await prisma.$transaction([
       prisma.reviewFinding.deleteMany({ where: { reportId: report.id } }),

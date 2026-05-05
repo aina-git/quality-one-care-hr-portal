@@ -377,6 +377,7 @@ model User {
   assignedOnboardingTasks          OnboardingTask[]             @relation("OnboardingTaskAssignedTo")
   completedEmployeeOnboardingTasks OnboardingTask[]             @relation("OnboardingTaskCompletedBy")
   passwordRecoveryTokens           PasswordRecoveryToken[]
+  personalTodos                    PersonalTodo[]
   createdAt                        DateTime                     @default(now())
   updatedAt                        DateTime                     @updatedAt
 
@@ -1373,6 +1374,20 @@ model ExternalVerificationRecord {
   @@index([verificationType])
   @@index([searchedByUserId])
   @@index([evidenceDocumentId])
+}
+
+model PersonalTodo {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text        String
+  completed   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, completed])
+  @@index([userId, sortOrder])
 }
 
 model AuditLog {

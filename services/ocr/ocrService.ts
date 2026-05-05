@@ -87,7 +87,7 @@ export async function extractTextFromDocument(filePath: string, mimeType: string
   const apiKey = process.env.OCR_API_KEY?.trim();
 
   if (provider && apiKey) {
-    // Provider hook for Phase 3 production OCR. Keep local Phase 2 runnable.
+    console.warn(`[OCR] Cloud provider "${provider}" configured but not yet implemented. Falling back to local OCR.`);
   }
 
   const ext = path.extname(filePath).toLowerCase();
