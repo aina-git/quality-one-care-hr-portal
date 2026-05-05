@@ -284,7 +284,11 @@ export async function updateVerificationItem({
   }
 
   const nextExpiration = expirationDate === undefined ? item.expirationDate : expirationDate;
-  const nextStatus = nextExpiration && dateIsExpired(nextExpiration) && status === "verified" ? "expired" : status;
+  // HR's explicit decision wins. Previously this auto-flipped status from "verified"
+  // to "expired" when the expiration date was in the past, which made HR's manual
+  // verification appear to silently fail. If the date is stale, surface that as a
+  // warning in the UI — don't override the reviewer's call.
+  const nextStatus = status;
   const updated = await prisma.verificationChecklistItem.update({
     where: { id: itemId },
     data: {

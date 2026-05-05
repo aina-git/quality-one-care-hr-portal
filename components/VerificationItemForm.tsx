@@ -72,7 +72,10 @@ export function VerificationItemForm({
       setBusy(false);
       return;
     }
-    window.location.reload();
+    // Show explicit confirmation so HR sees their change took effect, then refresh.
+    setMessage("✓ Saved. Refreshing the checklist…");
+    setBusy(false);
+    setTimeout(() => window.location.reload(), 700);
   }
 
   return (
@@ -89,7 +92,7 @@ export function VerificationItemForm({
       </select>
       <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Notes required for not applicable or warning items" rows={3} className="rounded-md border bg-white px-3 py-2 text-sm" />
       <Button type="submit" disabled={busy}>{busy ? "Saving..." : "Update"}</Button>
-      {message && <p className="text-sm text-orange-700">{message}</p>}
+      {message && <p className={`text-sm ${message.startsWith("✓") ? "text-emerald-700 font-semibold" : "text-orange-700"}`}>{message}</p>}
     </form>
   );
 }
