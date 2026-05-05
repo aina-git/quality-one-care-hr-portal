@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getVerificationChecklist, summarizeChecklist } from "@/services/verification/verificationService";
+import { defaultVerificationItems, getVerificationChecklist, itemRequiresCompletion, summarizeChecklist } from "@/services/verification/verificationService";
 import { getVerificationLink } from "@/services/verification/verificationLinks";
 import { splitMatchedAndUnmatchedDocuments } from "@/services/verification/documentMatchingService";
 
@@ -114,15 +114,53 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
           </CardContent>
         </Card>
 
-        {/* No checklist yet */}
+        {/* No checklist yet — show the 15-item blueprint so reviewers always know what's coming */}
         {!checklist ? (
-          <Card>
-            <CardHeader><CardTitle className="text-base">Verification not started</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 text-sm">
-              <p className="text-slate-600">Verification begins after HR approves the application for onboarding. Current status: <span className="font-medium">{label(application.status)}</span></p>
-              {application.status === "approved" && canEdit && <CreateVerificationButton applicationId={application.id} />}
-            </CardContent>
-          </Card>
+          <>
+            <Card>
+              <CardHeader><CardTitle className="text-base">Verification not started</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 text-sm">
+                <p className="text-slate-600">Verification begins after HR approves the application for onboarding. Current status: <span className="font-medium">{label(application.status)}</span></p>
+                {application.status === "approved" && canEdit && <CreateVerificationButton applicationId={application.id} />}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3 flex-row items-center justify-between">
+                <CardTitle className="text-base">Verification checklist preview</CardTitle>
+                <span className="text-xs font-medium text-slate-500">{defaultVerificationItems.length} items will be created</span>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <table className="w-full border-collapse text-sm">
+                  <thead>
+                    <tr>
+                      <th className="border bg-slate-100 p-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-700">#</th>
+                      <th className="border bg-slate-100 p-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-700">Checklist item</th>
+                      <th className="border bg-slate-100 p-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-700">Required standard</th>
+                      <th className="border bg-slate-100 p-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-700">Default applicability</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {defaultVerificationItems.map((item, idx) => {
+                      const required = itemRequiresCompletion(item.category, application.desiredRole);
+                      return (
+                        <tr key={item.category}>
+                          <td className="border p-2 align-top text-xs text-slate-500">{idx + 1}</td>
+                          <td className="border p-2 align-top font-medium text-slate-900">{item.title}</td>
+                          <td className="border p-2 align-top text-xs text-slate-600">{item.requirement}</td>
+                          <td className="border p-2 align-top text-xs">
+                            {required
+                              ? <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold text-amber-800">Required</span>
+                              : <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 font-semibold text-slate-600">Optional / N/A</span>
+                            }
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </>
         ) : (
           <>
             {/* Critical blockers banner */}

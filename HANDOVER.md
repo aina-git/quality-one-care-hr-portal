@@ -8,15 +8,25 @@
 
 ## 1. Test credentials (seeded automatically on every deploy)
 
-| Role | Email | Password | Lands on |
-|---|---|---|---|
-| Admin / Super Admin HR | `admin@qualityonecare.local` | `Admin123!` | `/admin/dashboard` |
-| HR Operations | `hr@qualityonecare.local` | `Hr123!` | `/hr/dashboard` |
-| Sample Applicant | `applicant@qualityonecare.local` | `Applicant123!` | `/applicant/dashboard` |
+**Role lineup (Q1C decision 2026-05-04):**
 
-**Change all three before public exposure.** The seed script (`prisma/seed.ts`) uses `upsert`, so changing the password in the UI persists; the seed only sets it if the row doesn't exist.
+| Role | Email | Password | Lands on | Capability |
+|---|---|---|---|---|
+| HR Manager (full control) | `hr@qualityonecare.local` | `Hr123!` | `/admin/dashboard` | Everything: applications, verification, users, communications |
+| HR Manager (alt login) | `admin@qualityonecare.local` | `Admin123!` | `/admin/dashboard` | Same as above (kept for backward compatibility) |
+| DON | `don@qualityonecare.local` | `Don123!` | `/don/approval-queue` | DON approval workflow only |
+| CEO | `ceo@qualityonecare.local` | `Ceo123!` | `/hr/dashboard` (read-only) | Oversight read-only across HR + DON workspaces |
+| Sample Applicant (in progress) | `applicant@qualityonecare.local` | `Applicant123!` | `/applicant/dashboard` | Standard applicant flow |
+| **Demo Applicant (already approved — for the printout)** | `demo.approved@qualityonecare.local` | `DemoApproved123!` | `/applicant/dashboard` | Used to populate the Final Approval print page |
 
-To create DON / Director / Scheduler accounts for the demo, log in as Admin → `/admin/users` → invite, then set their role from `admin/super_admin_hr`, `don_approver`, `executive_view_only`, `scheduler_limited`.
+**Super Admin HR has been removed from the seed.** The role enum still exists in the schema for backward compatibility but no user is assigned it. Don't grant it.
+
+**Change all six before public exposure.** The seed script (`prisma/seed.ts`) uses `upsert`, so changing a password in the UI persists; the seed only sets it if the row doesn't exist.
+
+**Demo printout URL** (live, populated, no clicks needed):
+`https://quality-one-care-hr-portal-production.up.railway.app/don/final-approval/seed-approved-demo/print`
+
+Log in as HR Manager or DON, then visit that URL → all 15 verification items show as Verified, DON decision = Approved for Hire, ready to Ctrl+P.
 
 ---
 

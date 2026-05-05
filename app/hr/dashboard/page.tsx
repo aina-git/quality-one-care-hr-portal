@@ -101,7 +101,7 @@ export default async function HrDashboardPage() {
 
   const dashboardLabel =
     user.role === "executive_view_only"
-      ? "Director Oversight Dashboard"
+      ? "CEO Oversight Dashboard"
       : user.role === "don_approver"
       ? "DON Final Approval Dashboard"
       : "HR Verification Dashboard";
