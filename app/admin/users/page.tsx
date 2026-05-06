@@ -18,6 +18,7 @@ export default async function AdminUsersPage() {
         { href: "/admin/dashboard", label: "Dashboard" },
         { href: "/admin/analytics", label: "Analytics" },
         { href: "/admin/system-health", label: "System Health" },
+        { href: "/admin/excel-monitor", label: "Excel Monitor" },
         { href: "/admin/users", label: "Users" },
         { href: "/admin/audit", label: "Audit" }
       ]}
