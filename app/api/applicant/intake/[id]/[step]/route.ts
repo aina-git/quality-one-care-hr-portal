@@ -56,6 +56,11 @@ import {
   mergeSkillsChecklistData,
   validateSkillsChecklistForCompletion
 } from "@/services/intake/skillsChecklistSchema";
+import {
+  mergeClinicalTestData,
+  validateClinicalTestForCompletion
+} from "@/services/intake/clinicalTestSchema";
+import { scoreClinicalTest } from "@/services/intake/clinicalTestScoring";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -245,6 +250,39 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
       });
       await logAction(user.id, markCompleted ? "intake.character_reference_submitted" : "intake.character_reference_saved", "intakeStep", `${id}:${stepKey}`, {});
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
+    }
+
+    if (stepKey === "pre_employment_test") {
+      const data = mergeClinicalTestData(body.data);
+      const markCompleted = body.markCompleted === true;
+      if (markCompleted) {
+        const errors = validateClinicalTestForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+      }
+      // Score the answers server-side; never trust the client's score.
+      const score = scoreClinicalTest(data.answers);
+      const enriched = {
+        ...data,
+        scoreCorrect: markCompleted ? score.correct : data.scoreCorrect,
+        scoreTotal: markCompleted ? score.total : data.scoreTotal,
+        scorePercent: markCompleted ? score.percentage : data.scorePercent,
+        passed: markCompleted ? score.passed : data.passed,
+        submittedAt: markCompleted ? new Date().toISOString() : data.submittedAt
+      };
+      const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
+      await saveIntakeStepData({
+        applicationId: id,
+        stepKey,
+        data: enriched,
+        signatureName: markCompleted ? sigName : null,
+        markCompleted
+      });
+      await logAction(user.id, markCompleted ? "intake.pre_employment_test_submitted" : "intake.pre_employment_test_saved", "intakeStep", `${id}:${stepKey}`, { correct: markCompleted ? score.correct : null, total: score.total, passed: markCompleted ? score.passed : null });
+      return NextResponse.json({
+        ok: true,
+        status: markCompleted ? "completed" : "in_progress",
+        score: markCompleted ? { correct: score.correct, total: score.total, percentage: score.percentage, passed: score.passed } : null
+      });
     }
 
     if (stepKey === "skills_checklist") {

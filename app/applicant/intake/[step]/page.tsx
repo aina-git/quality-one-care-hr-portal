@@ -24,6 +24,7 @@ import { W9Step } from "@/components/applicant/intake/W9Step";
 import { W4Step } from "@/components/applicant/intake/W4Step";
 import { MW507Step } from "@/components/applicant/intake/MW507Step";
 import { SkillsChecklistStep } from "@/components/applicant/intake/SkillsChecklistStep";
+import { PreEmploymentTestStep } from "@/components/applicant/intake/PreEmploymentTestStep";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
@@ -193,6 +194,14 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
             inferredPosition={inferRoleFromDesired(application.desiredRole) === "rn" ? "RN" : inferRoleFromDesired(application.desiredRole) === "lpn" ? "LPN" : ""}
+          />
+        ) : stepKey === "pre_employment_test" ? (
+          <PreEmploymentTestStep
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
+            applicantPosition={inferRoleFromDesired(application.desiredRole) === "rn" ? "RN" : inferRoleFromDesired(application.desiredRole) === "lpn" ? "LPN" : (application.desiredRole ?? "")}
           />
         ) : (
           <PlaceholderStep stepKey={stepKey} title={stepDef.title} />
