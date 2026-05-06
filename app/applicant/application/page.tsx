@@ -4,6 +4,8 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { ResubmitApplicationButton } from "@/components/ResubmitApplicationButton";
 import { SubmitApplicationButton } from "@/components/SubmitApplicationButton";
 import { BucketUpload } from "@/components/applicant/BucketUpload";
+import { IntakeLocationCard } from "@/components/applicant/IntakeLocationCard";
+import { DeleteApplicationButton } from "@/components/applicant/DeleteApplicationButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ValidationChecklist } from "@/components/ValidationChecklist";
@@ -94,6 +96,8 @@ export default async function ApplicantApplicationPage() {
           </Card>
         )}
 
+        <IntakeLocationCard initialLocationId={application.intakeLocationId ?? null} />
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2"><FileStack size={18} className="text-orange-600" /> Upload your documents</CardTitle>
@@ -138,6 +142,19 @@ export default async function ApplicantApplicationPage() {
             ) : (
               <SubmitApplicationButton canSubmit={validation.canSubmit} />
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-200 bg-red-50/40">
+          <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-900">Need to start over?</p>
+              <p className="text-sm text-slate-600">
+                Delete this application and begin a fresh one with the same email. This permanently removes your uploads,
+                form entries, and any review notes attached to it.
+              </p>
+            </div>
+            <DeleteApplicationButton applicantName={profile?.user.name ?? ""} />
           </CardContent>
         </Card>
       </div>

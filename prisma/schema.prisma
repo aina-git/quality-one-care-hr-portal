@@ -454,6 +454,8 @@ model Application {
   desiredRole                 String?
   intakeMode                  String?
   intakeType                  String?
+  intakeLocationId            String?
+  intakeLocation              IntakeLocation?              @relation(fields: [intakeLocationId], references: [id], onDelete: SetNull)
   createdById                 String?
   lastActionById              String?
   lastActionAt                DateTime?
@@ -512,6 +514,19 @@ model Application {
   @@index([lastActionAt])
   @@index([status, submittedAt])
   @@index([updatedAt])
+  @@index([intakeLocationId])
+}
+
+model IntakeLocation {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  city         String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+
+  @@index([isActive])
 }
 
 model HRReviewQueue {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DashboardShell } from "@/components/DashboardShell";
+import { HrDeleteApplicationButton } from "@/components/HrDeleteApplicationButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,11 +17,13 @@ export default async function AdminApplicationsPage() {
       applicantProfile: { include: { user: true } },
       hrReviewQueue: true,
       finalVerificationChecklist: true,
+      intakeLocation: true,
       validationIssues: { where: { resolved: false } }
     },
     orderBy: [{ applicationSubmittedAt: "desc" }, { updatedAt: "desc" }],
     take: 100
   });
+  const canDelete = user.role === "admin" || user.role === "super_admin_hr";
 
   return (
     <DashboardShell user={user} nav={adminNav}>
@@ -40,6 +43,7 @@ export default async function AdminApplicationsPage() {
                 <TableHead>Applicant</TableHead>
                 <TableHead>Application ID</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Intake location</TableHead>
                 <TableHead>Submitted</TableHead>
                 <TableHead>Queue</TableHead>
                 <TableHead>Issues</TableHead>
@@ -47,20 +51,29 @@ export default async function AdminApplicationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {applications.map((application) => (
-                <TableRow key={application.id}>
-                  <TableCell className="font-medium">{application.applicantProfile.user.name ?? application.applicantProfile.user.email}</TableCell>
-                  <TableCell className="font-mono text-xs">{application.id}</TableCell>
-                  <TableCell><StatusBadge status={application.status} /></TableCell>
-                  <TableCell>{(application.applicationSubmittedAt ?? application.submittedAt ?? application.updatedAt).toLocaleString()}</TableCell>
-                  <TableCell>{application.hrReviewQueue?.status ?? application.finalVerificationChecklist?.status ?? "-"}</TableCell>
-                  <TableCell>{application.validationIssues.length}</TableCell>
-                  <TableCell className="flex flex-wrap gap-2">
-                    <Button asChild size="sm"><Link href={application.status === "hr_review_pending" ? `/admin/applications/${application.id}/open-review` : `/admin/applications/${application.id}/review`}>Open Review</Link></Button>
-                    <Button asChild size="sm" variant="outline"><Link href={`/admin/applications/${application.id}/verification`}>Verification</Link></Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {applications.map((application) => {
+                const applicantName = application.applicantProfile.user.name ?? application.applicantProfile.user.email;
+                return (
+                  <TableRow key={application.id}>
+                    <TableCell className="font-medium">{applicantName}</TableCell>
+                    <TableCell className="font-mono text-xs">{application.id}</TableCell>
+                    <TableCell><StatusBadge status={application.status} /></TableCell>
+                    <TableCell className="text-sm">
+                      {application.intakeLocation?.name ?? <span className="text-slate-400">—</span>}
+                    </TableCell>
+                    <TableCell>{(application.applicationSubmittedAt ?? application.submittedAt ?? application.updatedAt).toLocaleString()}</TableCell>
+                    <TableCell>{application.hrReviewQueue?.status ?? application.finalVerificationChecklist?.status ?? "-"}</TableCell>
+                    <TableCell>{application.validationIssues.length}</TableCell>
+                    <TableCell className="flex flex-wrap gap-2">
+                      <Button asChild size="sm"><Link href={application.status === "hr_review_pending" ? `/admin/applications/${application.id}/open-review` : `/admin/applications/${application.id}/review`}>Open Review</Link></Button>
+                      <Button asChild size="sm" variant="outline"><Link href={`/admin/applications/${application.id}/verification`}>Verification</Link></Button>
+                      {canDelete ? (
+                        <HrDeleteApplicationButton applicationId={application.id} applicantName={applicantName} />
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
           {!applications.length ? <p className="mt-3 text-sm text-muted-foreground">No submitted applications yet.</p> : null}
