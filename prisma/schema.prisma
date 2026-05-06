@@ -379,6 +379,8 @@ model User {
   completedEmployeeOnboardingTasks OnboardingTask[]             @relation("OnboardingTaskCompletedBy")
   passwordRecoveryTokens           PasswordRecoveryToken[]
   personalTodos                    PersonalTodo[]
+  crossCheckOverridesCreated       CrossCheckOverride[]         @relation("CrossCheckOverrideCreatedBy")
+  crossCheckOverridesRevoked       CrossCheckOverride[]         @relation("CrossCheckOverrideRevokedBy")
   createdAt                        DateTime                     @default(now())
   updatedAt                        DateTime                     @updatedAt
 
@@ -506,6 +508,7 @@ model Application {
   systemAlerts                SystemAlert[]
   externalVerificationRecords ExternalVerificationRecord[]
   intakeSteps                 IntakeStep[]
+  crossCheckOverrides         CrossCheckOverride[]
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
 
@@ -565,6 +568,31 @@ model IntakeStep {
   @@unique([applicationId, stepKey])
   @@index([applicationId])
   @@index([status])
+}
+
+model CrossCheckOverride {
+  id               String            @id @default(cuid())
+  applicationId    String
+  application      Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  field            String
+  documentId       String?
+  document         UploadedDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  applicationValue String?
+  documentValue    String?
+  reason           String
+  overriddenById   String
+  overriddenBy     User              @relation("CrossCheckOverrideCreatedBy", fields: [overriddenById], references: [id], onDelete: Restrict)
+  overriddenAt     DateTime          @default(now())
+  revokedAt        DateTime?
+  revokedById      String?
+  revokedBy        User?             @relation("CrossCheckOverrideRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+  revokedReason    String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([applicationId])
+  @@index([applicationId, field, documentId])
+  @@index([revokedAt])
 }
 
 model IntakeLocation {
@@ -683,6 +711,7 @@ model UploadedDocument {
   extractedFields              ExtractedField[]
   fieldAssertions              ApplicantFieldAssertion[]
   intakeSteps                  IntakeStep[]
+  crossCheckOverrides          CrossCheckOverride[]
   createdAt                    DateTime                     @default(now())
   updatedAt                    DateTime                     @updatedAt
 }
