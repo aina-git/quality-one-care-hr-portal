@@ -1,6 +1,7 @@
 export const adminNav = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/applications", label: "Applications" },
+  { href: "/admin/intake-locations", label: "Intake Locations" },
   { href: "/admin/hr-review-queue", label: "HR Review Queue" },
   { href: "/admin/verification-queue", label: "Verification Queue" },
   { href: "/admin/don-approval-queue", label: "DON Approval Queue" },
