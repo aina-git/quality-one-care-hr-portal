@@ -3,6 +3,7 @@ import { ArrowLeft, AlertTriangle, CheckCircle2, FileText, ShieldCheck } from "l
 import { DashboardShell } from "@/components/DashboardShell";
 import { DocumentPreviewLink } from "@/components/DocumentPreviewLink";
 import { HRDecisionPanel } from "@/components/HRDecisionPanel";
+import { HrAddRecordForm } from "@/components/HrAddRecordForm";
 import { HrContactEditor } from "@/components/HrContactEditor";
 import { HrPediatricExperienceEditor } from "@/components/HrPediatricExperienceEditor";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
@@ -145,6 +146,21 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
                     {job.duties && <p className="mt-1 whitespace-pre-wrap text-slate-700">{job.duties}</p>}
                   </div>
                 ))}
+                <HrAddRecordForm
+                  applicationId={application.id}
+                  recordType="employment"
+                  buttonLabel="Add employment record"
+                  fields={[
+                    { key: "employerName", label: "Employer", required: true, maxLength: 200 },
+                    { key: "roleTitle", label: "Role / title", required: true, maxLength: 200 },
+                    { key: "startDate", label: "Start date", type: "date" },
+                    { key: "endDate", label: "End date (leave blank if current)", type: "date" },
+                    { key: "supervisorName", label: "Supervisor name", maxLength: 200 },
+                    { key: "supervisorPhone", label: "Supervisor phone", maxLength: 50 },
+                    { key: "pediatricCare", label: "Pediatric care role?", type: "checkbox", placeholder: "Tick if this role involved pediatric patients" },
+                    { key: "duties", label: "Key duties / notes", type: "textarea", maxLength: 4000 }
+                  ]}
+                />
               </CardContent>
             </Card>
 
@@ -165,6 +181,18 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
                       </div>
                     );
                   })}
+                  <HrAddRecordForm
+                    applicationId={application.id}
+                    recordType="licenses"
+                    buttonLabel="Add license"
+                    fields={[
+                      { key: "type", label: "License type", required: true, maxLength: 100, placeholder: "e.g. RN, LPN, CNA" },
+                      { key: "licenseNumber", label: "License number", maxLength: 100 },
+                      { key: "issuingState", label: "Issuing state", maxLength: 60 },
+                      { key: "issueDate", label: "Issued on", type: "date" },
+                      { key: "expiresAt", label: "Expires on", type: "date" }
+                    ]}
+                  />
                 </CardContent>
               </Card>
 
@@ -181,6 +209,17 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
                       <p className="text-slate-600 text-xs">{c.issuer ?? "—"} · Expires {formatDate(c.expiresAt)}</p>
                     </div>
                   ))}
+                  <HrAddRecordForm
+                    applicationId={application.id}
+                    recordType="certifications"
+                    buttonLabel="Add certification"
+                    fields={[
+                      { key: "name", label: "Certification name", required: true, maxLength: 200, placeholder: "e.g. CPR/BLS" },
+                      { key: "issuer", label: "Issuer", maxLength: 200 },
+                      { key: "issueDate", label: "Issued on", type: "date" },
+                      { key: "expiresAt", label: "Expires on", type: "date" }
+                    ]}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -198,6 +237,18 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
                     <p className="text-slate-600 text-xs">{[r.employer, r.phone, r.email].filter(Boolean).join(" · ") || "No contact details"}</p>
                   </div>
                 ))}
+                <HrAddRecordForm
+                  applicationId={application.id}
+                  recordType="references"
+                  buttonLabel="Add reference"
+                  fields={[
+                    { key: "name", label: "Reference name", required: true, maxLength: 200 },
+                    { key: "relationship", label: "Relationship", maxLength: 200, placeholder: "e.g. former supervisor" },
+                    { key: "employer", label: "Employer / organization", maxLength: 200 },
+                    { key: "phone", label: "Phone", maxLength: 50 },
+                    { key: "email", label: "Email", maxLength: 200 }
+                  ]}
+                />
               </CardContent>
             </Card>
 
