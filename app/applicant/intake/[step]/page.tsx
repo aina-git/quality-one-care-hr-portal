@@ -23,6 +23,7 @@ import { DirectDepositStep } from "@/components/applicant/intake/DirectDepositSt
 import { W9Step } from "@/components/applicant/intake/W9Step";
 import { W4Step } from "@/components/applicant/intake/W4Step";
 import { MW507Step } from "@/components/applicant/intake/MW507Step";
+import { SkillsChecklistStep } from "@/components/applicant/intake/SkillsChecklistStep";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
@@ -184,6 +185,14 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialData={stepRow.data}
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
+          />
+        ) : stepKey === "skills_checklist" ? (
+          <SkillsChecklistStep
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
+            inferredPosition={inferRoleFromDesired(application.desiredRole) === "rn" ? "RN" : inferRoleFromDesired(application.desiredRole) === "lpn" ? "LPN" : ""}
           />
         ) : (
           <PlaceholderStep stepKey={stepKey} title={stepDef.title} />

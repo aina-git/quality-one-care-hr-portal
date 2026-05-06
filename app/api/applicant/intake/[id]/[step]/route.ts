@@ -52,6 +52,10 @@ import {
   mergeMW507Data,
   validateMW507ForCompletion
 } from "@/services/intake/mw507Schema";
+import {
+  mergeSkillsChecklistData,
+  validateSkillsChecklistForCompletion
+} from "@/services/intake/skillsChecklistSchema";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -240,6 +244,25 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         markCompleted
       });
       await logAction(user.id, markCompleted ? "intake.character_reference_submitted" : "intake.character_reference_saved", "intakeStep", `${id}:${stepKey}`, {});
+      return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
+    }
+
+    if (stepKey === "skills_checklist") {
+      const data = mergeSkillsChecklistData(body.data);
+      const markCompleted = body.markCompleted === true;
+      if (markCompleted) {
+        const errors = validateSkillsChecklistForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+      }
+      const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
+      await saveIntakeStepData({
+        applicationId: id,
+        stepKey,
+        data,
+        signatureName: markCompleted ? sigName : null,
+        markCompleted
+      });
+      await logAction(user.id, markCompleted ? "intake.skills_checklist_submitted" : "intake.skills_checklist_saved", "intakeStep", `${id}:${stepKey}`, { position: data.position });
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
     }
 
