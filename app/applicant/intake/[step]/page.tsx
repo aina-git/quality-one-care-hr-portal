@@ -15,7 +15,9 @@ import {
 import { ApplicationFormStep } from "@/components/applicant/intake/ApplicationFormStep";
 import { HepBDeclinationStep } from "@/components/applicant/intake/HepBDeclinationStep";
 import { FluDeclinationStep } from "@/components/applicant/intake/FluDeclinationStep";
+import { JobDescriptionStep } from "@/components/applicant/intake/JobDescriptionStep";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
+import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
@@ -116,6 +118,14 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialData={stepRow.data}
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
+          />
+        ) : stepKey === "job_description" ? (
+          <JobDescriptionStep
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
+            inferredRole={inferRoleFromDesired(application.desiredRole)}
           />
         ) : (
           <PlaceholderStep stepKey={stepKey} title={stepDef.title} />

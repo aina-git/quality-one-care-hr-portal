@@ -20,6 +20,10 @@ import {
   mergeFluData,
   validateFluForCompletion
 } from "@/services/intake/fluSchema";
+import {
+  mergeJobDescriptionData,
+  validateJobDescriptionForCompletion
+} from "@/services/intake/jobDescriptionSchema";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -132,6 +136,25 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         markCompleted
       });
       await logAction(user.id, markCompleted ? "intake.flu_submitted" : "intake.flu_saved", "intakeStep", `${id}:${stepKey}`, { decision: data.decision });
+      return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
+    }
+
+    if (stepKey === "job_description") {
+      const data = mergeJobDescriptionData(body.data, "");
+      const markCompleted = body.markCompleted === true;
+      if (markCompleted) {
+        const errors = validateJobDescriptionForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+      }
+      const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
+      await saveIntakeStepData({
+        applicationId: id,
+        stepKey,
+        data,
+        signatureName: markCompleted ? sigName : null,
+        markCompleted
+      });
+      await logAction(user.id, markCompleted ? "intake.job_description_acknowledged" : "intake.job_description_saved", "intakeStep", `${id}:${stepKey}`, { selectedRole: data.selectedRole });
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
     }
 
