@@ -21,6 +21,7 @@ import { PhysicalHealthStep } from "@/components/applicant/intake/PhysicalHealth
 import { CharacterReferenceStep } from "@/components/applicant/intake/CharacterReferenceStep";
 import { DirectDepositStep } from "@/components/applicant/intake/DirectDepositStep";
 import { W9Step } from "@/components/applicant/intake/W9Step";
+import { W4Step } from "@/components/applicant/intake/W4Step";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
@@ -164,6 +165,13 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
           />
         ) : stepKey === "w9" ? (
           <W9Step
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
+          />
+        ) : stepKey === "w4" ? (
+          <W4Step
             applicationId={application.id}
             initialData={stepRow.data}
             initialStatus={stepRow.status}
