@@ -25,7 +25,14 @@ export default async function AdminApplicationsPage() {
   return (
     <DashboardShell user={user} nav={adminNav}>
       <Card>
-        <CardHeader><CardTitle>Admin Applications</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+          <CardTitle>Admin Applications</CardTitle>
+          {user.role !== "executive_view_only" ? (
+            <Button asChild>
+              <Link href="/admin/applications/new">+ Intake paper application</Link>
+            </Button>
+          ) : null}
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
