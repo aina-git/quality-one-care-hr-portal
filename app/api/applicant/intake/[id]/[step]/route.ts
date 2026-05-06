@@ -12,6 +12,10 @@ import {
   mergeApplicationFormData,
   validateApplicationFormForCompletion
 } from "@/services/intake/applicationFormSchema";
+import {
+  mergeHepBData,
+  validateHepBForCompletion
+} from "@/services/intake/hepBSchema";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -51,12 +55,50 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const stepKey = step as IntakeStepKey;
 
     if (body.refused === true) {
+      // For Hep B specifically, we still want to persist the full form data
+      // alongside the refusal so HR can see the OSHA acknowledgement and signature.
+      if (stepKey === "hep_b_declination") {
+        const data = mergeHepBData(body.data);
+        const errors = validateHepBForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+        const sigName = data.signatureName.trim().slice(0, 200);
+        if (!sigName) return NextResponse.json({ error: "Signature required to decline." }, { status: 400 });
+        await saveIntakeStepData({
+          applicationId: id,
+          stepKey,
+          data,
+          signatureName: sigName,
+          markCompleted: false
+        });
+        await markIntakeStepRefused(id, stepKey, String(body.refusalReason ?? "").slice(0, 4000), sigName);
+        await logAction(user.id, "intake.hep_b_declined", "intakeStep", `${id}:${stepKey}`, {});
+        return NextResponse.json({ ok: true, status: "refused" });
+      }
       const reason = String(body.refusalReason ?? "").slice(0, 4000);
       const sigName = String(body.signatureName ?? "").slice(0, 200);
       if (!sigName) return NextResponse.json({ error: "Signature required to refuse." }, { status: 400 });
       await markIntakeStepRefused(id, stepKey, reason, sigName);
       await logAction(user.id, "intake.step_refused", "intakeStep", `${id}:${stepKey}`, { stepKey });
       return NextResponse.json({ ok: true, status: "refused" });
+    }
+
+    if (stepKey === "hep_b_declination") {
+      const data = mergeHepBData(body.data);
+      const markCompleted = body.markCompleted === true;
+      if (markCompleted) {
+        const errors = validateHepBForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+      }
+      const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
+      await saveIntakeStepData({
+        applicationId: id,
+        stepKey,
+        data,
+        signatureName: markCompleted ? sigName : null,
+        markCompleted
+      });
+      await logAction(user.id, markCompleted ? "intake.hep_b_submitted" : "intake.hep_b_saved", "intakeStep", `${id}:${stepKey}`, { decision: data.decision });
+      return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
     }
 
     if (stepKey === "application_form") {
