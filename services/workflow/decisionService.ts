@@ -12,7 +12,11 @@ export const decisionStatusMap: Record<HRDecisionAction, ApplicationStatus> = {
   request_clarification: "correction_requested",
   place_on_hold: "under_review",
   mark_not_selected: "rejected",
-  approve_for_onboarding: "approved"
+  approve_for_onboarding: "approved",
+  // HR / admin pushes the application to the Verification stage even when
+  // open issues remain. DON / HR verify the flagged items manually from
+  // the Verification screen — open issues here aren't a hard block.
+  send_to_verification: "ready_for_verification"
 };
 
 export function decisionLabel(action: HRDecisionAction) {
@@ -111,6 +115,10 @@ export async function createHRDecision({
     await ensureOnboardingChecklist(applicationId, userId);
     await ensureFinalVerificationChecklist(applicationId, userId);
     await logAction(userId, "application_approved_for_onboarding", "application", applicationId);
+  }
+  if (action === "send_to_verification") {
+    await ensureFinalVerificationChecklist(applicationId, userId);
+    await logAction(userId, "application_sent_to_verification", "application", applicationId);
   }
 
   return decision;

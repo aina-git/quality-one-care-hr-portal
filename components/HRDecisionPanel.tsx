@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getCsrfHeaders } from "@/lib/csrf-client";
 
 const actions = [
+  ["send_to_verification", "Send to Verification"],
   ["proceed_to_interview", "Proceed to Interview"],
   ["request_clarification", "Request Clarification"],
   ["place_on_hold", "Place on Hold"],
@@ -13,7 +14,7 @@ const actions = [
 ];
 
 export function HRDecisionPanel({ applicationId }: { applicationId: string }) {
-  const [action, setAction] = useState("request_clarification");
+  const [action, setAction] = useState("send_to_verification");
   const [note, setNote] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);

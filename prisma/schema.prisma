@@ -118,6 +118,7 @@ enum HRDecisionAction {
   place_on_hold
   mark_not_selected
   approve_for_onboarding
+  send_to_verification
 }
 
 enum MessageSenderRole {
