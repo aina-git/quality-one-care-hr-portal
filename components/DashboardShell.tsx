@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/audit";
+import { countUniqueUnreadNotifications } from "@/services/operations/notificationService";
 
 type NavItem = {
   href: string;
@@ -105,7 +106,7 @@ export async function DashboardShell({
   children: ReactNode;
 }) {
   await logAction(user.id, "page_access", "route", null, { role: user.role }).catch(() => null);
-  const unreadNotifications = await prisma.notification.count({ where: { userId: user.id, readAt: null } }).catch(() => 0);
+  const unreadNotifications = await countUniqueUnreadNotifications(user.id).catch(() => 0);
   const dueTasks = await prisma.task.count({
     where: {
       assignedToUserId: user.id,

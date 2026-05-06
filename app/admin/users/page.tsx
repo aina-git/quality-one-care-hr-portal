@@ -50,7 +50,7 @@ export default async function AdminUsersPage() {
                   <TableCell className="capitalize">{portalUser.role}</TableCell>
                   <TableCell>{portalUser.isActive ? "Active" : "Inactive"}</TableCell>
                   <TableCell>{portalUser.createdAt.toLocaleDateString()}</TableCell>
-                  <TableCell><UserRoleControl userId={portalUser.id} currentRole={portalUser.role} isActive={portalUser.isActive} /></TableCell>
+                  <TableCell><UserRoleControl userId={portalUser.id} currentRole={portalUser.role} isActive={portalUser.isActive} isSelf={portalUser.id === user.id} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>

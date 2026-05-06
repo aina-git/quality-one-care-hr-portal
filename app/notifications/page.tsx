@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { listGroupedNotifications } from "@/services/operations/notificationService";
 
 function color(priority: string) {
   if (priority === "urgent") return "border-red-200 bg-red-50 text-red-800";
@@ -17,18 +18,14 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   const user = await requireAuth();
   const params = await searchParams;
   const filter = params.filter ?? "all";
-  const notifications = await prisma.notification.findMany({
-    where: {
-      userId: user.id,
-      ...(filter === "unread" ? { readAt: null } : {}),
-      ...(filter === "urgent" ? { priority: { in: ["urgent", "high"] } } : {}),
-      ...(filter === "messages" ? { notificationType: "message" } : {}),
-      ...(filter === "reminders" ? { notificationType: "reminder" } : {})
-    },
-    orderBy: [{ readAt: "asc" }, { createdAt: "desc" }],
-    take: 100
-  });
-  const unread = notifications.filter((item) => !item.readAt).length;
+  void prisma;
+  let groups = await listGroupedNotifications(user.id, { take: 200 });
+  if (filter === "unread") groups = groups.filter((g) => g.unreadCount > 0);
+  if (filter === "urgent") groups = groups.filter((g) => g.priority === "urgent" || g.priority === "high");
+  if (filter === "messages") groups = groups.filter((g) => g.notificationType === "message");
+  if (filter === "reminders") groups = groups.filter((g) => g.notificationType === "reminder");
+  const notifications = groups.slice(0, 100);
+  const unread = groups.filter((g) => g.unreadCount > 0).length;
 
   return (
     <DashboardShell user={user} nav={[]}>
@@ -45,22 +42,26 @@ export default async function NotificationsPage({ searchParams }: { searchParams
         </section>
         <div className="grid gap-4 sm:grid-cols-3">
           <OperationalPulse label="Unread" value={unread} icon="bell" color="orange" />
-          <OperationalPulse label="Urgent/High" value={notifications.filter((item) => ["urgent", "high"].includes(item.priority)).length} icon="alert" color="red" />
-          <OperationalPulse label="Messages" value={notifications.filter((item) => item.notificationType === "message").length} icon="message" color="blue" />
+          <OperationalPulse label="Urgent/High" value={notifications.filter((g) => g.priority === "urgent" || g.priority === "high").length} icon="alert" color="red" />
+          <OperationalPulse label="Messages" value={notifications.filter((g) => g.notificationType === "message").length} icon="message" color="blue" />
         </div>
         <Card>
           <CardHeader><CardTitle>Activity Feed</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
-            {notifications.map((item) => (
-              <div key={item.id} className={`rounded-md border p-3 ${color(item.priority)}`}>
+            {notifications.map((g) => (
+              <div key={g.representativeId} className={`rounded-md border p-3 ${color(g.priority)}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-medium">{item.title}</p>
-                  <span className="text-xs uppercase">{item.readAt ? "read" : "unread"} - {item.notificationType.replace(/_/g, " ")}</span>
+                  <p className="font-medium">
+                    {g.title}
+                    {g.duplicateCount > 1 ? <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-xs font-semibold text-slate-700">×{g.duplicateCount}</span> : null}
+                  </p>
+                  <span className="text-xs uppercase">{g.unreadCount > 0 ? "unread" : "read"} - {g.notificationType.replace(/_/g, " ")}</span>
                 </div>
-                <p className="mt-1 text-sm">{item.body}</p>
+                <p className="mt-1 text-sm">{g.body}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                  <span>{item.createdAt.toLocaleString()}</span>
-                  {item.route ? <Link className="underline" href={item.route}>Open related item</Link> : null}
+                  <span>{g.createdAt.toLocaleString()}</span>
+                  {g.duplicateCount > 1 ? <span className="text-slate-600">{g.unreadCount} unread of {g.duplicateCount} repeats</span> : null}
+                  {g.route ? <Link className="underline" href={g.route}>Open related item</Link> : null}
                 </div>
               </div>
             ))}

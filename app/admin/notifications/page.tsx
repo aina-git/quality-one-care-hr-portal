@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { adminNav } from "@/lib/adminNav";
+import { listGroupedNotifications } from "@/services/operations/notificationService";
 
 function priorityClass(priority: string) {
   if (priority === "urgent" || priority === "high") return "border-red-200 bg-red-50 text-red-900";
@@ -17,12 +18,8 @@ function priorityClass(priority: string) {
 
 export default async function AdminNotificationsPage() {
   const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
-  const [notifications, systemAlerts, missingDocuments, expiringLicenses, queuedMessages, overdueTasks, readyForDon, pendingHrReviews] = await Promise.all([
-    prisma.notification.findMany({
-      where: { userId: user.id },
-      orderBy: [{ readAt: "asc" }, { createdAt: "desc" }],
-      take: 80
-    }),
+  const [groupedNotifications, systemAlerts, missingDocuments, expiringLicenses, queuedMessages, overdueTasks, readyForDon, pendingHrReviews] = await Promise.all([
+    listGroupedNotifications(user.id, { take: 80 }),
     prisma.systemAlert.findMany({
       where: { resolved: false },
       include: { application: { include: { applicantProfile: { include: { user: true } } } } },
@@ -36,25 +33,39 @@ export default async function AdminNotificationsPage() {
     prisma.finalVerificationChecklist.count({ where: { status: "ready_for_don_review" } }),
     prisma.application.count({ where: { status: "hr_review_pending" } })
   ]);
-  const unread = notifications.filter((item) => !item.readAt).length;
-  const activeItems = [
+  const unread = groupedNotifications.filter((g) => g.unreadCount > 0).length;
+  const activeItems: Array<{
+    id: string;
+    title: string;
+    body: string;
+    priority: string;
+    route: string | null;
+    createdAt: Date;
+    type: string;
+    duplicateCount: number;
+    unreadCount: number;
+  }> = [
     ...systemAlerts.map((alert) => ({
       id: `alert-${alert.id}`,
       title: alert.title,
       body: alert.message,
-      priority: alert.priority,
+      priority: alert.priority as string,
       route: alert.route,
       createdAt: alert.createdAt,
-      type: alert.category
+      type: alert.category as string,
+      duplicateCount: 1,
+      unreadCount: 1
     })),
-    ...notifications.map((notification) => ({
-      id: `notification-${notification.id}`,
-      title: notification.title,
-      body: notification.body,
-      priority: notification.priority,
-      route: notification.route,
-      createdAt: notification.createdAt,
-      type: notification.notificationType
+    ...groupedNotifications.map((g) => ({
+      id: `notification-${g.representativeId}`,
+      title: g.title,
+      body: g.body,
+      priority: g.priority,
+      route: g.route,
+      createdAt: g.createdAt,
+      type: g.notificationType,
+      duplicateCount: g.duplicateCount,
+      unreadCount: g.unreadCount
     }))
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
@@ -87,12 +98,16 @@ export default async function AdminNotificationsPage() {
             {activeItems.map((item) => (
               <div key={item.id} className={`rounded-xl border p-4 ${priorityClass(item.priority)}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-semibold">{item.title}</p>
+                  <p className="font-semibold">
+                    {item.title}
+                    {item.duplicateCount > 1 ? <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-xs font-semibold text-slate-700">×{item.duplicateCount}</span> : null}
+                  </p>
                   <span className="rounded-full bg-white/70 px-2 py-1 text-xs font-semibold uppercase">{item.type.replace(/_/g, " ")}</span>
                 </div>
                 <p className="mt-2 text-sm">{item.body}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
                   <span>{item.createdAt.toLocaleString()}</span>
+                  {item.duplicateCount > 1 ? <span className="text-slate-600">{item.unreadCount} unread of {item.duplicateCount} repeats</span> : null}
                   {item.route ? <Link className="font-semibold underline" href={item.route.startsWith("/hr/applications") ? item.route.replace("/hr/applications", "/admin/applications") : item.route}>Open related item</Link> : null}
                 </div>
               </div>

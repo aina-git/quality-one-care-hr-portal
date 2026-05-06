@@ -60,11 +60,13 @@ export function CreateUserForm() {
 export function UserRoleControl({
   userId,
   currentRole,
-  isActive
+  isActive,
+  isSelf = false
 }: {
   userId: string;
   currentRole: Role;
   isActive: boolean;
+  isSelf?: boolean;
 }) {
   const [role, setRole] = useState<Role>(currentRole);
   const [active, setActive] = useState(isActive);
@@ -72,6 +74,7 @@ export function UserRoleControl({
   const [message, setMessage] = useState("");
   const [showReset, setShowReset] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [deleteState, setDeleteState] = useState<"idle" | "confirm" | "force">("idle");
 
   async function save(nextActive = active) {
     setBusy(true);
@@ -114,6 +117,30 @@ export function UserRoleControl({
     setBusy(false);
   }
 
+  async function performDelete(force: boolean) {
+    setBusy(true);
+    setMessage("");
+    const url = force ? `/api/admin/users/${userId}?force=true` : `/api/admin/users/${userId}`;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: getCsrfHeaders({ "Content-Type": "application/json" })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.status === 409 && !force) {
+      setMessage(payload.error ?? "This user has linked data. Click 'Force delete' to proceed anyway.");
+      setDeleteState("force");
+      setBusy(false);
+      return;
+    }
+    if (!response.ok) {
+      setMessage(payload.error ?? "User could not be deleted.");
+      setBusy(false);
+      setDeleteState("idle");
+      return;
+    }
+    window.location.reload();
+  }
+
   return (
     <div className="grid gap-2">
       <select value={role} onChange={(event) => setRole(event.target.value as Role)} className="h-9 rounded-md border bg-white px-2 text-sm">
@@ -136,6 +163,27 @@ export function UserRoleControl({
         <Button size="sm" type="button" variant="outline" onClick={() => setShowReset(!showReset)} disabled={busy}>
           Reset Password
         </Button>
+        {!isSelf && deleteState === "idle" && (
+          <Button size="sm" type="button" variant="outline" className="border-red-300 text-red-700 hover:bg-red-50" onClick={() => setDeleteState("confirm")} disabled={busy}>
+            Delete
+          </Button>
+        )}
+        {deleteState === "confirm" && (
+          <>
+            <Button size="sm" type="button" className="bg-red-600 hover:bg-red-700" onClick={() => performDelete(false)} disabled={busy}>
+              {busy ? "Deleting…" : "Confirm delete"}
+            </Button>
+            <Button size="sm" type="button" variant="outline" onClick={() => { setDeleteState("idle"); setMessage(""); }} disabled={busy}>Cancel</Button>
+          </>
+        )}
+        {deleteState === "force" && (
+          <>
+            <Button size="sm" type="button" className="bg-red-600 hover:bg-red-700" onClick={() => performDelete(true)} disabled={busy}>
+              {busy ? "Deleting…" : "Force delete"}
+            </Button>
+            <Button size="sm" type="button" variant="outline" onClick={() => { setDeleteState("idle"); setMessage(""); }} disabled={busy}>Cancel</Button>
+          </>
+        )}
       </div>
       {showReset && (
         <div className="flex gap-2 mt-1">
