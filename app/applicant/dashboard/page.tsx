@@ -18,6 +18,7 @@ import { getApplicationProgress } from "@/services/applicantProgressService";
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
   { href: "/applicant/application", label: "Application" },
+  { href: "/applicant/intake", label: "Intake Wizard" },
   { href: "/applicant/quick-upload", label: "Upload Documents" },
   { href: "/applicant/intake-review", label: "Review Extracted Fields" },
   { href: "/applicant/messages", label: "Messages" },
