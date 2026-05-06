@@ -7,8 +7,14 @@ import { extractTextFromDocument } from "@/services/ocr/ocrService";
 import { resolveDocumentPath } from "@/services/storage/storageService";
 import { validateApplication } from "@/services/validation/applicationValidationService";
 import { organizeDocumentForIntake } from "@/services/intake/documentOrganizationService";
+import { autoMapHighConfidenceFields } from "@/services/intake/mappingService";
 import { analyzeDocumentWithProvider, getAnalysisSettings } from "@/services/analysis/documentAnalysisProvider";
 import { reviewReasonForField, sourceSnippetFor } from "@/services/analysis/precisionReviewService";
+
+// Minimum confidence for an extracted field to be promoted automatically into
+// the applicant's structured profile rows. Below this, the field stays in
+// pending_review for manual HR confirmation. Tunable via env if needed.
+const AUTO_MAP_THRESHOLD = Number(process.env.AUTO_MAP_CONFIDENCE_THRESHOLD ?? 0.6);
 
 export async function processUploadedDocument(documentId: string, userId: string) {
   const document = await prisma.uploadedDocument.findUnique({ where: { id: documentId } });
@@ -89,6 +95,12 @@ export async function processUploadedDocument(documentId: string, userId: string
       }
     }
 
+    // Bridge the extraction → structured profile gap. Promotes high-confidence
+    // ExtractedField rows into ApplicantProfile / EmploymentHistory / License /
+    // Certification / Reference so HR doesn't have to re-type what the OCR
+    // already captured. Lower-confidence fields stay flagged for manual review.
+    const autoMap = await autoMapHighConfidenceFields(document.applicationId, AUTO_MAP_THRESHOLD, userId);
+
     await prisma.uploadedDocument.update({
       where: { id: documentId },
       data: {
@@ -103,7 +115,9 @@ export async function processUploadedDocument(documentId: string, userId: string
     });
     await logAction(userId, "document_processing_completed", "uploaded_document", documentId, {
       detectedType: classification.detectedType,
-      fieldCount: extracted.length
+      fieldCount: extracted.length,
+      autoMapped: autoMap.mapped,
+      autoMapPending: autoMap.skipped
     });
     await organizeDocumentForIntake(documentId, userId);
     await validateApplication(document.applicationId, userId);
