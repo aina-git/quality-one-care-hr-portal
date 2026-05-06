@@ -18,6 +18,7 @@ import { FluDeclinationStep } from "@/components/applicant/intake/FluDeclination
 import { JobDescriptionStep } from "@/components/applicant/intake/JobDescriptionStep";
 import { WageDeductionStep } from "@/components/applicant/intake/WageDeductionStep";
 import { PhysicalHealthStep } from "@/components/applicant/intake/PhysicalHealthStep";
+import { CharacterReferenceStep } from "@/components/applicant/intake/CharacterReferenceStep";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
@@ -143,6 +144,13 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
             applicantEmail={user.email ?? ""}
+          />
+        ) : stepKey === "character_reference" ? (
+          <CharacterReferenceStep
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
           />
         ) : (
           <PlaceholderStep stepKey={stepKey} title={stepDef.title} />

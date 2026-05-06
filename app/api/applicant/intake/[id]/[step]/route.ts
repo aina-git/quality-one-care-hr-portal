@@ -32,6 +32,10 @@ import {
   mergePhysicalHealthData,
   validatePhysicalHealthForCompletion
 } from "@/services/intake/physicalHealthSchema";
+import {
+  mergeCharacterReferenceData,
+  validateCharacterReferenceForCompletion
+} from "@/services/intake/characterReferenceSchema";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -201,6 +205,25 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         markCompleted
       });
       await logAction(user.id, markCompleted ? "intake.physical_health_submitted" : "intake.physical_health_saved", "intakeStep", `${id}:${stepKey}`, { determination: data.determination });
+      return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
+    }
+
+    if (stepKey === "character_reference") {
+      const data = mergeCharacterReferenceData(body.data);
+      const markCompleted = body.markCompleted === true;
+      if (markCompleted) {
+        const errors = validateCharacterReferenceForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+      }
+      const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
+      await saveIntakeStepData({
+        applicationId: id,
+        stepKey,
+        data,
+        signatureName: markCompleted ? sigName : null,
+        markCompleted
+      });
+      await logAction(user.id, markCompleted ? "intake.character_reference_submitted" : "intake.character_reference_saved", "intakeStep", `${id}:${stepKey}`, {});
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
     }
 
