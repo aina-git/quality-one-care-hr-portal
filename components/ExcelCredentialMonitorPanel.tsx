@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mail, Play, RefreshCw, Save } from "lucide-react";
+import { Mail, Play, RefreshCw, Save, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,6 +119,27 @@ export function ExcelCredentialMonitorPanel() {
     setBusy(false);
   }
 
+  async function handleUpload(file: File) {
+    setBusy(true);
+    setMessage("");
+    const body = new FormData();
+    body.append("file", file);
+    const response = await fetch("/api/admin/excel-monitor/upload", {
+      method: "POST",
+      headers: getCsrfHeaders(),
+      body
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setSettings(payload.settings);
+      setMessage(`Uploaded ${payload.filename} (${Math.round(payload.bytes / 1024)} KB) to persistent storage.`);
+      await preview();
+    } else {
+      setMessage(payload.error ?? "Upload failed.");
+    }
+    setBusy(false);
+  }
+
   useEffect(() => {
     void loadSettings().then(preview);
   }, []);
@@ -132,6 +153,22 @@ export function ExcelCredentialMonitorPanel() {
             <h1 className="mt-2 text-3xl font-semibold tracking-normal">Nurse license and document notices</h1>
           </div>
           <div className="flex flex-wrap gap-2">
+            <label
+              className={`inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-white px-4 py-2 text-sm font-medium hover:bg-orange-50 hover:text-orange-700 ${busy ? "pointer-events-none opacity-50" : ""}`}
+            >
+              <Upload size={16} /> Upload Excel
+              <input
+                type="file"
+                accept=".xlsx,.xlsm,.xls"
+                className="hidden"
+                disabled={busy}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (file) void handleUpload(file);
+                }}
+              />
+            </label>
             <Button type="button" variant="outline" onClick={preview} disabled={busy}>
               <RefreshCw size={16} /> Preview
             </Button>
