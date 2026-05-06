@@ -40,6 +40,10 @@ import {
   mergeDirectDepositData,
   validateDirectDepositForCompletion
 } from "@/services/intake/directDepositSchema";
+import {
+  mergeW9Data,
+  validateW9ForCompletion
+} from "@/services/intake/w9Schema";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -228,6 +232,26 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         markCompleted
       });
       await logAction(user.id, markCompleted ? "intake.character_reference_submitted" : "intake.character_reference_saved", "intakeStep", `${id}:${stepKey}`, {});
+      return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
+    }
+
+    if (stepKey === "w9") {
+      const data = mergeW9Data(body.data);
+      const markCompleted = body.markCompleted === true;
+      if (markCompleted) {
+        const errors = validateW9ForCompletion(data);
+        if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
+      }
+      const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
+      await saveIntakeStepData({
+        applicationId: id,
+        stepKey,
+        data,
+        signatureName: markCompleted ? sigName : null,
+        markCompleted
+      });
+      // Audit intentionally avoids capturing SSN/EIN.
+      await logAction(user.id, markCompleted ? "intake.w9_submitted" : "intake.w9_saved", "intakeStep", `${id}:${stepKey}`, { tinType: data.tinType, classification: data.taxClassification });
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
     }
 
