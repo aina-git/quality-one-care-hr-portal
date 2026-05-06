@@ -16,13 +16,26 @@ export const POST = withApi({ scope: "calendar.events", entityType: "calendarEve
   const body = await request.json().catch(() => ({}));
   const eventType = sanitizeText(body.eventType, 80);
   const visibility = sanitizeText(body.visibility, 80);
+  const title = sanitizeText(body.title, 200);
   const start = new Date(String(body.startDateTime ?? ""));
   const end = new Date(String(body.endDateTime ?? ""));
-  if (!sanitizeText(body.title, 200) || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
-    return NextResponse.json({ error: "Title, start time, and end time are required." }, { status: 400 });
+  if (!title) {
+    return NextResponse.json({ error: "Event title is required." }, { status: 400 });
   }
-  if (!eventTypes.includes(eventType) || !visibilities.includes(visibility)) {
-    return NextResponse.json({ error: "Choose valid event options." }, { status: 400 });
+  if (Number.isNaN(start.getTime())) {
+    return NextResponse.json({ error: "Start date and time are required (use the date/time picker)." }, { status: 400 });
+  }
+  if (Number.isNaN(end.getTime())) {
+    return NextResponse.json({ error: "End date and time are required (use the date/time picker)." }, { status: 400 });
+  }
+  if (end <= start) {
+    return NextResponse.json({ error: "End time must be after the start time." }, { status: 400 });
+  }
+  if (!eventTypes.includes(eventType)) {
+    return NextResponse.json({ error: `Pick a valid event type (one of: ${eventTypes.join(", ")}).` }, { status: 400 });
+  }
+  if (!visibilities.includes(visibility)) {
+    return NextResponse.json({ error: `Pick a valid visibility (one of: ${visibilities.join(", ")}).` }, { status: 400 });
   }
 
   const event = await createCalendarEvent({

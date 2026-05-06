@@ -16,6 +16,29 @@ export function CalendarEventForm({ applicationId, applicantUserId }: { applicat
     setBusy(true);
     setMessage("");
     const form = new FormData(event.currentTarget);
+    const startStr = String(form.get("startDateTime") ?? "");
+    const endStr = String(form.get("endDateTime") ?? "");
+    // Client-side pre-checks so the user sees the issue without a round trip.
+    if (!String(form.get("title") ?? "").trim()) {
+      setMessage("Please enter an event title.");
+      setBusy(false);
+      return;
+    }
+    if (!startStr) {
+      setMessage("Please pick a start date and time.");
+      setBusy(false);
+      return;
+    }
+    if (!endStr) {
+      setMessage("Please pick an end date and time.");
+      setBusy(false);
+      return;
+    }
+    if (new Date(endStr) <= new Date(startStr)) {
+      setMessage("End time must be after the start time.");
+      setBusy(false);
+      return;
+    }
     const response = await fetch("/api/calendar/events", {
       method: "POST",
       headers: getCsrfHeaders({ "Content-Type": "application/json" }),
@@ -23,8 +46,8 @@ export function CalendarEventForm({ applicationId, applicantUserId }: { applicat
         title: form.get("title"),
         description: form.get("description"),
         eventType: form.get("eventType"),
-        startDateTime: form.get("startDateTime"),
-        endDateTime: form.get("endDateTime"),
+        startDateTime: startStr,
+        endDateTime: endStr,
         location: form.get("location"),
         meetingLink: form.get("meetingLink"),
         visibility: form.get("visibility"),
@@ -56,8 +79,12 @@ export function CalendarEventForm({ applicationId, applicantUserId }: { applicat
       <input name="meetingLink" placeholder="Meeting link" className="h-10 rounded-md border bg-white px-3 text-sm" />
       {!applicationId ? <input name="relatedApplicationId" placeholder="Related application ID optional" className="h-10 rounded-md border bg-white px-3 text-sm md:col-span-2" /> : null}
       <textarea name="description" placeholder="Description" rows={3} className="rounded-md border bg-white px-3 py-2 text-sm md:col-span-2" />
-      <Button type="submit" disabled={busy}>{busy ? "Saving..." : "Create Event"}</Button>
-      {message ? <p className="text-sm text-orange-700">{message}</p> : null}
+      {message ? (
+        <div role="alert" className="md:col-span-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+          {message}
+        </div>
+      ) : null}
+      <Button type="submit" disabled={busy} className="md:col-span-2">{busy ? "Saving..." : "Create Event"}</Button>
     </form>
   );
 }
