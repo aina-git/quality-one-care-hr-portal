@@ -26,7 +26,10 @@ export async function POST() {
   const passwordHash = await bcrypt.hash(TEMP_PASSWORD, 12);
   await prisma.user.upsert({
     where: { email: HR_MANAGER_EMAIL },
-    update: { name: HR_MANAGER_NAME, role: "admin", isActive: true },
+    // Always re-set the password on cleanup so the operator has a known
+    // way back in. Without this, a second cleanup left the password at
+    // whatever it had been changed to and could lock out the admin.
+    update: { name: HR_MANAGER_NAME, role: "admin", isActive: true, passwordHash },
     create: { email: HR_MANAGER_EMAIL, name: HR_MANAGER_NAME, role: "admin", passwordHash },
   });
 
