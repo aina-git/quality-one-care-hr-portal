@@ -46,20 +46,49 @@ function eventTone(type: string) {
   return "border-slate-200 bg-slate-50 text-slate-700";
 }
 
+// Quality One Care operates in Maryland - all calendar labels are computed
+// in Eastern time so users see "Today" / "Tomorrow" relative to their day,
+// not the server's UTC day.
+const ORG_TZ = "America/New_York";
+
+function ymdInTz(d: Date, tz: string): string {
+  // Returns "YYYY-MM-DD" as seen in the given timezone.
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
 function dateKey(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return ymdInTz(d, ORG_TZ);
 }
 
 function dayLabel(d: Date): string {
-  const today = new Date();
-  const tomorrow = new Date(today.getTime() + 86400000);
-  if (d.toDateString() === today.toDateString()) return "Today";
-  if (d.toDateString() === tomorrow.toDateString()) return "Tomorrow";
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  const now = new Date();
+  const todayKey = ymdInTz(now, ORG_TZ);
+  const tomorrow = new Date(now.getTime() + 86400000);
+  const tomorrowKey = ymdInTz(tomorrow, ORG_TZ);
+  const dKey = ymdInTz(d, ORG_TZ);
+  if (dKey === todayKey) return "Today";
+  if (dKey === tomorrowKey) return "Tomorrow";
+  return d.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    timeZone: ORG_TZ
+  });
 }
 
 function timeOf(d: Date): string {
-  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: ORG_TZ
+  });
 }
 
 export default async function CalendarPage({ searchParams }: { searchParams?: Promise<{ filter?: string }> }) {
@@ -174,45 +203,48 @@ export default async function CalendarPage({ searchParams }: { searchParams?: Pr
           </div>
         </div>
 
-        {canCreate && (
-          <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus size={16} /> New event</CardTitle></CardHeader>
-            <CardContent className="pt-0">
-              <CalendarEventForm />
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">Schedule</CardTitle></CardHeader>
-          <CardContent className="pt-0 grid gap-4">
+        <Card className="border-2 border-orange-200">
+          <CardHeader className="pb-3 bg-orange-50/50 border-b border-orange-100">
+            <CardTitle className="text-lg flex items-center gap-2 text-orange-900">
+              <CalendarDays size={20} className="text-orange-600" /> Schedule
+              <span className="ml-auto text-sm font-normal text-slate-600">
+                {filter === "today" ? "Today" : filter === "upcoming" ? "Today and upcoming" : "All events"}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 grid gap-5">
             {groups.length === 0 && (
-              <div className="rounded-md border border-dashed bg-slate-50 p-6 text-center">
-                <CalendarDays size={20} className="mx-auto text-slate-400 mb-2" />
-                <p className="text-sm text-slate-600">No events {filter === "today" ? "today" : filter === "upcoming" ? "scheduled" : ""}.</p>
-                {canCreate && <p className="mt-1 text-xs text-slate-500">Use the form above to create one.</p>}
+              <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+                <CalendarDays size={28} className="mx-auto text-slate-400 mb-3" />
+                <p className="text-base font-medium text-slate-700">No events {filter === "today" ? "today" : filter === "upcoming" ? "scheduled" : "found"}.</p>
+                {canCreate && <p className="mt-1 text-sm text-slate-500">Add one using the form below.</p>}
               </div>
             )}
             {groups.map((group) => (
-              <div key={group.date.toISOString()} className="grid gap-2">
-                <p className="text-sm font-semibold text-slate-700 border-b border-slate-100 pb-1">{dayLabel(group.date)}</p>
+              <div key={group.date.toISOString()} className="grid gap-3">
+                <p className="text-base font-bold text-slate-900 border-b-2 border-orange-200 pb-1.5">
+                  {dayLabel(group.date)}
+                  <span className="ml-2 text-sm font-normal text-slate-500">
+                    {group.date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: ORG_TZ })}
+                  </span>
+                </p>
                 {group.events.map((ev) => (
-                  <div key={ev.id} className={`rounded-md border p-3 text-sm ${eventTone(ev.eventType)}`}>
+                  <div key={ev.id} className={`rounded-lg border-2 p-4 text-sm shadow-sm ${eventTone(ev.eventType)}`}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold">{ev.title}</p>
-                        <p className="mt-0.5 text-xs flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                          <span className="inline-flex items-center gap-1"><Clock size={11} /> {timeOf(ev.startDateTime)}–{timeOf(ev.endDateTime)}</span>
+                        <p className="text-base font-bold">{ev.title}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                          <span className="inline-flex items-center gap-1.5 font-semibold"><Clock size={14} /> {timeOf(ev.startDateTime)} – {timeOf(ev.endDateTime)}</span>
                           {(ev.location || ev.meetingLink) && (
-                            <span className="inline-flex items-center gap-1"><MapPin size={11} /> {ev.location ?? ev.meetingLink}</span>
+                            <span className="inline-flex items-center gap-1.5"><MapPin size={14} /> {ev.location ?? ev.meetingLink}</span>
                           )}
                           {ev.relatedApplication && (
-                            <span className="inline-flex items-center gap-1"><Users size={11} /> {ev.relatedApplication.applicantProfile.user.name ?? ev.relatedApplication.applicantProfile.user.email}</span>
+                            <span className="inline-flex items-center gap-1.5"><Users size={14} /> {ev.relatedApplication.applicantProfile.user.name ?? ev.relatedApplication.applicantProfile.user.email}</span>
                           )}
-                        </p>
-                        {ev.description && <p className="mt-1 text-xs whitespace-pre-wrap opacity-90">{ev.description}</p>}
+                        </div>
+                        {ev.description && <p className="mt-2 text-sm whitespace-pre-wrap opacity-90">{ev.description}</p>}
                       </div>
-                      <span className="rounded-full border bg-white/60 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                      <span className="rounded-full border bg-white/80 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide">
                         {ev.eventType.replace(/_/g, " ")}
                       </span>
                     </div>
@@ -222,6 +254,15 @@ export default async function CalendarPage({ searchParams }: { searchParams?: Pr
             ))}
           </CardContent>
         </Card>
+
+        {canCreate && (
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus size={16} /> Add a new event</CardTitle></CardHeader>
+            <CardContent className="pt-0">
+              <CalendarEventForm />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardShell>
   );
