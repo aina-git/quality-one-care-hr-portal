@@ -138,6 +138,29 @@ function dateIsExpired(value?: Date | null) {
   return value.getTime() < Date.now();
 }
 
+export function describeBlockerReason(item: {
+  status: VerificationItemStatus;
+  expirationDate: Date | null;
+  notes: string | null;
+  result: string | null;
+  category: VerificationCategory;
+}) {
+  if (dateIsExpired(item.expirationDate)) {
+    const dateText = item.expirationDate ? item.expirationDate.toLocaleDateString() : "";
+    return `Expired${dateText ? ` ${dateText}` : ""}`;
+  }
+  if (item.status === "expired") return "Expired";
+  if (item.status === "failed") return "Failed";
+  if (item.status === "needs_followup") return "Needs Followup";
+  if (item.status === "pending_external_check") return "Pending External Check";
+  if ((item.category === "oig_exclusion" || item.category === "maryland_case_search") && /fail|hit|match|concern/i.test(item.result ?? "")) {
+    return "Result needs review";
+  }
+  if (item.status === "pending") return "Pending";
+  if (item.status === "not_applicable" && !item.notes?.trim()) return "Marked N/A — note required";
+  return item.status.replace(/_/g, " ");
+}
+
 export function summarizeChecklist(checklist: {
   application: { desiredRole: string | null };
   items: Array<{
