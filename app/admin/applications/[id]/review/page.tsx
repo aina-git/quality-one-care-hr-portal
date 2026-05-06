@@ -5,8 +5,10 @@ import { DocumentPreviewLink } from "@/components/DocumentPreviewLink";
 import { HRDecisionPanel } from "@/components/HRDecisionPanel";
 import { HrAddRecordForm } from "@/components/HrAddRecordForm";
 import { HrContactEditor } from "@/components/HrContactEditor";
+import { HrOcrViewer } from "@/components/HrOcrViewer";
 import { HrPediatricExperienceEditor } from "@/components/HrPediatricExperienceEditor";
 import { HrReprocessButton } from "@/components/HrReprocessButton";
+import { HrUploadDocument } from "@/components/HrUploadDocument";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { RecommendationBadge, RiskBadge } from "@/components/ReviewBadges";
 import { RunReviewButton } from "@/components/RunReviewButton";
@@ -268,14 +270,20 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
               <CardContent className="pt-0 grid gap-3 text-sm">
                 {application.documents.length === 0 && <p className="text-slate-400 italic">No documents uploaded.</p>}
                 {application.documents.map((doc) => (
-                  <div key={doc.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-100 bg-slate-50 p-2.5">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 truncate">{doc.fileName}</p>
-                      <p className="text-slate-600 text-xs">{label(doc.detectedDocumentType ?? doc.documentType)} · {label(doc.processingStatus)}</p>
+                  <div key={doc.id} className="rounded-md border border-slate-100 bg-slate-50 p-2.5 grid gap-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 truncate">{doc.fileName}</p>
+                        <p className="text-slate-600 text-xs">{label(doc.detectedDocumentType ?? doc.documentType)} · {label(doc.processingStatus)}</p>
+                      </div>
+                      <DocumentPreviewLink documentId={doc.id} label="Preview" />
                     </div>
-                    <DocumentPreviewLink documentId={doc.id} label="Preview" />
+                    <HrOcrViewer applicationId={application.id} documentId={doc.id} />
                   </div>
                 ))}
+
+                <HrUploadDocument applicationId={application.id} />
+
                 {application.documents.length > 0 && (
                   <div className="rounded-md border border-dashed border-slate-200 bg-white p-3">
                     <p className="text-xs font-medium text-slate-700 mb-1">Auto-fill from documents</p>
