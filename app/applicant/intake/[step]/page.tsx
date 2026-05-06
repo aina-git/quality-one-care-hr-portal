@@ -22,6 +22,7 @@ import { CharacterReferenceStep } from "@/components/applicant/intake/CharacterR
 import { DirectDepositStep } from "@/components/applicant/intake/DirectDepositStep";
 import { W9Step } from "@/components/applicant/intake/W9Step";
 import { W4Step } from "@/components/applicant/intake/W4Step";
+import { MW507Step } from "@/components/applicant/intake/MW507Step";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
@@ -172,6 +173,13 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
           />
         ) : stepKey === "w4" ? (
           <W4Step
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
+          />
+        ) : stepKey === "mw507" ? (
+          <MW507Step
             applicationId={application.id}
             initialData={stepRow.data}
             initialStatus={stepRow.status}
