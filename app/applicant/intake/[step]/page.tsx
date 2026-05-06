@@ -14,6 +14,7 @@ import {
 } from "@/services/intake/intakeWizardService";
 import { ApplicationFormStep } from "@/components/applicant/intake/ApplicationFormStep";
 import { HepBDeclinationStep } from "@/components/applicant/intake/HepBDeclinationStep";
+import { FluDeclinationStep } from "@/components/applicant/intake/FluDeclinationStep";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 
 const APPLICANT_NAV = [
@@ -104,6 +105,13 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
           />
         ) : stepKey === "hep_b_declination" ? (
           <HepBDeclinationStep
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
+          />
+        ) : stepKey === "flu_declination" ? (
+          <FluDeclinationStep
             applicationId={application.id}
             initialData={stepRow.data}
             initialStatus={stepRow.status}
