@@ -3,6 +3,8 @@ import { ArrowLeft, AlertTriangle, CheckCircle2, FileText, ShieldCheck } from "l
 import { DashboardShell } from "@/components/DashboardShell";
 import { DocumentPreviewLink } from "@/components/DocumentPreviewLink";
 import { HRDecisionPanel } from "@/components/HRDecisionPanel";
+import { HrContactEditor } from "@/components/HrContactEditor";
+import { HrPediatricExperienceEditor } from "@/components/HrPediatricExperienceEditor";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { RecommendationBadge, RiskBadge } from "@/components/ReviewBadges";
 import { RunReviewButton } from "@/components/RunReviewButton";
@@ -22,15 +24,6 @@ function formatDate(d: Date | string | null | undefined) {
   if (!d) return "—";
   const date = d instanceof Date ? d : new Date(d);
   return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
-}
-
-function dataRow(label: string, value: string | null | undefined) {
-  return (
-    <div className="grid grid-cols-[140px_1fr] gap-3 py-1.5 text-sm border-b border-slate-100 last:border-0">
-      <span className="font-medium text-slate-600">{label}</span>
-      <span className="text-slate-900">{value && value.trim() ? value : <span className="text-slate-400 italic">Not provided</span>}</span>
-    </div>
-  );
 }
 
 export default async function AdminApplicationReviewPage({ params }: { params: Promise<{ id: string }> }) {
@@ -122,10 +115,18 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">Contact</CardTitle></CardHeader>
               <CardContent className="pt-0">
-                {dataRow("Email", profile.user.email)}
-                {dataRow("Phone", profile.phone)}
-                {dataRow("Date of birth", profile.dateOfBirth ? formatDate(profile.dateOfBirth) : null)}
-                {dataRow("Address", [profile.address, profile.city, profile.state, profile.zip].filter(Boolean).join(", "))}
+                <HrContactEditor
+                  applicationId={application.id}
+                  email={profile.user.email}
+                  initial={{
+                    phone: profile.phone,
+                    dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.toISOString() : null,
+                    address: profile.address,
+                    city: profile.city,
+                    state: profile.state,
+                    zip: profile.zip
+                  }}
+                />
               </CardContent>
             </Card>
 
@@ -203,11 +204,7 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">Pediatric Experience</CardTitle></CardHeader>
               <CardContent className="pt-0">
-                {profile.pediatricExperience ? (
-                  <p className="whitespace-pre-wrap text-sm text-slate-800">{profile.pediatricExperience}</p>
-                ) : (
-                  <p className="text-sm text-slate-400 italic">Applicant did not complete the pediatric experience section.</p>
-                )}
+                <HrPediatricExperienceEditor applicationId={application.id} initial={profile.pediatricExperience} />
               </CardContent>
             </Card>
 
