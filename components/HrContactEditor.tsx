@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCsrfHeaders } from "@/lib/csrf-client";
@@ -44,6 +44,12 @@ export function HrContactEditor({
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Auto-open into edit mode when HR jumps here from the Open Issues fix link.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#card-contact") {
+      setEditing(true);
+    }
+  }, []);
   const [data, setData] = useState({
     phone: initial.phone ?? "",
     dateOfBirth: formatDateForInput(initial.dateOfBirth),

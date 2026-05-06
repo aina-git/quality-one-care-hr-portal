@@ -5,6 +5,7 @@ import { DocumentPreviewLink } from "@/components/DocumentPreviewLink";
 import { HRDecisionPanel } from "@/components/HRDecisionPanel";
 import { HrAddRecordForm } from "@/components/HrAddRecordForm";
 import { HrContactEditor } from "@/components/HrContactEditor";
+import { HrIssueFixLink } from "@/components/HrIssueFixLink";
 import { HrOcrViewer } from "@/components/HrOcrViewer";
 import { HrPediatricExperienceEditor } from "@/components/HrPediatricExperienceEditor";
 import { HrReprocessButton } from "@/components/HrReprocessButton";
@@ -116,7 +117,7 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
 
           {/* LEFT — Applicant Case File */}
           <div className="grid gap-4">
-            <Card>
+            <Card id="card-contact" className="scroll-mt-4 transition-shadow rounded-xl">
               <CardHeader className="pb-3"><CardTitle className="text-base">Contact</CardTitle></CardHeader>
               <CardContent className="pt-0">
                 <HrContactEditor
@@ -134,7 +135,7 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="card-employment" className="scroll-mt-4 transition-shadow rounded-xl">
               <CardHeader className="pb-3 flex-row items-center justify-between">
                 <CardTitle className="text-base">Employment History</CardTitle>
                 <span className="text-xs font-medium text-slate-500">{application.employmentHistory.length} record{application.employmentHistory.length === 1 ? "" : "s"}</span>
@@ -168,7 +169,7 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Card>
+              <Card id="card-licenses" className="scroll-mt-4 transition-shadow rounded-xl">
                 <CardHeader className="pb-3 flex-row items-center justify-between">
                   <CardTitle className="text-base">Licenses</CardTitle>
                   <span className="text-xs font-medium text-slate-500">{application.licenses.length}</span>
@@ -199,7 +200,7 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card id="card-certifications" className="scroll-mt-4 transition-shadow rounded-xl">
                 <CardHeader className="pb-3 flex-row items-center justify-between">
                   <CardTitle className="text-base">Certifications</CardTitle>
                   <span className="text-xs font-medium text-slate-500">{application.certifications.length}</span>
@@ -227,7 +228,7 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
               </Card>
             </div>
 
-            <Card>
+            <Card id="card-references" className="scroll-mt-4 transition-shadow rounded-xl">
               <CardHeader className="pb-3 flex-row items-center justify-between">
                 <CardTitle className="text-base">References</CardTitle>
                 <span className="text-xs font-medium text-slate-500">{application.references.length}</span>
@@ -255,14 +256,14 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="card-pediatric" className="scroll-mt-4 transition-shadow rounded-xl">
               <CardHeader className="pb-3"><CardTitle className="text-base">Pediatric Experience</CardTitle></CardHeader>
               <CardContent className="pt-0">
                 <HrPediatricExperienceEditor applicationId={application.id} initial={profile.pediatricExperience} />
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="card-documents" className="scroll-mt-4 transition-shadow rounded-xl">
               <CardHeader className="pb-3 flex-row items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2"><FileText size={16} /> Documents</CardTitle>
                 <span className="text-xs font-medium text-slate-500">{application.documents.length}</span>
@@ -354,12 +355,14 @@ export default async function AdminApplicationReviewPage({ params }: { params: P
                     <div key={iss.id} className="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm">
                       <p className="font-semibold text-red-900">{iss.section}{iss.fieldKey ? ` · ${iss.fieldKey}` : ""}</p>
                       <p className="text-red-800">{iss.message}</p>
+                      <div className="mt-1.5"><HrIssueFixLink section={iss.section} fieldKey={iss.fieldKey} /></div>
                     </div>
                   ))}
                   {warningIssues.map((iss) => (
                     <div key={iss.id} className="rounded-md border border-amber-200 bg-amber-50 p-2.5 text-sm">
                       <p className="font-semibold text-amber-900">{iss.section}{iss.fieldKey ? ` · ${iss.fieldKey}` : ""}</p>
                       <p className="text-amber-800">{iss.message}</p>
+                      <div className="mt-1.5"><HrIssueFixLink section={iss.section} fieldKey={iss.fieldKey} /></div>
                     </div>
                   ))}
                 </CardContent>

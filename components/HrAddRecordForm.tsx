@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+
+const HASH_BY_RECORD: Record<string, string> = {
+  employment: "card-employment",
+  licenses: "card-licenses",
+  certifications: "card-certifications",
+  references: "card-references"
+};
 
 type FieldDef = {
   key: string;
@@ -36,6 +43,13 @@ export function HrAddRecordForm({
     for (const f of fields) init[f.key] = f.type === "checkbox" ? false : "";
     return init;
   });
+  // Auto-open when HR jumps here from the Open Issues fix link.
+  useEffect(() => {
+    const hash = HASH_BY_RECORD[recordType];
+    if (typeof window !== "undefined" && hash && window.location.hash === `#${hash}`) {
+      setOpen(true);
+    }
+  }, [recordType]);
 
   function setField(key: string, value: string | boolean) {
     setValues((v) => ({ ...v, [key]: value }));
