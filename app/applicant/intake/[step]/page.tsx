@@ -16,6 +16,7 @@ import { ApplicationFormStep } from "@/components/applicant/intake/ApplicationFo
 import { HepBDeclinationStep } from "@/components/applicant/intake/HepBDeclinationStep";
 import { FluDeclinationStep } from "@/components/applicant/intake/FluDeclinationStep";
 import { JobDescriptionStep } from "@/components/applicant/intake/JobDescriptionStep";
+import { WageDeductionStep } from "@/components/applicant/intake/WageDeductionStep";
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
@@ -126,6 +127,13 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
             inferredRole={inferRoleFromDesired(application.desiredRole)}
+          />
+        ) : stepKey === "wage_deduction" ? (
+          <WageDeductionStep
+            applicationId={application.id}
+            initialData={stepRow.data}
+            initialStatus={stepRow.status}
+            applicantName={user.name ?? ""}
           />
         ) : (
           <PlaceholderStep stepKey={stepKey} title={stepDef.title} />
