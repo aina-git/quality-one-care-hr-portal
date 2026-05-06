@@ -6,7 +6,7 @@ import { processUploadedDocument } from "@/services/intake/intakeProcessor";
 import { autoMapHighConfidenceFields } from "@/services/intake/mappingService";
 import { AppError, handleApiError } from "@/services/monitoring/errorService";
 
-const AUTO_MAP_THRESHOLD = Number(process.env.AUTO_MAP_CONFIDENCE_THRESHOLD ?? 0.6);
+const AUTO_MAP_THRESHOLD = Number(process.env.AUTO_MAP_CONFIDENCE_THRESHOLD ?? 0.7);
 
 // HR-triggered re-run of OCR + extraction + auto-mapping on every document
 // attached to an application. Used to retro-fill structured fields for

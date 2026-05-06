@@ -14,7 +14,11 @@ import { reviewReasonForField, sourceSnippetFor } from "@/services/analysis/prec
 // Minimum confidence for an extracted field to be promoted automatically into
 // the applicant's structured profile rows. Below this, the field stays in
 // pending_review for manual HR confirmation. Tunable via env if needed.
-const AUTO_MAP_THRESHOLD = Number(process.env.AUTO_MAP_CONFIDENCE_THRESHOLD ?? 0.6);
+// Bumped to 0.7 alongside the stricter fieldExtractor — only well-labelled
+// matches (Applicant Name:, Cell Phone:, License Number:, etc.) clear this
+// bar, keeping garbage from form headers / verification forms out of the
+// profile.
+const AUTO_MAP_THRESHOLD = Number(process.env.AUTO_MAP_CONFIDENCE_THRESHOLD ?? 0.7);
 
 export async function processUploadedDocument(documentId: string, userId: string) {
   const document = await prisma.uploadedDocument.findUnique({ where: { id: documentId } });
