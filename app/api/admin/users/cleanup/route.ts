@@ -7,12 +7,20 @@ import { withApi } from "@/services/monitoring/errorService";
 const REQUIRED_CONFIRMATION = "DELETE ALL OTHER USERS";
 
 /**
- * One-shot cleanup: deletes every User except the actor and ensures the actor
- * has the super_admin_hr role. Cascades through ApplicantProfile to
- * Applications and downstream relations via existing onDelete: Cascade FKs.
+ * One-shot cleanup for first-applicant prep.
  *
- * IRREVERSIBLE. Requires the caller to send confirmation: "DELETE ALL OTHER USERS"
- * in the body so it cannot be triggered by an accidental request.
+ * Deletes every User except:
+ *   1. The actor (preserves your account + ensures role = super_admin_hr)
+ *   2. Any applicant whose ApplicantProfile owns at least one non-draft
+ *      Application (preserves real applicants so their application data
+ *      isn't cascade-deleted)
+ *
+ * Also wipes:
+ *   - All Notification rows (the inflated "29" badge)
+ *   - All resolved=false SystemAlert rows
+ *
+ * IRREVERSIBLE. Requires the caller to send the literal confirmation phrase
+ * "DELETE ALL OTHER USERS" so accidental requests bounce.
  */
 export const POST = withApi(
   { scope: "admin.users.cleanup", entityType: "user", fallbackMessage: "Cleanup failed." },
@@ -28,13 +36,27 @@ export const POST = withApi(
       );
     }
 
-    // Identify everyone except the actor.
+    // Identify users who own a non-draft application — those we preserve so
+    // their submitted/in-progress applications aren't lost to cascade.
+    const applicantsWithApps = await prisma.user.findMany({
+      where: {
+        applicant: {
+          applications: {
+            some: { status: { not: "draft" } }
+          }
+        }
+      },
+      select: { id: true, email: true }
+    });
+    const preservedIds = new Set<string>([actor.id, ...applicantsWithApps.map((u) => u.id)]);
+
+    // Everyone else gets deleted.
     const others = await prisma.user.findMany({
-      where: { id: { not: actor.id } },
+      where: { id: { notIn: Array.from(preservedIds) } },
       select: { id: true, email: true, role: true }
     });
 
-    let deleted = 0;
+    let deletedUsers = 0;
     const failures: Array<{ email: string; reason: string }> = [];
 
     for (const u of others) {
@@ -45,7 +67,7 @@ export const POST = withApi(
           deletedRole: u.role,
           source: "bulk_cleanup"
         });
-        deleted += 1;
+        deletedUsers += 1;
       } catch (err) {
         failures.push({
           email: u.email,
@@ -53,6 +75,12 @@ export const POST = withApi(
         });
       }
     }
+
+    // Wipe all notifications (clears the inflated alert count and stale messages).
+    const deletedNotifications = await prisma.notification.deleteMany({});
+
+    // Wipe all unresolved system alerts (operational noise from prior testing).
+    const deletedAlerts = await prisma.systemAlert.deleteMany({});
 
     // Ensure the actor is super_admin_hr after the wipe so they retain control.
     if (actor.role !== "super_admin_hr") {
@@ -68,13 +96,20 @@ export const POST = withApi(
     }
 
     await logAction(actor.id, "admin_users_bulk_cleanup", "user", null, {
-      deletedCount: deleted,
+      deletedUserCount: deletedUsers,
+      preservedApplicantCount: applicantsWithApps.length,
+      deletedNotificationCount: deletedNotifications.count,
+      deletedSystemAlertCount: deletedAlerts.count,
       failureCount: failures.length
     });
 
     return NextResponse.json({
       ok: true,
-      deletedCount: deleted,
+      deletedUserCount: deletedUsers,
+      preservedApplicantCount: applicantsWithApps.length,
+      preservedApplicants: applicantsWithApps.map((u) => u.email),
+      deletedNotificationCount: deletedNotifications.count,
+      deletedSystemAlertCount: deletedAlerts.count,
       failureCount: failures.length,
       failures
     });
