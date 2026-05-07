@@ -116,30 +116,65 @@ export default async function AdminVerificationPage({ params }: { params: Promis
           </Card>
         ) : (
           <>
-            {summary && summary.criticalBlockers.length > 0 && (
-              <Card className="border-red-300 bg-red-50">
-                <CardContent className="p-4 flex flex-wrap items-start gap-3">
-                  <AlertTriangle size={18} className="text-red-700 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-red-900">Critical blockers — cannot submit to DON</p>
-                    <ul className="mt-1 grid gap-0.5 text-sm text-red-800 list-disc list-inside">
-                      {summary.criticalBlockers.map((item) => (
-                        <li key={item.id}>{item.title} <span className="text-red-600 italic">({describeBlockerReason(item)})</span></li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {summary && summary.criticalBlockers.length === 0 && summary.missingItems.length === 0 && (
-              <Card className="border-emerald-200 bg-emerald-50">
-                <CardContent className="p-4 flex items-center gap-2">
-                  <CheckCircle2 size={18} className="text-emerald-700" />
-                  <p className="text-sm font-semibold text-emerald-900">All required items verified or marked not applicable. Ready to submit to DON.</p>
-                </CardContent>
-              </Card>
-            )}
+            {(() => {
+              const verificationConcluded =
+                checklist.status === "ready_for_don_review" ||
+                checklist.status === "approved_by_don" ||
+                checklist.status === "rejected_by_don";
+              if (verificationConcluded) {
+                const tone =
+                  checklist.status === "approved_by_don" ? "border-emerald-300 bg-emerald-50" :
+                  checklist.status === "rejected_by_don" ? "border-red-300 bg-red-50" :
+                  "border-blue-300 bg-blue-50";
+                const heading =
+                  checklist.status === "approved_by_don" ? "Verification concluded — DON approved" :
+                  checklist.status === "rejected_by_don" ? "Verification concluded — DON did not approve" :
+                  "Verification concluded — submitted to DON for review";
+                const body =
+                  checklist.status === "approved_by_don" ? "All checklist items resolved. The DON has approved this applicant for hire." :
+                  checklist.status === "rejected_by_don" ? "Verification was completed, but the DON did not approve. Open the DON decision to see the reason." :
+                  "Verification is locked while the DON reviews this file.";
+                return (
+                  <Card className={tone}>
+                    <CardContent className="p-4 flex flex-wrap items-start gap-3">
+                      <CheckCircle2 size={18} className="mt-0.5 text-slate-700" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900">{heading}</p>
+                        <p className="mt-1 text-sm text-slate-700">{body}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              if (summary && summary.criticalBlockers.length > 0) {
+                return (
+                  <Card className="border-red-300 bg-red-50">
+                    <CardContent className="p-4 flex flex-wrap items-start gap-3">
+                      <AlertTriangle size={18} className="text-red-700 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-red-900">Critical blockers — cannot submit to DON</p>
+                        <ul className="mt-1 grid gap-0.5 text-sm text-red-800 list-disc list-inside">
+                          {summary.criticalBlockers.map((item) => (
+                            <li key={item.id}>{item.title} <span className="text-red-600 italic">({describeBlockerReason(item)})</span></li>
+                          ))}
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              if (summary && summary.criticalBlockers.length === 0 && summary.missingItems.length === 0) {
+                return (
+                  <Card className="border-emerald-200 bg-emerald-50">
+                    <CardContent className="p-4 flex items-center gap-2">
+                      <CheckCircle2 size={18} className="text-emerald-700" />
+                      <p className="text-sm font-semibold text-emerald-900">All required items verified or marked not applicable. Ready to submit to DON.</p>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              return null;
+            })()}
 
             <Card className="border-blue-200 bg-blue-50/30">
               <CardHeader className="pb-3"><CardTitle className="text-base">Automated identity cross-check</CardTitle></CardHeader>

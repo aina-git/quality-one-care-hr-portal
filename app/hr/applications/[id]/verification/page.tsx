@@ -119,11 +119,29 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
                     <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400" style={{ width: `${summary.completionPercentage}%` }} />
                   </div>
                 </div>
-                <div className={`rounded-xl border p-3 ${summary.criticalBlockers.length > 0 ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
-                  <p className={`text-xs font-medium ${summary.criticalBlockers.length > 0 ? "text-red-700" : "text-emerald-700"}`}>Blockers</p>
-                  <p className={`mt-1 text-2xl font-bold tabular-nums ${summary.criticalBlockers.length > 0 ? "text-red-900" : "text-emerald-900"}`}>{summary.criticalBlockers.length}</p>
-                  <p className={`mt-1 text-[11px] ${summary.criticalBlockers.length > 0 ? "text-red-700" : "text-emerald-700"}`}>{summary.criticalBlockers.length > 0 ? "Must resolve" : "None — ready"}</p>
-                </div>
+                {(() => {
+                  const concluded = !!checklist && (
+                    checklist.status === "ready_for_don_review" ||
+                    checklist.status === "approved_by_don" ||
+                    checklist.status === "rejected_by_don"
+                  );
+                  if (concluded) {
+                    return (
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-xs font-medium text-slate-500">Blockers</p>
+                        <p className="mt-1 text-2xl font-bold tabular-nums text-slate-700">{summary.criticalBlockers.length}</p>
+                        <p className="mt-1 text-[11px] text-slate-500">Verification concluded</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className={`rounded-xl border p-3 ${summary.criticalBlockers.length > 0 ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
+                      <p className={`text-xs font-medium ${summary.criticalBlockers.length > 0 ? "text-red-700" : "text-emerald-700"}`}>Blockers</p>
+                      <p className={`mt-1 text-2xl font-bold tabular-nums ${summary.criticalBlockers.length > 0 ? "text-red-900" : "text-emerald-900"}`}>{summary.criticalBlockers.length}</p>
+                      <p className={`mt-1 text-[11px] ${summary.criticalBlockers.length > 0 ? "text-red-700" : "text-emerald-700"}`}>{summary.criticalBlockers.length > 0 ? "Must resolve" : "None — ready"}</p>
+                    </div>
+                  );
+                })()}
                 <div className={`rounded-xl border p-3 ${summary.missingItems.length > 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"}`}>
                   <p className={`text-xs font-medium ${summary.missingItems.length > 0 ? "text-amber-700" : "text-slate-500"}`}>Missing</p>
                   <p className={`mt-1 text-2xl font-bold tabular-nums ${summary.missingItems.length > 0 ? "text-amber-900" : "text-slate-700"}`}>{summary.missingItems.length}</p>
@@ -188,31 +206,69 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
           </>
         ) : (
           <>
-            {/* Critical blockers banner */}
-            {summary && summary.criticalBlockers.length > 0 && (
-              <Card className="border-red-300 bg-red-50">
-                <CardContent className="p-4 flex flex-wrap items-start gap-3">
-                  <AlertTriangle size={18} className="text-red-700 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-red-900">Critical blockers — cannot submit to DON</p>
-                    <ul className="mt-1 grid gap-0.5 text-sm text-red-800 list-disc list-inside">
-                      {summary.criticalBlockers.map((item) => (
-                        <li key={item.id}>{item.title} <span className="text-red-600 italic">({describeBlockerReason(item)})</span></li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {summary && summary.criticalBlockers.length === 0 && summary.missingItems.length === 0 && (
-              <Card className="border-emerald-200 bg-emerald-50">
-                <CardContent className="p-4 flex items-center gap-2">
-                  <CheckCircle2 size={18} className="text-emerald-700" />
-                  <p className="text-sm font-semibold text-emerald-900">All required items verified or marked not applicable. Ready to submit to DON.</p>
-                </CardContent>
-              </Card>
-            )}
+            {/* Conclusion banner — once verification has been concluded
+                (submitted to DON, approved, or rejected), the "Critical
+                blockers — cannot submit to DON" card is no longer
+                actionable, so we show the resolution instead. */}
+            {(() => {
+              const verificationConcluded =
+                checklist.status === "ready_for_don_review" ||
+                checklist.status === "approved_by_don" ||
+                checklist.status === "rejected_by_don";
+              if (verificationConcluded) {
+                const tone =
+                  checklist.status === "approved_by_don" ? "border-emerald-300 bg-emerald-50" :
+                  checklist.status === "rejected_by_don" ? "border-red-300 bg-red-50" :
+                  "border-blue-300 bg-blue-50";
+                const heading =
+                  checklist.status === "approved_by_don" ? "Verification concluded — DON approved" :
+                  checklist.status === "rejected_by_don" ? "Verification concluded — DON did not approve" :
+                  "Verification concluded — submitted to DON for review";
+                const body =
+                  checklist.status === "approved_by_don" ? "All checklist items resolved. The DON has approved this applicant for hire." :
+                  checklist.status === "rejected_by_don" ? "Verification was completed, but the DON did not approve. Open the DON decision to see the reason." :
+                  "Verification is locked while the DON reviews this file. You'll be notified once a decision is recorded.";
+                return (
+                  <Card className={tone}>
+                    <CardContent className="p-4 flex flex-wrap items-start gap-3">
+                      <CheckCircle2 size={18} className="mt-0.5 text-slate-700" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900">{heading}</p>
+                        <p className="mt-1 text-sm text-slate-700">{body}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              if (summary && summary.criticalBlockers.length > 0) {
+                return (
+                  <Card className="border-red-300 bg-red-50">
+                    <CardContent className="p-4 flex flex-wrap items-start gap-3">
+                      <AlertTriangle size={18} className="text-red-700 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-red-900">Critical blockers — cannot submit to DON</p>
+                        <ul className="mt-1 grid gap-0.5 text-sm text-red-800 list-disc list-inside">
+                          {summary.criticalBlockers.map((item) => (
+                            <li key={item.id}>{item.title} <span className="text-red-600 italic">({describeBlockerReason(item)})</span></li>
+                          ))}
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              if (summary && summary.criticalBlockers.length === 0 && summary.missingItems.length === 0) {
+                return (
+                  <Card className="border-emerald-200 bg-emerald-50">
+                    <CardContent className="p-4 flex items-center gap-2">
+                      <CheckCircle2 size={18} className="text-emerald-700" />
+                      <p className="text-sm font-semibold text-emerald-900">All required items verified or marked not applicable. Ready to submit to DON.</p>
+                    </CardContent>
+                  </Card>
+                );
+              }
+              return null;
+            })()}
 
             {/* Identity cross-check */}
             <Card className="border-blue-200 bg-blue-50/30">
