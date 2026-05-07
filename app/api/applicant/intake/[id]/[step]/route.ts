@@ -273,19 +273,44 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         if (errors.length) return NextResponse.json({ error: errors[0] }, { status: 400 });
       }
       const sigName = data.signatureName.trim() ? data.signatureName.trim() : null;
-      await saveIntakeStepData({
-        applicationId: id,
-        stepKey,
-        data,
-        signatureName: markCompleted ? sigName : null,
-        markCompleted
-      });
+      // Saving the step + advancing the application status must happen
+      // together. If the status update fails the applicant would think
+      // they're done but HR would never see the application — that's worse
+      // than the applicant retrying. So we run both in a transaction.
       if (markCompleted) {
-        // Move the application out of draft so HR sees it in their queue.
-        await prisma.application.update({
-          where: { id },
-          data: { status: "submitted", currentStatus: "submitted", submittedAt: new Date(), applicationSubmittedAt: new Date(), lastActionAt: new Date(), lastActionById: user.id }
-        }).catch(() => null);
+        await prisma.$transaction(async (tx) => {
+          await tx.intakeStep.upsert({
+            where: { applicationId_stepKey: { applicationId: id, stepKey } },
+            update: {
+              status: "completed",
+              completedAt: new Date(),
+              data: data as never,
+              signatureName: sigName,
+              signatureSignedAt: sigName ? new Date() : null
+            },
+            create: {
+              applicationId: id,
+              stepKey,
+              status: "completed",
+              completedAt: new Date(),
+              data: data as never,
+              signatureName: sigName,
+              signatureSignedAt: sigName ? new Date() : null
+            }
+          });
+          await tx.application.update({
+            where: { id },
+            data: { status: "submitted", currentStatus: "submitted", submittedAt: new Date(), applicationSubmittedAt: new Date(), lastActionAt: new Date(), lastActionById: user.id }
+          });
+        });
+      } else {
+        await saveIntakeStepData({
+          applicationId: id,
+          stepKey,
+          data,
+          signatureName: null,
+          markCompleted: false
+        });
       }
       await logAction(user.id, markCompleted ? "intake.new_hire_checklist_finalized" : "intake.new_hire_checklist_saved", "intakeStep", `${id}:${stepKey}`, {});
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });

@@ -37,21 +37,24 @@ export async function POST(request: Request, ctx: { params: Promise<{ applicatio
 
     // Revoke any prior active override for the same (field, documentId) to keep
     // exactly one active override per finding while preserving audit history.
-    await prisma.crossCheckOverride.updateMany({
-      where: { applicationId, field, documentId, revokedAt: null },
-      data: { revokedAt: new Date(), revokedById: user.id, revokedReason: "Superseded by new override" }
-    });
-
-    const created = await prisma.crossCheckOverride.create({
-      data: {
-        applicationId,
-        field,
-        documentId,
-        applicationValue,
-        documentValue,
-        reason,
-        overriddenById: user.id
-      }
+    // Wrapping in a transaction prevents two concurrent HR users from both
+    // creating active overrides for the same finding.
+    const created = await prisma.$transaction(async (tx) => {
+      await tx.crossCheckOverride.updateMany({
+        where: { applicationId, field, documentId, revokedAt: null },
+        data: { revokedAt: new Date(), revokedById: user.id, revokedReason: "Superseded by new override" }
+      });
+      return tx.crossCheckOverride.create({
+        data: {
+          applicationId,
+          field,
+          documentId,
+          applicationValue,
+          documentValue,
+          reason,
+          overriddenById: user.id
+        }
+      });
     });
 
     await logAction(user.id, "cross_check_override_created", "application", applicationId, {
