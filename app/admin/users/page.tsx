@@ -1,5 +1,6 @@
 import { DashboardShell } from "@/components/DashboardShell";
 import { CreateUserForm, UserRoleControl } from "@/components/UserManagementActions";
+import { UserCleanupDangerZone } from "@/components/UserCleanupDangerZone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { logAction } from "@/lib/audit";
@@ -55,6 +56,7 @@ export default async function AdminUsersPage() {
               ))}
             </TableBody>
           </Table>
+          <UserCleanupDangerZone actorEmail={user.email} />
         </CardContent>
       </Card>
     </DashboardShell>

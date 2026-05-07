@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, AlertTriangle, CheckCircle2, FileText, Printer } from "lucide-react";
 import { DonDecisionForm } from "@/components/DonDecisionForm";
+import { PostDonDeleteApplicantButton } from "@/components/PostDonDeleteApplicantButton";
 import { DashboardShell } from "@/components/DashboardShell";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -115,12 +116,27 @@ export default async function DonFinalApprovalPage({ params }: { params: Promise
             checklist.donDecision === "not_approved" ? "border-red-200 bg-red-50/50" :
             "border-amber-200 bg-amber-50/50"
           }>
-            <CardContent className="p-4">
-              <p className="font-semibold text-slate-900">DON decision recorded: {label(checklist.donDecision)}</p>
-              {checklist.donComment && <p className="mt-1 text-sm text-slate-700">{checklist.donComment}</p>}
-              <p className="mt-1 text-xs text-slate-500">
-                {checklist.approvedByUser?.name ?? checklist.approvedByUser?.email ?? "DON/Admin"} · {formatDate(checklist.approvedAt ?? checklist.rejectedAt ?? checklist.updatedAt)}
-              </p>
+            <CardContent className="p-4 grid gap-3">
+              <div>
+                <p className="font-semibold text-slate-900">DON decision recorded: {label(checklist.donDecision)}</p>
+                {checklist.donComment && <p className="mt-1 text-sm text-slate-700">{checklist.donComment}</p>}
+                <p className="mt-1 text-xs text-slate-500">
+                  {checklist.approvedByUser?.name ?? checklist.approvedByUser?.email ?? "DON/Admin"} · {formatDate(checklist.approvedAt ?? checklist.rejectedAt ?? checklist.updatedAt)}
+                </p>
+              </div>
+              {(user.role === "admin" || user.role === "super_admin_hr") && (
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-semibold text-slate-700 mb-2">Post-decision cleanup</p>
+                  <p className="text-xs text-slate-600 mb-2">
+                    Once you no longer need this applicant&apos;s record, you can permanently delete their account and all related data.
+                  </p>
+                  <PostDonDeleteApplicantButton
+                    userId={applicant.user.id}
+                    applicantName={applicant.user.name ?? applicant.user.email}
+                    decisionLabel={label(checklist.donDecision)}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
