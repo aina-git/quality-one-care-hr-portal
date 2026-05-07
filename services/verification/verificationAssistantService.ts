@@ -52,7 +52,7 @@ const sources: AssistantSource[] = [
     ],
     captureFields: [
       { key: "licenseStatus", label: "License status (e.g. Active, Inactive, Disciplined)", required: true, placeholder: "Active" },
-      { key: "expirationDate", label: "Expiration date (YYYY-MM-DD)", placeholder: "2027-06-30" },
+      { key: "expirationDate", label: "Expiration date (MM/DD/YYYY)", placeholder: "06/30/2027" },
       { key: "disciplinaryActions", label: "Any disciplinary actions noted?", placeholder: "None / details" }
     ]
   },
@@ -61,8 +61,8 @@ const sources: AssistantSource[] = [
     providerName: "Maryland Board of Nursing",
     description: "Maryland-issued RN/LPN/CNA license lookup. Public search by name or license number.",
     buildUrl: (input) => {
-      // MBON portal — most reliable entry is the license verification landing page
-      const url = new URL("https://mbon.maryland.gov/Pages/license-verification.aspx");
+      // MBON public verification portal
+      const url = new URL("https://lookup.mbon.org/verification/");
       return url.toString();
     },
     searchHints: [
@@ -74,7 +74,7 @@ const sources: AssistantSource[] = [
     captureFields: [
       { key: "licenseStatus", label: "Status (must be Active for hire)", required: true, placeholder: "Active" },
       { key: "licenseNumber", label: "License number (verify match)", placeholder: "R012345" },
-      { key: "expirationDate", label: "Expiration date", placeholder: "2027-06-30" },
+      { key: "expirationDate", label: "Expiration date (MM/DD/YYYY)", placeholder: "06/30/2027" },
       { key: "publicActions", label: "Any public actions on the record?", placeholder: "None / details" }
     ]
   },

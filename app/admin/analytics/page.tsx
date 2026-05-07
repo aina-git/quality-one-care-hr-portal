@@ -14,7 +14,7 @@ import {
 
 function formatDate(d: Date | null) {
   if (!d) return "—";
-  return d.toLocaleDateString();
+  return d.toLocaleDateString("en-US");
 }
 
 function statusLabel(s: string) {

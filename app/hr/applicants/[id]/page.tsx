@@ -89,7 +89,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
           <div className="mt-4 flex flex-wrap gap-2">
             <StatusBadge status={application.status} />
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Role: {application.desiredRole ?? "Not recorded"}</span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">Last updated {progress?.lastUpdated.toLocaleString() ?? application.updatedAt.toLocaleString()}</span>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">Last updated {progress?.lastUpdated.toLocaleString("en-US") ?? application.updatedAt.toLocaleString("en-US")}</span>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
             <Button asChild variant="outline"><Link href={`/hr/applications/${application.id}`}>Open Case File</Link></Button>
@@ -129,7 +129,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
               <p><span className="font-semibold">Phone:</span> {applicant.phone ?? "-"}</p>
               <p><span className="font-semibold">Address:</span> {[applicant.address, applicant.city, applicant.state, applicant.zip].filter(Boolean).join(", ") || "-"}</p>
               <p><span className="font-semibold">Pediatric experience:</span> {applicant.pediatricExperience ?? "-"}</p>
-              <p><span className="font-semibold">Photo consent:</span> {applicant.profilePhotoConsentAt ? applicant.profilePhotoConsentAt.toLocaleString() : "Missing"}</p>
+              <p><span className="font-semibold">Photo consent:</span> {applicant.profilePhotoConsentAt ? applicant.profilePhotoConsentAt.toLocaleString("en-US") : "Missing"}</p>
               <p><span className="font-semibold">Identity photo note:</span> {applicant.identityPhotoNotes ?? "-"}</p>
               {canEdit ? <IdentityPhotoFlagForm applicantProfileId={applicant.id} /> : null}
               {canEdit ? <Button variant="outline" size="sm">Edit Profile</Button> : <p className="text-xs text-slate-500">Read-only role.</p>}
@@ -195,7 +195,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
                 <div key={message.id} className="rounded-xl border bg-slate-50 p-3">
                   <p className="font-semibold">{message.subject}</p>
                   <p className="mt-1 text-slate-600">{message.body}</p>
-                  <p className="mt-2 text-xs text-slate-500">{label(message.channel)} - {label(message.status)} - {message.sender?.name ?? message.sender?.email ?? "System"} - {message.createdAt.toLocaleString()}</p>
+                  <p className="mt-2 text-xs text-slate-500">{label(message.channel)} - {label(message.status)} - {message.sender?.name ?? message.sender?.email ?? "System"} - {message.createdAt.toLocaleString("en-US")}</p>
                 </div>
               ))}
             </CardContent>
@@ -207,7 +207,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
               {application.hrNotes.map((note) => (
                 <div key={note.id} className="rounded-xl border bg-slate-50 p-3">
                   <p>{note.note}</p>
-                  <p className="mt-2 text-xs text-slate-500">{note.createdBy.name ?? note.createdBy.email} - {note.createdAt.toLocaleString()}</p>
+                  <p className="mt-2 text-xs text-slate-500">{note.createdBy.name ?? note.createdBy.email} - {note.createdAt.toLocaleString("en-US")}</p>
                 </div>
               ))}
               {!application.hrNotes.length ? <p className="text-slate-500">No internal notes yet.</p> : null}
@@ -221,7 +221,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
             {audit.map((entry) => (
               <div key={entry.id} className="rounded-xl border bg-slate-50 p-3">
                 <p className="font-semibold">{entry.action}</p>
-                <p className="text-xs text-slate-500">{entry.createdAt.toLocaleString()} by {entry.user?.name ?? entry.user?.email ?? "System"}</p>
+                <p className="text-xs text-slate-500">{entry.createdAt.toLocaleString("en-US")} by {entry.user?.name ?? entry.user?.email ?? "System"}</p>
               </div>
             ))}
             {!audit.length ? <p className="text-slate-500">No audit entries found for this profile.</p> : null}

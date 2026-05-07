@@ -65,7 +65,7 @@ export default async function HrEmployeeOnboardingPage({ params }: { params: Pro
                   <TableRow key={task.id}>
                     <TableCell><p className="font-medium">{task.title}</p><p className="text-xs text-muted-foreground">{task.description}</p></TableCell>
                     <TableCell>{task.assignedTo ? task.assignedTo.name ?? task.assignedTo.email : "Unassigned"}</TableCell>
-                    <TableCell>{task.dueDate ? task.dueDate.toLocaleDateString() : "-"}</TableCell>
+                    <TableCell>{task.dueDate ? task.dueDate.toLocaleDateString("en-US") : "-"}</TableCell>
                     <TableCell>{label(task.status)}</TableCell>
                     <TableCell><EmployeeOnboardingTaskActions taskId={task.id} currentStatus={task.status} /></TableCell>
                   </TableRow>

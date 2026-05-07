@@ -274,7 +274,7 @@ export function ExcelCredentialMonitorPanel() {
               <TableRow key={`${row.sourceRow}-${row.nurseName}-${row.documentName}`}>
                 <TableCell>{row.nurseName}</TableCell>
                 <TableCell>{row.documentName}</TableCell>
-                <TableCell>{new Date(row.expiresAt).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(row.expiresAt).toLocaleDateString("en-US")}</TableCell>
                 <TableCell>{bucketLabel(row.bucket)}</TableCell>
                 <TableCell>{row.frequencyLabel}</TableCell>
                 <TableCell>{row.dueNow ? "Yes" : "No"}</TableCell>

@@ -34,7 +34,7 @@ function label(value: string | null | undefined) {
 function formatDate(d: Date | string | null | undefined) {
   if (!d) return "—";
   const date = d instanceof Date ? d : new Date(d);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-US");
 }
 
 function dataRow(rowLabel: string, value: string | null | undefined) {

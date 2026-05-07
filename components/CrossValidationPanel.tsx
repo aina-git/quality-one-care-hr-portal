@@ -227,7 +227,7 @@ export function CrossValidationPanel({ applicationId, canOverride = true }: { ap
                         <p className="mt-1 rounded border border-blue-200 bg-white p-1.5 text-[11px] text-blue-900">
                           <span className="font-medium">Resolved by {f.override.overriddenByName ?? f.override.overriddenByEmail ?? "HR"}</span>
                           {" on "}
-                          <span>{new Date(f.override.overriddenAt).toLocaleDateString()}</span>
+                          <span>{new Date(f.override.overriddenAt).toLocaleDateString("en-US")}</span>
                           {": "}{f.override.reason}
                         </p>
                       )}

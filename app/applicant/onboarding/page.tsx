@@ -21,7 +21,7 @@ function label(value: string) {
 
 function formatDate(d: Date | null) {
   if (!d) return "";
-  return d.toLocaleDateString();
+  return d.toLocaleDateString("en-US");
 }
 
 export default async function ApplicantOnboardingPage() {

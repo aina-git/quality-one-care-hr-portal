@@ -37,7 +37,7 @@ export default async function ApplicantProgressPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             <StatusBadge status={application.status} />
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-              Last updated {progress?.lastUpdated.toLocaleString() ?? application.updatedAt.toLocaleString()}
+              Last updated {progress?.lastUpdated.toLocaleString("en-US") ?? application.updatedAt.toLocaleString("en-US")}
             </span>
           </div>
         </section>
@@ -64,7 +64,7 @@ export default async function ApplicantProgressPage() {
               <div key={message.id} className="rounded-xl border bg-slate-50 p-3">
                 <p className="font-semibold">{message.subject}</p>
                 <p className="mt-1 text-slate-600">{message.body}</p>
-                <p className="mt-2 text-xs text-slate-500">{message.createdAt.toLocaleString()}</p>
+                <p className="mt-2 text-xs text-slate-500">{message.createdAt.toLocaleString("en-US")}</p>
               </div>
             )) : <p className="text-slate-500">No messages yet.</p>}
             <div className="flex flex-wrap gap-2">

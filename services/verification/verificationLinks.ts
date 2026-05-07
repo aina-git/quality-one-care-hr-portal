@@ -15,15 +15,15 @@ export const verificationLinks: VerificationLink[] = [
     verificationType: "maryland_board_of_nursing",
     providerName: "Maryland Board of Nursing",
     label: "Maryland Board of Nursing license lookup",
-    searchUrl: "https://mbon.maryland.gov/",
-    notes: "Provider-ready link. HR must manually record the active/current result."
+    searchUrl: "https://lookup.mbon.org/verification/",
+    notes: "Provider-ready link to the Maryland Board of Nursing public verification lookup. HR must manually record the active/current result."
   },
   {
     category: "nursys",
     verificationType: "nursys",
     providerName: "Nursys",
     label: "Nursys license verification",
-    searchUrl: "https://www.nursys.com/",
+    searchUrl: "https://www.nursys.com/LQC/LQCSearch.aspx",
     notes: "Provider-ready link. No private credentials are stored."
   },
   {

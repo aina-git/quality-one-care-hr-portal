@@ -118,7 +118,7 @@ export default async function HrApplicationsPage({
       id: application.id,
       applicantName: application.applicantProfile.user.name ?? application.applicantProfile.user.email,
       status: application.status,
-      submittedLabel: application.submittedAt ? application.submittedAt.toLocaleDateString() : "Not submitted",
+      submittedLabel: application.submittedAt ? application.submittedAt.toLocaleDateString("en-US") : "Not submitted",
       reviewStatus: report?.status ?? "not run",
       riskLevel: report?.overallRiskLevel ?? null,
       recommendation: report?.recommendation ?? null,

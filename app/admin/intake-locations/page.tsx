@@ -60,7 +60,7 @@ export default async function AdminIntakeLocationsPage() {
                         </span>
                       </TableCell>
                       <TableCell>{loc._count.applications}</TableCell>
-                      <TableCell className="text-sm text-slate-500">{loc.createdAt.toLocaleDateString()}</TableCell>
+                      <TableCell className="text-sm text-slate-500">{loc.createdAt.toLocaleDateString("en-US")}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

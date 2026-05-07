@@ -69,8 +69,8 @@ export default async function AdminSystemHealthPage() {
                       <TableCell>{job.name}</TableCell>
                       <TableCell>{job.scheduleLabel}</TableCell>
                       <TableCell className="capitalize">{job.lastStatus.replace(/_/g, " ")}</TableCell>
-                      <TableCell>{job.lastCompletedAt ? job.lastCompletedAt.toLocaleString() : "Not yet"}</TableCell>
-                      <TableCell>{job.nextRunAt ? job.nextRunAt.toLocaleString() : "Pending"}</TableCell>
+                      <TableCell>{job.lastCompletedAt ? job.lastCompletedAt.toLocaleString("en-US") : "Not yet"}</TableCell>
+                      <TableCell>{job.nextRunAt ? job.nextRunAt.toLocaleString("en-US") : "Pending"}</TableCell>
                       <TableCell><JobRunControls jobKey={job.key} /></TableCell>
                     </TableRow>
                   ))}

@@ -211,7 +211,7 @@ export function AiAnalysisPanel({
           <p className="mt-2 text-xs text-slate-500">{oig && "error" in oig ? oig.error : "Will check ~83,000 federal exclusion records."}</p>
         ) : oig.matchType === "none" ? (
           <p className="mt-2 text-xs text-emerald-900">
-            <strong>No match found.</strong> Checked against {oig.recordCount.toLocaleString()} records.
+            <strong>No match found.</strong> Checked against {oig.recordCount.toLocaleString("en-US")} records.
             {oig.datasetLastUpdated && <> Dataset last updated {oig.datasetLastUpdated.slice(0, 10)}.</>}
           </p>
         ) : (

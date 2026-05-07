@@ -74,7 +74,7 @@ export const POST = withApi(
             ? `MATCH FOUND on OIG LEIE: name + DOB exact match. ${oigResult.matches.length} record(s).`
             : oigResult.matchType === "name_only"
               ? `Possible name match on OIG LEIE. ${oigResult.matches.length} record(s) — HR review required.`
-              : `No match on OIG LEIE (checked ${oigResult.recordCount.toLocaleString()} records).`;
+              : `No match on OIG LEIE (checked ${oigResult.recordCount.toLocaleString("en-US")} records).`;
         await prisma.verificationChecklistItem.update({
           where: { id: oigItem.id },
           data: {

@@ -61,7 +61,7 @@ export const POST = withApi(
             ? `MATCH FOUND on OIG LEIE: name + DOB exact match. ${result.matches.length} record(s).`
             : result.matchType === "name_only"
               ? `Possible name match on OIG LEIE. ${result.matches.length} record(s) — HR must review (DOB did not match or applicant DOB missing).`
-              : `No match on OIG LEIE (checked ${result.recordCount.toLocaleString()} records, dataset updated ${result.datasetLastUpdated?.toISOString().slice(0, 10) ?? "unknown"}).`;
+              : `No match on OIG LEIE (checked ${result.recordCount.toLocaleString("en-US")} records, dataset updated ${result.datasetLastUpdated?.toISOString().slice(0, 10) ?? "unknown"}).`;
 
         updatedItem = await prisma.verificationChecklistItem.update({
           where: { id: oigItem.id },

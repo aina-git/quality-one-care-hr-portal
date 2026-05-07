@@ -43,7 +43,7 @@ export default async function VerificationProvidersPage() {
               <div className="mt-2 flex items-center gap-2 text-xs text-slate-600">
                 <Database size={12} />
                 {oigMeta.lastUpdated ? (
-                  <span>{oigMeta.recordCount.toLocaleString()} records · Last updated {oigMeta.lastUpdated.toLocaleDateString()}</span>
+                  <span>{oigMeta.recordCount.toLocaleString("en-US")} records · Last updated {oigMeta.lastUpdated.toLocaleDateString("en-US")}</span>
                 ) : (
                   <span className="text-amber-700">Dataset not yet downloaded — will run on next daily job tick or manual trigger.</span>
                 )}

@@ -106,7 +106,7 @@ export default async function AdminNotificationsPage() {
                 </div>
                 <p className="mt-2 text-sm">{item.body}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-                  <span>{item.createdAt.toLocaleString()}</span>
+                  <span>{item.createdAt.toLocaleString("en-US")}</span>
                   {item.duplicateCount > 1 ? <span className="text-slate-600">{item.unreadCount} unread of {item.duplicateCount} repeats</span> : null}
                   {item.route ? <Link className="font-semibold underline" href={item.route.startsWith("/hr/applications") ? item.route.replace("/hr/applications", "/admin/applications") : item.route}>Open related item</Link> : null}
                 </div>

@@ -50,12 +50,12 @@ function dueLabel(due: Date | null, status: string): { text: string; tone: strin
   if (!due) return { text: "No due date", tone: "text-slate-500" };
   const ms = due.getTime() - Date.now();
   const days = Math.round(ms / 86400000);
-  if (status === "completed") return { text: `Done · was due ${due.toLocaleDateString()}`, tone: "text-slate-500" };
+  if (status === "completed") return { text: `Done · was due ${due.toLocaleDateString("en-US")}`, tone: "text-slate-500" };
   if (ms < 0) return { text: `${Math.abs(days)}d overdue`, tone: "text-red-700 font-semibold" };
   if (days === 0) return { text: "Due today", tone: "text-amber-700 font-semibold" };
   if (days === 1) return { text: "Due tomorrow", tone: "text-amber-700" };
   if (days < 7) return { text: `Due in ${days}d`, tone: "text-slate-700" };
-  return { text: `Due ${due.toLocaleDateString()}`, tone: "text-slate-500" };
+  return { text: `Due ${due.toLocaleDateString("en-US")}`, tone: "text-slate-500" };
 }
 
 export default async function TasksPage() {

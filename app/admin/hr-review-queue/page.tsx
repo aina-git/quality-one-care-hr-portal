@@ -16,7 +16,7 @@ const waitingStatuses: ApplicationStatus[] = ["hr_review_pending", "submitted"];
 const startedStatuses: ApplicationStatus[] = ["hr_review_started", "under_review"];
 
 function formatDate(date?: Date | null) {
-  return date ? date.toLocaleString() : "Not recorded";
+  return date ? date.toLocaleString("en-US") : "Not recorded";
 }
 
 function actionHref(applicationId: string, status: ApplicationStatus) {

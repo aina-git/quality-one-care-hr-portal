@@ -100,7 +100,7 @@ export function HrContactEditor({
         </div>
         {dataRow("Email", email)}
         {dataRow("Phone", data.phone || null)}
-        {dataRow("Date of birth", initial.dateOfBirth ? new Date(initial.dateOfBirth).toLocaleDateString() : null)}
+        {dataRow("Date of birth", initial.dateOfBirth ? new Date(initial.dateOfBirth).toLocaleDateString("en-US") : null)}
         {dataRow("Address", fullAddress || null)}
       </>
     );

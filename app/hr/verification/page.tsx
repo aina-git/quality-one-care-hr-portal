@@ -180,11 +180,11 @@ export default async function VerificationQueuePage({
                         <StatusBadge status={checklist.application.status} />
                       </TableCell>
                       <TableCell>{checklist.application.desiredRole ?? "-"}</TableCell>
-                      <TableCell>{checklist.application.submittedAt?.toLocaleDateString() ?? "-"}</TableCell>
+                      <TableCell>{checklist.application.submittedAt?.toLocaleDateString("en-US") ?? "-"}</TableCell>
                       <TableCell>{summary.completionPercentage}%<br /><span className="text-xs text-muted-foreground">{label(checklist.status)}</span></TableCell>
                       <TableCell>{summary.missingItems.length + summary.criticalBlockers.length}</TableCell>
                       <TableCell>{expiringCount(checklist.items)}</TableCell>
-                      <TableCell>{lastActivity.toLocaleString()}</TableCell>
+                      <TableCell>{lastActivity.toLocaleString("en-US")}</TableCell>
                       <TableCell>
                         <div className="grid min-w-52 gap-2">
                           <Button asChild size="sm" variant="outline"><Link href={`/hr/applications/${checklist.applicationId}/verification`}>View Verification</Link></Button>
