@@ -379,6 +379,8 @@ model User {
   completedEmployeeOnboardingTasks OnboardingTask[]             @relation("OnboardingTaskCompletedBy")
   passwordRecoveryTokens           PasswordRecoveryToken[]
   personalTodos                    PersonalTodo[]
+  crossCheckOverridesCreated       CrossCheckOverride[]         @relation("CrossCheckOverrideCreatedBy")
+  crossCheckOverridesRevoked       CrossCheckOverride[]         @relation("CrossCheckOverrideRevokedBy")
   createdAt                        DateTime                     @default(now())
   updatedAt                        DateTime                     @updatedAt
 
@@ -505,6 +507,8 @@ model Application {
   licenseAlerts               LicenseAlert[]
   systemAlerts                SystemAlert[]
   externalVerificationRecords ExternalVerificationRecord[]
+  intakeSteps                 IntakeStep[]
+  crossCheckOverrides         CrossCheckOverride[]
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
 
@@ -516,6 +520,79 @@ model Application {
   @@index([status, submittedAt])
   @@index([updatedAt])
   @@index([intakeLocationId])
+}
+
+enum IntakeStepKey {
+  application_form
+  hep_b_declination
+  flu_declination
+  job_description
+  wage_deduction
+  physical_health
+  character_reference
+  direct_deposit
+  w9
+  w4
+  mw507
+  skills_checklist
+  pre_employment_test
+  application_updates
+  new_hire_checklist
+}
+
+enum IntakeStepStatus {
+  not_started
+  in_progress
+  completed
+  refused
+  skipped
+}
+
+model IntakeStep {
+  id                 String            @id @default(cuid())
+  applicationId      String
+  application        Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  stepKey            IntakeStepKey
+  status             IntakeStepStatus  @default(not_started)
+  data               Json?
+  signatureName      String?
+  signatureSignedAt  DateTime?
+  attachedDocumentId String?
+  attachedDocument   UploadedDocument? @relation(fields: [attachedDocumentId], references: [id], onDelete: SetNull)
+  ocrCompletedAt     DateTime?
+  refusedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@unique([applicationId, stepKey])
+  @@index([applicationId])
+  @@index([status])
+}
+
+model CrossCheckOverride {
+  id               String            @id @default(cuid())
+  applicationId    String
+  application      Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  field            String
+  documentId       String?
+  document         UploadedDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  applicationValue String?
+  documentValue    String?
+  reason           String
+  overriddenById   String
+  overriddenBy     User              @relation("CrossCheckOverrideCreatedBy", fields: [overriddenById], references: [id], onDelete: Restrict)
+  overriddenAt     DateTime          @default(now())
+  revokedAt        DateTime?
+  revokedById      String?
+  revokedBy        User?             @relation("CrossCheckOverrideRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+  revokedReason    String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([applicationId])
+  @@index([applicationId, field, documentId])
+  @@index([revokedAt])
 }
 
 model IntakeLocation {
@@ -633,6 +710,8 @@ model UploadedDocument {
   extractions                  DocumentExtraction[]
   extractedFields              ExtractedField[]
   fieldAssertions              ApplicantFieldAssertion[]
+  intakeSteps                  IntakeStep[]
+  crossCheckOverrides          CrossCheckOverride[]
   createdAt                    DateTime                     @default(now())
   updatedAt                    DateTime                     @updatedAt
 }

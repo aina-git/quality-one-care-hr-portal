@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, FileText, MessageSquare, Upload } from "lucide-react";
+import { ArrowRight, CheckCircle2, CheckSquare, Circle, FileText, MessageSquare, Upload } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,10 +14,12 @@ import { validateApplication } from "@/services/validation/applicationValidation
 import { outcomeColorFor, colorClasses, colorLabel, stageLabel } from "@/lib/outcomeColor";
 import { ApplicantProgressTimeline } from "@/components/ApplicantProgressTimeline";
 import { getApplicationProgress } from "@/services/applicantProgressService";
+import { getIntakeProgress } from "@/services/intake/intakeWizardService";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
   { href: "/applicant/application", label: "Application" },
+  { href: "/applicant/intake", label: "Intake Wizard" },
   { href: "/applicant/quick-upload", label: "Upload Documents" },
   { href: "/applicant/intake-review", label: "Review Extracted Fields" },
   { href: "/applicant/messages", label: "Messages" },
@@ -78,31 +80,40 @@ export default async function ApplicantDashboardPage() {
   if (!application) {
     return (
       <DashboardShell user={user} nav={APPLICANT_NAV.slice(0, 3)}>
-        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">Applicant Application Dashboard</div>
-        <Card className="border-orange-200 bg-orange-50/40">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-orange-700">Welcome to Quality One Care</p>
-            <h1 className="mt-2 text-2xl font-semibold">Let&apos;s start your application</h1>
-            <p className="mt-2 text-sm text-slate-600 max-w-xl">You can either fill in the digital application form, or upload your scanned application + credentials to have them auto-read.</p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button asChild><Link href="/applicant/application">Start digital application <ArrowRight size={16} /></Link></Button>
-              <Button asChild variant="outline"><Link href="/applicant/quick-upload"><Upload size={16} /> Upload documents first</Link></Button>
+        <div className="grid gap-5">
+          <div className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-8 shadow-sm">
+            <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-orange-200/40 blur-3xl" aria-hidden />
+            <div className="relative">
+              <p className="text-xs font-semibold uppercase tracking-wide text-orange-700">Welcome to Quality One Care</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Hi {user.name?.split(" ")[0] ?? "there"} — let&apos;s get you set up.</h1>
+              <p className="mt-2 max-w-xl text-sm text-slate-700">
+                Walk through your new-hire packet step by step. Each step is short and saves automatically. You can pause and come back any time.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button asChild size="lg"><Link href="/applicant/intake">Start intake packet <ArrowRight size={16} /></Link></Button>
+                <Button asChild variant="outline"><Link href="/applicant/quick-upload"><Upload size={16} /> Upload existing documents</Link></Button>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </DashboardShell>
     );
   }
 
-  const [validation, documents, messages, profilePhoto, onboardingChecklist, openLicenseAlerts, progress] = await Promise.all([
+  const [validation, documents, messages, profilePhoto, onboardingChecklist, openLicenseAlerts, progress, intakeProgress] = await Promise.all([
     validateApplication(application.id, user.id),
     prisma.uploadedDocument.findMany({ where: { applicationId: application.id }, orderBy: { createdAt: "desc" } }),
     prisma.applicantMessage.findMany({ where: { applicationId: application.id, visibleToApplicant: true }, orderBy: { createdAt: "desc" }, take: 3 }),
     prisma.uploadedDocument.findFirst({ where: { applicantProfileId: application.applicantProfileId, documentType: "profile_photo" }, orderBy: { createdAt: "desc" } }),
     prisma.onboardingChecklist.findUnique({ where: { applicationId: application.id }, include: { items: { orderBy: { createdAt: "asc" } } } }),
     prisma.licenseAlert.findMany({ where: { applicationId: application.id, resolved: false }, orderBy: { createdAt: "desc" }, take: 3 }),
-    getApplicationProgress(application.id)
+    getApplicationProgress(application.id),
+    getIntakeProgress(application.id, { desiredRole: application.desiredRole, isExistingEmployee: false }).catch(() => [])
   ]);
+  const intakeCompleted = intakeProgress.filter((p) => p.status === "completed" || p.status === "refused").length;
+  const intakeTotal = intakeProgress.length;
+  const intakePercent = intakeTotal > 0 ? Math.round((intakeCompleted / intakeTotal) * 100) : 0;
+  const firstIncompleteIntakeStep = intakeProgress.find((p) => p.status !== "completed" && p.status !== "refused");
 
   const action = nextActionFor(application.status, validation.canSubmit);
   const isCorrection = application.status === "correction_requested" || application.status === "applicant_correction_required";
@@ -187,6 +198,35 @@ export default async function ApplicantDashboardPage() {
           </CardContent>
         </Card>
 
+        {/* INTAKE WIZARD — promote the new packet flow */}
+        {intakeTotal > 0 && (
+          <Card className="overflow-hidden border-orange-200">
+            <CardContent className="p-0">
+              <div className="grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">Intake Packet</p>
+                  <h3 className="mt-1 text-lg font-semibold text-slate-950">
+                    {intakePercent === 0 ? "Start your new-hire packet" :
+                     intakePercent === 100 ? "All packet steps complete" :
+                     "Continue your intake packet"}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {intakeCompleted} of {intakeTotal} steps complete{firstIncompleteIntakeStep ? ` · up next: ${firstIncompleteIntakeStep.def.shortLabel}` : ""}.
+                  </p>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all" style={{ width: `${intakePercent}%` }} />
+                  </div>
+                </div>
+                <Button asChild size="lg">
+                  <Link href={firstIncompleteIntakeStep ? `/applicant/intake/${firstIncompleteIntakeStep.def.key}` : "/applicant/intake"}>
+                    {intakePercent === 0 ? "Start packet" : intakePercent === 100 ? "Review packet" : "Continue"} <ArrowRight size={16} />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Two-column body */}
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
 
@@ -211,6 +251,13 @@ export default async function ApplicantDashboardPage() {
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">Quick links</CardTitle></CardHeader>
               <CardContent className="pt-0 grid gap-2 sm:grid-cols-2">
+                <Link href="/applicant/intake" className="flex items-center gap-3 rounded-md border-2 border-orange-300 bg-orange-50 p-3 hover:border-orange-400 hover:bg-orange-100 transition-colors">
+                  <CheckSquare size={18} className="text-orange-600" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-slate-900">Intake packet</p>
+                    <p className="text-slate-600">Step-by-step new-hire forms</p>
+                  </div>
+                </Link>
                 <Link href="/applicant/application" className="flex items-center gap-3 rounded-md border bg-slate-50 p-3 hover:border-orange-300 hover:bg-orange-50 transition-colors">
                   <FileText size={18} className="text-orange-600" />
                   <div className="text-sm">

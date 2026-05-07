@@ -1,5 +1,6 @@
 import { DashboardShell } from "@/components/DashboardShell";
 import { CreateUserForm, UserRoleControl } from "@/components/UserManagementActions";
+import { UserCleanupDangerZone } from "@/components/UserCleanupDangerZone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { logAction } from "@/lib/audit";
@@ -50,11 +51,12 @@ export default async function AdminUsersPage() {
                   <TableCell className="capitalize">{portalUser.role}</TableCell>
                   <TableCell>{portalUser.isActive ? "Active" : "Inactive"}</TableCell>
                   <TableCell>{portalUser.createdAt.toLocaleDateString()}</TableCell>
-                  <TableCell><UserRoleControl userId={portalUser.id} currentRole={portalUser.role} isActive={portalUser.isActive} /></TableCell>
+                  <TableCell><UserRoleControl userId={portalUser.id} currentRole={portalUser.role} isActive={portalUser.isActive} isSelf={portalUser.id === user.id} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          <UserCleanupDangerZone actorEmail={user.email} />
         </CardContent>
       </Card>
     </DashboardShell>

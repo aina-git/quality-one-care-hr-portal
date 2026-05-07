@@ -111,16 +111,29 @@ export default async function HrDashboardPage() {
   return (
     <DashboardShell user={user} nav={HR_NAV}>
       <div className="grid gap-5">
-        <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">{dashboardLabel}</div>
-
-        {/* HEADER */}
-        <Card className="border-slate-200">
-          <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">HR Dashboard</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Today&apos;s work</h1>
-            <p className="mt-1 text-sm text-slate-600">{isReadOnly ? "Read-only operational view." : "Pick up applications waiting for HR action."}</p>
-          </CardContent>
-        </Card>
+        {/* HEADER — hero greeting */}
+        <div className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-6 shadow-sm">
+          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-orange-200/40 blur-3xl" aria-hidden />
+          <div className="relative flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-orange-700">{dashboardLabel}</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                {(() => {
+                  const hour = new Date().getHours();
+                  const greeting = hour < 5 ? "Working late" : hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+                  const first = user.name?.split(" ")[0];
+                  return first ? `${greeting}, ${first}` : greeting;
+                })()}
+              </h1>
+              <p className="mt-1 text-sm text-slate-700">{isReadOnly ? "Read-only operational view." : pendingHrReview > 0 ? `${pendingHrReview} application${pendingHrReview === 1 ? "" : "s"} waiting for your review.` : "All caught up — no applications waiting for HR."}</p>
+            </div>
+            {pendingHrReview > 0 && !isReadOnly && (
+              <Button asChild size="lg">
+                <Link href="/hr/applications?status=hr_review_pending">Open next review <ArrowRight size={16} /></Link>
+              </Button>
+            )}
+          </div>
+        </div>
 
         {/* TODAY'S WORK — 4 big action queue cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

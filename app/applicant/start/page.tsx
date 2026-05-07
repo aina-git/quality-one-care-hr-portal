@@ -1,43 +1,9 @@
 import Link from "next/link";
-import { ClipboardList, FileStack, ScanLine } from "lucide-react";
+import { ArrowRight, ClipboardList, FileStack, ScanLine, Sparkles } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
-
-const paths = [
-  {
-    title: "Start Full Digital Application",
-    description: "For applicants filling everything online. Complete each section, upload documents, and submit when validation is ready.",
-    href: "/applicant/application",
-    action: "Start Online",
-    icon: ClipboardList,
-    tone: "border-blue-200 bg-blue-50 text-blue-950",
-    iconTone: "text-blue-700",
-    steps: "Enter details -> Upload documents -> System checks -> HR reviews"
-  },
-  {
-    title: "Upload Completed & Scanned Application",
-    description: "Already completed a paper application? Upload your scanned form and supporting documents. The system will organize and prepare it for HR review.",
-    href: "/applicant/quick-upload?mode=paper",
-    action: "Upload Scanned Application",
-    icon: ScanLine,
-    tone: "border-orange-200 bg-orange-50 text-orange-950",
-    iconTone: "text-orange-700",
-    recommended: true,
-    steps: "Upload -> System organizes -> HR reviews -> Verification begins"
-  },
-  {
-    title: "Upload Resume & Supporting Documents",
-    description: "Upload your resume and any documents. The system will organize them and guide you through the remaining steps.",
-    href: "/applicant/quick-upload?mode=supporting_documents",
-    action: "Upload Materials",
-    icon: FileStack,
-    tone: "border-teal-200 bg-teal-50 text-teal-950",
-    iconTone: "text-teal-700",
-    steps: "Upload -> Classify -> Review missing items -> Continue application"
-  }
-];
 
 export default async function ApplicantStartPage() {
   const user = await requireRole(["applicant"]);
@@ -46,46 +12,73 @@ export default async function ApplicantStartPage() {
       user={user}
       nav={[
         { href: "/applicant/dashboard", label: "Dashboard" },
-        { href: "/applicant/start", label: "Begin Intake" },
-        { href: "/applicant/quick-upload", label: "Document Upload" },
-        { href: "/applicant/application", label: "Application" },
-        { href: "/applicant/intake-status", label: "Intake Status" }
+        { href: "/applicant/intake", label: "Intake Wizard" },
+        { href: "/applicant/quick-upload", label: "Upload Documents" },
+        { href: "/applicant/application", label: "Application" }
       ]}
     >
       <div className="grid gap-6">
-        <section className="rounded-2xl border bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold text-orange-600">Choose how to begin</p>
-          <h1 className="mt-2 text-3xl font-semibold">Start your Quality One Care application intake</h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Choose how you would like to begin. You can complete your application online or upload existing documents for processing.
-          </p>
-        </section>
-        <div className="grid gap-4 xl:grid-cols-3">
-          {paths.map((path) => {
-            const Icon = path.icon;
-            return (
-              <Card key={path.title} className={`qoc-card relative overflow-hidden rounded-2xl ${path.tone}`}>
-                {path.recommended ? (
-                  <span className="absolute right-4 top-4 rounded-full bg-orange-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">Recommended</span>
-                ) : null}
-                <CardHeader className="gap-3">
-                  <Icon className={`h-9 w-9 ${path.iconTone}`} />
-                  <CardTitle className="pr-28 text-xl">{path.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-5 text-sm">
-                  <p>{path.description}</p>
-                  <div className="rounded-xl border border-white/80 bg-white/75 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Intake path</p>
-                    <p className="mt-1 font-medium text-slate-800">{path.steps}</p>
-                  </div>
-                  <Button asChild>
-                    <Link href={path.href}>{path.action}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+        {/* Hero */}
+        <div className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-6 shadow-sm sm:p-8">
+          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-orange-200/40 blur-3xl" aria-hidden />
+          <div className="relative">
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700">
+              <Sparkles size={12} /> Welcome to Quality One Care
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              Hi {user.name?.split(" ")[0] ?? "there"} — let&apos;s get you set up.
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-700 sm:text-base">
+              We&apos;ll guide you through your application, credentials, and new-hire forms — one short step at a time. Your progress saves automatically, so you can pause and pick up later.
+            </p>
+            <div className="mt-5">
+              <Button asChild size="lg">
+                <Link href="/applicant/intake">Begin step-by-step packet <ArrowRight size={16} /></Link>
+              </Button>
+            </div>
+          </div>
         </div>
+
+        {/* Alternate paths */}
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Other ways to start</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Card className="border-slate-200">
+              <CardContent className="p-5">
+                <ScanLine size={22} className="text-orange-600" />
+                <p className="mt-3 font-semibold text-slate-900">Upload completed paper application</p>
+                <p className="mt-1 text-sm text-slate-600">Already filled out a printed packet? Scan it and upload — we&apos;ll organize the contents.</p>
+                <Button asChild variant="outline" size="sm" className="mt-3"><Link href="/applicant/quick-upload?mode=paper">Upload scanned packet</Link></Button>
+              </CardContent>
+            </Card>
+            <Card className="border-slate-200">
+              <CardContent className="p-5">
+                <FileStack size={22} className="text-orange-600" />
+                <p className="mt-3 font-semibold text-slate-900">Upload supporting documents</p>
+                <p className="mt-1 text-sm text-slate-600">Resume, license, ID, CPR card, immunization records — drop them in and we&apos;ll route each one.</p>
+                <Button asChild variant="outline" size="sm" className="mt-3"><Link href="/applicant/quick-upload?mode=supporting_documents">Upload documents</Link></Button>
+              </CardContent>
+            </Card>
+            <Card className="border-slate-200">
+              <CardContent className="p-5">
+                <ClipboardList size={22} className="text-orange-600" />
+                <p className="mt-3 font-semibold text-slate-900">Classic application form</p>
+                <p className="mt-1 text-sm text-slate-600">Prefer a single long form? You can also fill the legacy application page and submit when ready.</p>
+                <Button asChild variant="outline" size="sm" className="mt-3"><Link href="/applicant/application">Open classic form</Link></Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <Card className="border-blue-100 bg-blue-50/40">
+          <CardContent className="p-4 text-sm text-blue-900">
+            <p className="font-semibold">Need help?</p>
+            <p className="mt-1">
+              Email <a className="font-semibold hover:underline" href="mailto:info@qualityonecare.com">info@qualityonecare.com</a>{" "}
+              or call <span className="font-semibold">(301) 658-7141</span>. We&apos;re here Monday–Friday.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </DashboardShell>
   );

@@ -14,14 +14,30 @@
 
 import { prisma } from "@/lib/prisma";
 
+export type CrossValidationFindingField = "name" | "dateOfBirth" | "licenseNumber" | "licenseType" | "address";
+
+export type CrossValidationOverride = {
+  id: string;
+  reason: string;
+  overriddenAt: Date;
+  overriddenByName: string | null;
+  overriddenByEmail: string | null;
+};
+
 export type CrossValidationFinding = {
-  field: "name" | "dateOfBirth" | "licenseNumber" | "licenseType" | "address";
+  field: CrossValidationFindingField;
+  // The original severity computed from values. "ok" means the check passed
+  // outright; "warning"/"critical" mean a discrepancy was detected.
+  rawSeverity: "ok" | "warning" | "critical";
+  // The effective severity after applying any active HR override.
+  // Overridden findings get effectiveSeverity = "ok".
   severity: "ok" | "warning" | "critical";
   applicationValue: string | null;
   documentValue: string | null;
   documentId: string | null;
   documentName: string | null;
   message: string;
+  override?: CrossValidationOverride | null;
 };
 
 export type CrossValidationReport = {
@@ -31,6 +47,7 @@ export type CrossValidationReport = {
   okCount: number;
   warningCount: number;
   criticalCount: number;
+  overriddenCount: number;
   findings: CrossValidationFinding[];
   generatedAt: Date;
 };
@@ -111,6 +128,7 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
       const ok = nameMatches(appName, docName);
       findings.push({
         field: "name",
+        rawSeverity: ok ? "ok" : "critical",
         severity: ok ? "ok" : "critical",
         applicationValue: appName,
         documentValue: docName,
@@ -125,6 +143,7 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
       const ok = docDobIso === appDob;
       findings.push({
         field: "dateOfBirth",
+        rawSeverity: ok ? "ok" : "critical",
         severity: ok ? "ok" : "critical",
         applicationValue: appDob,
         documentValue: docDobIso || docDob,
@@ -138,6 +157,7 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
       const ok = normalize(docLicNum) === normalize(appLicenseNumber);
       findings.push({
         field: "licenseNumber",
+        rawSeverity: ok ? "ok" : "warning",
         severity: ok ? "ok" : "warning",
         applicationValue: appLicenseNumber,
         documentValue: docLicNum,
@@ -153,6 +173,7 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
       const ok = a === b || a.includes(b) || b.includes(a);
       findings.push({
         field: "licenseType",
+        rawSeverity: ok ? "ok" : "warning",
         severity: ok ? "ok" : "warning",
         applicationValue: appLicenseType,
         documentValue: docLicType,
@@ -168,6 +189,7 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
       const ok = a === b || a.includes(b) || b.includes(a);
       findings.push({
         field: "address",
+        rawSeverity: ok ? "ok" : "warning",
         severity: ok ? "ok" : "warning",
         applicationValue: appAddress,
         documentValue: docAddress,
@@ -178,10 +200,36 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
     }
   }
 
+  // Apply HR overrides: any active override matching (field + documentId) flips
+  // the finding's effective severity to "ok" and attaches override metadata so
+  // the UI can show "Resolved by [name] on [date] — [reason]".
+  const activeOverrides = await prisma.crossCheckOverride.findMany({
+    where: { applicationId, revokedAt: null },
+    include: { overriddenBy: true },
+    orderBy: { overriddenAt: "desc" }
+  });
+
+  for (const finding of findings) {
+    if (finding.rawSeverity === "ok") continue;
+    const match = activeOverrides.find(
+      (o) => o.field === finding.field && o.documentId === finding.documentId
+    );
+    if (!match) continue;
+    finding.severity = "ok";
+    finding.override = {
+      id: match.id,
+      reason: match.reason,
+      overriddenAt: match.overriddenAt,
+      overriddenByName: match.overriddenBy.name,
+      overriddenByEmail: match.overriddenBy.email
+    };
+  }
+
   const totalChecks = findings.length;
   const okCount = findings.filter((f) => f.severity === "ok").length;
   const warningCount = findings.filter((f) => f.severity === "warning").length;
   const criticalCount = findings.filter((f) => f.severity === "critical").length;
+  const overriddenCount = findings.filter((f) => f.override).length;
   const consistencyScore = totalChecks > 0 ? Math.round((okCount / totalChecks) * 100) : 100;
 
   return {
@@ -191,6 +239,7 @@ export async function runCrossValidation(applicationId: string): Promise<CrossVa
     okCount,
     warningCount,
     criticalCount,
+    overriddenCount,
     findings,
     generatedAt: new Date()
   };
