@@ -45,10 +45,10 @@ export const verificationLinks: VerificationLink[] = [
   {
     category: "background_check_cgis",
     verificationType: "cgis",
-    providerName: "CGIS Background Check",
-    label: "CGIS/background check receipt",
-    searchUrl: "",
-    notes: "Record agency, MA provider number, tracking number, date sent or verified, and receipt evidence."
+    providerName: "CJIS / CGIS Background Check",
+    label: "CJIS/CGIS background check request form",
+    searchUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf5wiEUBXK5XQno2ThbO7dsv_8Ds57Gb6LBi_AYnQHuKuXogA/viewform?pli=1",
+    notes: "Submit the CJIS/CGIS request form linked here. Then record agency, MA provider number, tracking number, date sent or verified, and receipt evidence."
   },
   {
     category: "liability_insurance_nso",
