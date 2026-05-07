@@ -133,9 +133,42 @@ function isBlockingStatus(status: VerificationItemStatus) {
   return status === "failed" || status === "expired";
 }
 
+/**
+ * Categories that have a real-world expiration concept. Past employment,
+ * references, OIG checks, and the final-decision marker do NOT expire — once
+ * verified, they stay verified. Treating them as "expired" because someone
+ * (or the OCR auto-fill) wrote a date into the field is a UX bug.
+ */
+const expirableCategories = new Set<VerificationCategory>([
+  "background_check_cgis",
+  "maryland_case_search",
+  "nursys",
+  "maryland_board_of_nursing",
+  "annual_physical_health",
+  "tb_test_or_chest_xray",
+  "liability_insurance_nso",
+  "cpr",
+  "id_or_work_authorization",
+  "sanitation_training"
+]);
+
+export function categoryCanExpire(category: VerificationCategory) {
+  return expirableCategories.has(category);
+}
+
+/**
+ * Date-only expiration test. Use itemIsExpiredByDate() when you also need to
+ * gate by category — because for non-expirable categories we treat any stored
+ * date as a no-op.
+ */
 function dateIsExpired(value?: Date | null) {
   if (!value) return false;
   return value.getTime() < Date.now();
+}
+
+function itemIsExpiredByDate(item: { category: VerificationCategory; expirationDate: Date | null }) {
+  if (!expirableCategories.has(item.category)) return false;
+  return dateIsExpired(item.expirationDate);
 }
 
 export function describeBlockerReason(item: {
@@ -145,18 +178,19 @@ export function describeBlockerReason(item: {
   result: string | null;
   category: VerificationCategory;
 }) {
-  if (dateIsExpired(item.expirationDate)) {
+  if (itemIsExpiredByDate(item)) {
     const dateText = item.expirationDate ? item.expirationDate.toLocaleDateString() : "";
     return `Expired${dateText ? ` ${dateText}` : ""}`;
   }
-  if (item.status === "expired") return "Expired";
+  if (item.status === "expired" && expirableCategories.has(item.category)) return "Expired";
   if (item.status === "failed") return "Failed";
   if (item.status === "needs_followup") return "Needs Followup";
   if (item.status === "pending_external_check") return "Pending External Check";
   if ((item.category === "oig_exclusion" || item.category === "maryland_case_search") && /fail|hit|match|concern/i.test(item.result ?? "")) {
     return "Result needs review";
   }
-  if (item.status === "pending") return "Pending";
+  if (item.status === "pending") return "Pending verification";
+  if (item.status === "not_started") return "Not yet verified";
   if (item.status === "not_applicable" && !item.notes?.trim()) return "Marked N/A — note required";
   return item.status.replace(/_/g, " ");
 }
@@ -175,12 +209,21 @@ export function summarizeChecklist(checklist: {
 }) {
   const requiredItems = checklist.items.filter((item) => itemRequiresCompletion(item.category, checklist.application.desiredRole));
   const satisfied = requiredItems.filter((item) => isSatisfied(item.status, item.notes));
-  const expiredItems = checklist.items.filter((item) => item.status === "expired" || dateIsExpired(item.expirationDate));
+  // Only items in expirable categories can be "expired by date". A past date
+  // on a non-expirable item (employment_history, character_reference,
+  // oig_exclusion, etc.) is treated as a no-op so we don't flag them.
+  const expiredItems = checklist.items.filter((item) => {
+    if (item.status === "expired" && expirableCategories.has(item.category)) return true;
+    return itemIsExpiredByDate(item);
+  });
   const failedItems = checklist.items.filter((item) => item.status === "failed");
   const missingItems = requiredItems.filter((item) => !isSatisfied(item.status, item.notes));
   const criticalBlockers = checklist.items.filter((item) => {
     if (!criticalCategories.includes(item.category)) return false;
-    if (isBlockingStatus(item.status) || dateIsExpired(item.expirationDate)) return true;
+    // Status "expired" only blocks for categories that can actually expire.
+    if (item.status === "failed") return true;
+    if (item.status === "expired" && expirableCategories.has(item.category)) return true;
+    if (itemIsExpiredByDate(item)) return true;
     if (itemRequiresCompletion(item.category, checklist.application.desiredRole) && !isSatisfied(item.status, item.notes)) return true;
     if ((item.category === "oig_exclusion" || item.category === "maryland_case_search") && /fail|hit|match|concern/i.test(item.result ?? "")) return true;
     return false;
