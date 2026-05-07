@@ -21,6 +21,7 @@ import { adminNav } from "@/lib/adminNav";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { describeBlockerReason, getVerificationChecklist, summarizeChecklist } from "@/services/verification/verificationService";
+import { BlockerQuickFix } from "@/components/BlockerQuickFix";
 import { getVerificationLink } from "@/services/verification/verificationLinks";
 import { splitMatchedAndUnmatchedDocuments } from "@/services/verification/documentMatchingService";
 
@@ -149,13 +150,20 @@ export default async function AdminVerificationPage({ params }: { params: Promis
               if (summary && summary.criticalBlockers.length > 0) {
                 return (
                   <Card className="border-red-300 bg-red-50">
-                    <CardContent className="p-4 flex flex-wrap items-start gap-3">
-                      <AlertTriangle size={18} className="text-red-700 mt-0.5" />
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <AlertTriangle size={18} className="text-red-700 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <p className="font-semibold text-red-900">Critical blockers — cannot submit to DON</p>
-                        <ul className="mt-1 grid gap-0.5 text-sm text-red-800 list-disc list-inside">
+                        <p className="mt-0.5 text-xs text-red-700">Click any item to enter a new expiration date or mark verified — without leaving this page.</p>
+                        <ul className="mt-2 grid gap-1.5">
                           {summary.criticalBlockers.map((item) => (
-                            <li key={item.id}>{item.title} <span className="text-red-600 italic">({describeBlockerReason(item)})</span></li>
+                            <BlockerQuickFix
+                              key={item.id}
+                              itemId={item.id}
+                              itemTitle={item.title}
+                              reason={describeBlockerReason(item)}
+                              applicationId={application.id}
+                            />
                           ))}
                         </ul>
                       </div>
