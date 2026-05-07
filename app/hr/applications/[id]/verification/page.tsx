@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { defaultVerificationItems, describeBlockerReason, getVerificationChecklist, itemRequiresCompletion, summarizeChecklist } from "@/services/verification/verificationService";
+import { categoryCanExpire, defaultVerificationItems, describeBlockerReason, getVerificationChecklist, itemRequiresCompletion, summarizeChecklist } from "@/services/verification/verificationService";
 import { BlockerQuickFix } from "@/components/BlockerQuickFix";
 import { getVerificationLink } from "@/services/verification/verificationLinks";
 import { splitMatchedAndUnmatchedDocuments } from "@/services/verification/documentMatchingService";
@@ -258,6 +258,7 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
                                 itemTitle={item.title}
                                 reason={describeBlockerReason(item)}
                                 applicationId={application.id}
+                                canExpire={categoryCanExpire(item.category)}
                               />
                             ))
                           ) : (

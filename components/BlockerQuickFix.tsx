@@ -12,6 +12,12 @@ type Props = {
   itemTitle: string;
   reason: string;
   applicationId: string;
+  /**
+   * Whether this category has a real-world expiration concept. False for
+   * employment_history, character_reference, oig_exclusion, etc. — those
+   * are point-in-time verifications that don't expire.
+   */
+  canExpire?: boolean;
 };
 
 /**
@@ -20,7 +26,7 @@ type Props = {
  * fill in a new expiration + optional notes and save. After save, the page
  * server-refreshes so the blocker disappears from the banner.
  */
-export function BlockerQuickFix({ itemId, itemTitle, reason }: Props) {
+export function BlockerQuickFix({ itemId, itemTitle, reason, canExpire = true }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -81,16 +87,18 @@ export function BlockerQuickFix({ itemId, itemTitle, reason }: Props) {
       </button>
       {open && (
         <div className="mt-2 grid gap-2 rounded-md border border-red-200 bg-white p-3">
-          <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-            <label className="grid gap-0.5 text-xs">
-              <span className="font-medium text-slate-700">New expiration date (if renewed)</span>
-              <input
-                type="date"
-                value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
-                className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm"
-              />
-            </label>
+          <div className={`grid gap-2 ${canExpire ? "sm:grid-cols-[1fr_auto_auto]" : "sm:grid-cols-[1fr_auto]"}`}>
+            {canExpire && (
+              <label className="grid gap-0.5 text-xs">
+                <span className="font-medium text-slate-700">New expiration date (if renewed)</span>
+                <input
+                  type="date"
+                  value={expirationDate}
+                  onChange={(e) => setExpirationDate(e.target.value)}
+                  className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm"
+                />
+              </label>
+            )}
             <Button
               type="button"
               size="sm"
@@ -113,11 +121,13 @@ export function BlockerQuickFix({ itemId, itemTitle, reason }: Props) {
           </div>
           <label className="grid gap-0.5 text-xs">
             <span className="font-medium text-slate-700">Optional note (e.g., source document, renewal #)</span>
-            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Renewed via portal 5/7/2026" />
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={canExpire ? "Renewed via portal 5/7/2026" : "Verified from uploaded document"} />
           </label>
           {error && <p className="text-xs text-red-700">{error}</p>}
           <p className="text-[11px] text-slate-500">
-            Tip: leave the date blank if the credential never expires (e.g. background check passed). Click Mark verified to clear the blocker.
+            {canExpire
+              ? "Tip: leave the date blank if the credential never expires. Click Mark verified to clear the blocker."
+              : "This item doesn't have an expiration — it's a point-in-time verification. Click Mark verified to clear the blocker."}
           </p>
         </div>
       )}

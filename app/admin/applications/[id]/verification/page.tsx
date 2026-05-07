@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminNav } from "@/lib/adminNav";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { describeBlockerReason, getVerificationChecklist, summarizeChecklist } from "@/services/verification/verificationService";
+import { categoryCanExpire, describeBlockerReason, getVerificationChecklist, summarizeChecklist } from "@/services/verification/verificationService";
 import { BlockerQuickFix } from "@/components/BlockerQuickFix";
 import { getVerificationLink } from "@/services/verification/verificationLinks";
 import { splitMatchedAndUnmatchedDocuments } from "@/services/verification/documentMatchingService";
@@ -163,6 +163,7 @@ export default async function AdminVerificationPage({ params }: { params: Promis
                               itemTitle={item.title}
                               reason={describeBlockerReason(item)}
                               applicationId={application.id}
+                              canExpire={categoryCanExpire(item.category)}
                             />
                           ))}
                         </ul>
