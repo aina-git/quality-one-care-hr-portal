@@ -2,33 +2,45 @@
 
 This doc lives at the repo root for one reason: the wiring is done in code, but it can't actually deliver mail until Railway has the right env vars set. Here's what you set, and what happens when you do.
 
-## TL;DR — Set these 3 Railway env vars
+## Sender identity — official HR mailbox
+
+All applicant-facing emails (status updates, license alerts, login credentials, SMS-via-email gateway messages) go out from **`hr@qualityonecare.com`** by default. This is QOC's official HR department address — applicants see it as the From line, and any replies they send go to the HR inbox where the team can act on them.
+
+`aaina@qualityonecare.com` is a personal work account and is **not** used for outbound app email. Don't set it as `EMAIL_FROM`.
+
+## TL;DR — Set these 4 Railway env vars
 
 | Variable | Value | Required? |
 |---|---|---|
 | `EMAIL_PROVIDER` | `resend` | ✅ |
 | `EMAIL_API_KEY` | your Resend API key | ✅ |
-| `EMAIL_FROM` | `noreply@qualityonecare.com` (or whatever sending address you've verified at the provider) | ✅ |
+| `EMAIL_FROM` | `hr@qualityonecare.com` | ✅ (default if unset) |
 | `NEXT_PUBLIC_APP_URL` | `https://quality-one-care-hr-portal-production.up.railway.app` | recommended (used in email links) |
 
-After you set these and Railway redeploys, **every status change fires both a real email and a free SMS via the carrier's email-to-SMS gateway** — no SMS provider account needed yet.
+After you set these and Railway redeploys, **every status change fires both a real email from `hr@qualityonecare.com` and a free SMS via the carrier's email-to-SMS gateway** — no SMS provider account needed yet.
+
+## Do I need a password for hr@qualityonecare.com?
+
+**Probably no.** The provider you pick (Resend or SendGrid) does the actual sending — they impersonate `hr@qualityonecare.com` after you prove you own the `qualityonecare.com` domain via DNS records. Nobody asks for your mailbox password.
+
+The only case where you'd need a password is if you wanted to send via raw SMTP from the real Gmail/Workspace account (`smtp.gmail.com:587` with username `hr@qualityonecare.com` + an app password). The current code doesn't support raw SMTP — if you'd rather go that route, I can add it. Tell me and I'll wire it up.
 
 ## Step-by-step: Set up Resend (5 minutes, free 3K/month)
 
 1. Sign up at https://resend.com (free tier: 3,000 emails/month, 100/day, plenty for HR)
-2. Verify your sending domain (`qualityonecare.com`) by adding the DNS records Resend gives you. If you don't own DNS, use the throwaway-but-real `onboarding@resend.dev` for now and switch to your domain when DNS is set up.
+2. **Verify the `qualityonecare.com` domain** by adding the DNS records Resend gives you (TXT for SPF/DKIM, CNAME for the return-path). This is what authorizes Resend to send as `hr@qualityonecare.com`. Takes a few minutes for DNS to propagate. If you don't have DNS access yet, use the throwaway sender `onboarding@resend.dev` for testing and switch later.
 3. Create an API key (Resend Dashboard → API Keys → Create)
 4. In Railway → your service → Variables → click **+ New Variable** for each:
    - `EMAIL_PROVIDER` = `resend`
    - `EMAIL_API_KEY` = the key from step 3 (starts with `re_`)
-   - `EMAIL_FROM` = `noreply@qualityonecare.com` once your domain is verified, or `onboarding@resend.dev` while you're testing
+   - `EMAIL_FROM` = `hr@qualityonecare.com` (or `onboarding@resend.dev` while you're testing without verified DNS)
 5. Save → Railway redeploys automatically (~5 min)
 
-That's it. The next status change on any application will trigger a real email + a real SMS.
+That's it. The next status change on any application will trigger a real email + a real SMS, both showing `hr@qualityonecare.com` as the sender.
 
 ## Alternative: SendGrid
 
-The code already supports SendGrid — set `EMAIL_PROVIDER=sendgrid` and `EMAIL_API_KEY=SG....` instead. SendGrid free tier is 100/day forever.
+The code already supports SendGrid — set `EMAIL_PROVIDER=sendgrid` and `EMAIL_API_KEY=SG....` instead. SendGrid free tier is 100/day forever. Same DNS-based sender authorization.
 
 ## How SMS-via-email works
 
