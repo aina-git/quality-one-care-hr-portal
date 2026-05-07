@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
+import { IdentityMatchBadge } from "@/components/IdentityMatchBadge";
 import {
   type ApplicationFormData,
   type EmployerEntry,
@@ -150,6 +151,7 @@ export function ApplicationFormStep(props: Props) {
                 onChange={(v) => update("mailingAddress", v)}
                 placeholder="Start typing — we'll suggest the full address"
               />
+              <IdentityMatchBadge currentAddress={form.mailingAddress} applicantName={form.fullLegalName || props.applicantName} />
             </Field>
             <Field label="Phone (Mobile)" required>
               <Input value={form.phoneMobile} onChange={(e) => update("phoneMobile", e.target.value)} />

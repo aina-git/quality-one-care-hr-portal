@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
+import { IdentityMatchBadge } from "@/components/IdentityMatchBadge";
 
 type Props = {
   index: number;
@@ -111,6 +112,7 @@ export function PersonalInfoSection(props: Props) {
               placeholder="Start typing your street address…"
             />
             <span className="text-xs text-slate-500">Suggestions auto-fill city, state, and ZIP.</span>
+            <IdentityMatchBadge currentAddress={form.address} applicantName={form.name || props.defaultName} />
           </label>
           <label className="grid gap-1 text-sm">
             <span className="font-medium">City</span>
