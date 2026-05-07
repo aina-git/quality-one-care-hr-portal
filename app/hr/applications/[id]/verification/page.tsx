@@ -88,31 +88,56 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
           </Link>
         </div>
 
-        {/* HEADER */}
-        <Card className="border-slate-200">
-          <CardContent className="p-5">
+        {/* HEADER — hero card with progress ring */}
+        <div className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 shadow-sm">
+          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-orange-200/40 blur-3xl" aria-hidden />
+          <div className="relative p-6">
             <div className="flex flex-wrap items-start gap-5">
               <ProfilePhoto document={photoDoc} viewerUserId={user.id} name={profile.user.name} size="md" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">Verification Workspace</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{profile.user.name ?? profile.user.email}</h1>
-                <p className="mt-1 text-sm text-slate-600">{application.desiredRole ?? "Role not recorded"}</p>
+                <p className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-orange-700">Verification Workspace</p>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">{profile.user.name ?? profile.user.email}</h1>
+                <p className="mt-1 text-sm text-slate-700">{application.desiredRole ?? "Role not recorded"}</p>
                 <div className="mt-3 flex flex-wrap gap-2 items-center">
                   <StatusBadge status={application.status} />
-                  {summary && <span className="text-sm font-semibold text-slate-700">{summary.completionPercentage}% complete</span>}
-                  {summary && summary.missingItems.length > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">{summary.missingItems.length} missing</span>}
-                  {summary && summary.expiredItems.length > 0 && <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">{summary.expiredItems.length} expired</span>}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
                 {checklist && summary?.readyForDon && canEdit && <SubmitToDonButton applicationId={application.id} />}
                 {checklist && !summary?.readyForDon && canEdit && (
-                  <p className="text-xs text-slate-500 max-w-[220px] text-right">Resolve missing/failed items below to enable DON submission.</p>
+                  <p className="text-xs text-slate-600 max-w-[220px] text-right">Resolve missing/failed items below to enable DON submission.</p>
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {summary && (
+              <div className="mt-5 grid gap-3 sm:grid-cols-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-medium text-slate-500">Complete</p>
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{summary.completionPercentage}%</p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400" style={{ width: `${summary.completionPercentage}%` }} />
+                  </div>
+                </div>
+                <div className={`rounded-xl border p-3 ${summary.criticalBlockers.length > 0 ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
+                  <p className={`text-xs font-medium ${summary.criticalBlockers.length > 0 ? "text-red-700" : "text-emerald-700"}`}>Blockers</p>
+                  <p className={`mt-1 text-2xl font-bold tabular-nums ${summary.criticalBlockers.length > 0 ? "text-red-900" : "text-emerald-900"}`}>{summary.criticalBlockers.length}</p>
+                  <p className={`mt-1 text-[11px] ${summary.criticalBlockers.length > 0 ? "text-red-700" : "text-emerald-700"}`}>{summary.criticalBlockers.length > 0 ? "Must resolve" : "None — ready"}</p>
+                </div>
+                <div className={`rounded-xl border p-3 ${summary.missingItems.length > 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"}`}>
+                  <p className={`text-xs font-medium ${summary.missingItems.length > 0 ? "text-amber-700" : "text-slate-500"}`}>Missing</p>
+                  <p className={`mt-1 text-2xl font-bold tabular-nums ${summary.missingItems.length > 0 ? "text-amber-900" : "text-slate-700"}`}>{summary.missingItems.length}</p>
+                  <p className={`mt-1 text-[11px] ${summary.missingItems.length > 0 ? "text-amber-700" : "text-slate-500"}`}>Awaiting upload</p>
+                </div>
+                <div className={`rounded-xl border p-3 ${summary.expiredItems.length > 0 ? "border-red-200 bg-red-50" : "border-slate-200 bg-white"}`}>
+                  <p className={`text-xs font-medium ${summary.expiredItems.length > 0 ? "text-red-700" : "text-slate-500"}`}>Expired</p>
+                  <p className={`mt-1 text-2xl font-bold tabular-nums ${summary.expiredItems.length > 0 ? "text-red-900" : "text-slate-700"}`}>{summary.expiredItems.length}</p>
+                  <p className={`mt-1 text-[11px] ${summary.expiredItems.length > 0 ? "text-red-700" : "text-slate-500"}`}>Past expiry date</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* No checklist yet — show the 15-item blueprint so reviewers always know what's coming */}
         {!checklist ? (
