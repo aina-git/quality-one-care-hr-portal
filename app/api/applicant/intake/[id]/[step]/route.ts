@@ -69,6 +69,7 @@ import {
   applicableSteps,
   getIntakeProgress
 } from "@/services/intake/intakeWizardService";
+import { notifyApplicantOfStatusChange } from "@/services/notifications/applicantStatusNotifier";
 
 const VALID_STEPS: IntakeStepKey[] = [
   "application_form",
@@ -277,6 +278,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
       // together. If the status update fails the applicant would think
       // they're done but HR would never see the application — that's worse
       // than the applicant retrying. So we run both in a transaction.
+      const previousAppStatus = application.status;
       if (markCompleted) {
         await prisma.$transaction(async (tx) => {
           await tx.intakeStep.upsert({
@@ -313,6 +315,16 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
         });
       }
       await logAction(user.id, markCompleted ? "intake.new_hire_checklist_finalized" : "intake.new_hire_checklist_saved", "intakeStep", `${id}:${stepKey}`, {});
+      // After the application status flips to "submitted", fire the
+      // applicant-facing email + SMS notifications.
+      if (markCompleted && previousAppStatus !== "submitted") {
+        await notifyApplicantOfStatusChange({
+          applicationId: id,
+          fromStatus: previousAppStatus,
+          toStatus: "submitted",
+          triggeredByUserId: user.id
+        });
+      }
       return NextResponse.json({ ok: true, status: markCompleted ? "completed" : "in_progress" });
     }
 

@@ -2,6 +2,7 @@ import type { ApplicationStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/audit";
 import { ensureHrReviewWorkflowIntegrity, isHrReviewWorkflowStatus } from "@/services/workflow/hrReviewQueueService";
+import { notifyApplicantOfStatusChange } from "@/services/notifications/applicantStatusNotifier";
 
 type LifecyclePatch = {
   status?: ApplicationStatus;
@@ -104,5 +105,18 @@ export async function updateApplicationLifecycle({
   if (isHrReviewWorkflowStatus(nextStatus)) {
     await ensureHrReviewWorkflowIntegrity(applicationId, userId ?? null);
   }
+
+  // Fire applicant-facing email + SMS notifications when the status actually
+  // changed. The notifier swallows its own errors so a bad email config can't
+  // break this transaction.
+  if (statusChanged) {
+    await notifyApplicantOfStatusChange({
+      applicationId,
+      fromStatus: application.status,
+      toStatus: nextStatus,
+      triggeredByUserId: userId ?? null
+    });
+  }
+
   return updated;
 }

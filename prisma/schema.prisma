@@ -399,6 +399,9 @@ model ApplicantProfile {
   state                    String?
   zip                      String?
   pediatricExperience      String?
+  phoneCarrier             String?
+  smsEmailOverride         String?
+  notificationOptIn        Boolean             @default(true)
   profilePhotoDocumentId   String?
   profilePhotoConsentAt    DateTime?
   identityPhotoStatus      String?             @default("pending")

@@ -33,7 +33,10 @@ export async function PATCH(request: Request) {
       state: maybeString(body.state, 100),
       zip: maybeString(body.zip, 20),
       pediatricExperience: maybeString(body.pediatricExperience, 4000),
-      dateOfBirth: parseDate(body.dateOfBirth)
+      dateOfBirth: parseDate(body.dateOfBirth),
+      phoneCarrier: maybeString(body.phoneCarrier, 50),
+      smsEmailOverride: maybeString(body.smsEmailOverride, 200),
+      notificationOptIn: body.notificationOptIn === undefined ? undefined : Boolean(body.notificationOptIn)
     };
 
     if (name !== undefined && name) {
