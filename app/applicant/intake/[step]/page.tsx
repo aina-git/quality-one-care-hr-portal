@@ -29,6 +29,7 @@ import { NewHireChecklistStep } from "@/components/applicant/intake/NewHireCheck
 import { PlaceholderStep } from "@/components/applicant/intake/PlaceholderStep";
 import { getIntakeProgress } from "@/services/intake/intakeWizardService";
 import { prisma } from "@/lib/prisma";
+import { ConfirmContactInfoBanner } from "@/components/applicant/ConfirmContactInfoBanner";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
 
 const APPLICANT_NAV = [
@@ -90,6 +91,7 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
   const idx = applicable.findIndex((s) => s.key === stepKey);
   const prev = previousStepKey(stepKey, applicable);
   const next = nextStepKey(stepKey, applicable);
+  const applicantProfile = await prisma.applicantProfile.findUnique({ where: { id: application.applicantProfileId } });
 
   // For the final New Hire Checklist, we need a snapshot of every other
   // step's status plus the count of documents uploaded so far.
@@ -104,6 +106,13 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
   return (
     <DashboardShell user={user} nav={APPLICANT_NAV}>
       <div className="grid gap-5">
+        <ConfirmContactInfoBanner
+          emailIsTemporary={Boolean(applicantProfile?.emailIsTemporary)}
+          phoneIsTemporary={Boolean(applicantProfile?.phoneIsTemporary)}
+          currentEmail={user.email}
+          currentPhone={applicantProfile?.phone ?? ""}
+          currentCarrier={applicantProfile?.phoneCarrier ?? ""}
+        />
         <div className="flex items-center justify-between">
           <Link href="/applicant/intake" className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-orange-700">
             <ArrowLeft size={14} /> Wizard index

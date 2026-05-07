@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { getOrCreateApplicantApplication } from "@/services/applicationService";
 import { getIntakeProgress } from "@/services/intake/intakeWizardService";
+import { ConfirmContactInfoBanner } from "@/components/applicant/ConfirmContactInfoBanner";
+import { prisma } from "@/lib/prisma";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
@@ -17,10 +19,13 @@ const APPLICANT_NAV = [
 export default async function ApplicantIntakeIndexPage() {
   const user = await requireRole(["applicant"]);
   const { application } = await getOrCreateApplicantApplication(user.id);
-  const progress = await getIntakeProgress(application.id, {
-    desiredRole: application.desiredRole,
-    isExistingEmployee: false
-  });
+  const [progress, applicantProfile] = await Promise.all([
+    getIntakeProgress(application.id, {
+      desiredRole: application.desiredRole,
+      isExistingEmployee: false
+    }),
+    prisma.applicantProfile.findUnique({ where: { id: application.applicantProfileId } })
+  ]);
 
   const completed = progress.filter((p) => p.status === "completed" || p.status === "refused").length;
   const total = progress.length;
@@ -31,6 +36,13 @@ export default async function ApplicantIntakeIndexPage() {
   return (
     <DashboardShell user={user} nav={APPLICANT_NAV}>
       <div className="grid gap-6">
+        <ConfirmContactInfoBanner
+          emailIsTemporary={Boolean(applicantProfile?.emailIsTemporary)}
+          phoneIsTemporary={Boolean(applicantProfile?.phoneIsTemporary)}
+          currentEmail={user.email}
+          currentPhone={applicantProfile?.phone ?? ""}
+          currentCarrier={applicantProfile?.phoneCarrier ?? ""}
+        />
         {/* Hero */}
         <div className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-6 sm:p-8 shadow-sm">
           <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-orange-200/40 blur-3xl" aria-hidden />

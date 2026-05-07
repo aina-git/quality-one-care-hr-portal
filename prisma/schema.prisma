@@ -402,6 +402,8 @@ model ApplicantProfile {
   phoneCarrier             String?
   smsEmailOverride         String?
   notificationOptIn        Boolean             @default(true)
+  phoneIsTemporary         Boolean             @default(false)
+  emailIsTemporary         Boolean             @default(false)
   profilePhotoDocumentId   String?
   profilePhotoConsentAt    DateTime?
   identityPhotoStatus      String?             @default("pending")

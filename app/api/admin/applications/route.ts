@@ -19,6 +19,9 @@ export async function POST(request: Request) {
   const desiredRole = sanitizeText(body.desiredRole, 200) || "Home Health Care";
   const tempPassword = sanitizeText(body.tempPassword, 256);
   const intakeMode = sanitizeText(body.intakeMode, 80) || "paper_intake";
+  const phone = sanitizeText(body.phone, 50);
+  const emailIsTemporary = Boolean(body.emailIsTemporary);
+  const phoneIsTemporary = Boolean(body.phoneIsTemporary);
 
   if (!email) {
     return NextResponse.json({ error: "Applicant email is required." }, { status: 400 });
@@ -48,15 +51,38 @@ export async function POST(request: Request) {
           name,
           passwordHash,
           role: "applicant",
-          applicant: { create: {} }
+          applicant: {
+            create: {
+              phone: phone || null,
+              emailIsTemporary,
+              phoneIsTemporary
+            }
+          }
         },
         include: { applicant: { include: { applications: { orderBy: { updatedAt: "desc" }, take: 1 } } } }
       });
-      await logAction(actor.id, "user_created", "user", user.id, { role: "applicant", source: "admin_intake" });
+      await logAction(actor.id, "user_created", "user", user.id, { role: "applicant", source: "admin_intake", emailIsTemporary, phoneIsTemporary });
+    } else if (user.applicant) {
+      // Update temp flags on existing profile if admin re-creates an application
+      await prisma.applicantProfile.update({
+        where: { id: user.applicant.id },
+        data: {
+          ...(phone ? { phone } : {}),
+          ...(body.emailIsTemporary !== undefined ? { emailIsTemporary } : {}),
+          ...(body.phoneIsTemporary !== undefined ? { phoneIsTemporary } : {})
+        }
+      });
     }
 
     if (!user.applicant) {
-      const profile = await prisma.applicantProfile.create({ data: { userId: user.id } });
+      const profile = await prisma.applicantProfile.create({
+        data: {
+          userId: user.id,
+          phone: phone || null,
+          emailIsTemporary,
+          phoneIsTemporary
+        }
+      });
       user = { ...user, applicant: { ...profile, applications: [] } };
     }
 
