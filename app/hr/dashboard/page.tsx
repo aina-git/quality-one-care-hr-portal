@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, AlertTriangle, Clock, ShieldCheck, UserCheck } from "lucide-react";
+import { ArrowRight, AlertTriangle, Clock, ShieldCheck, UserCheck, Users } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { DashboardClock } from "@/components/DashboardClock";
 import { PersonalTodoList } from "@/components/PersonalTodoList";
@@ -18,6 +18,7 @@ import { outcomeColorFor, colorClasses } from "@/lib/outcomeColor";
 const HR_NAV = [
   { href: "/hr/dashboard", label: "Dashboard" },
   { href: "/hr/applications", label: "Applications" },
+  { href: "/hr/applicants/live", label: "Live Monitor" },
   { href: "/hr/verification", label: "Verification" },
   { href: "/hr/training", label: "Training" }
 ];
@@ -127,11 +128,18 @@ export default async function HrDashboardPage() {
               </h1>
               <p className="mt-1 text-sm text-slate-700">{isReadOnly ? "Read-only operational view." : pendingHrReview > 0 ? `${pendingHrReview} application${pendingHrReview === 1 ? "" : "s"} waiting for your review.` : "All caught up — no applications waiting for HR."}</p>
             </div>
-            {pendingHrReview > 0 && !isReadOnly && (
-              <Button asChild size="lg">
-                <Link href="/hr/applications?status=hr_review_pending">Open next review <ArrowRight size={16} /></Link>
-              </Button>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {!isReadOnly && (
+                <Button asChild size="lg" variant="outline">
+                  <Link href="/hr/applicants/live"><Users size={16} /> Live applicant monitor</Link>
+                </Button>
+              )}
+              {pendingHrReview > 0 && !isReadOnly && (
+                <Button asChild size="lg">
+                  <Link href="/hr/applications?status=hr_review_pending">Open next review <ArrowRight size={16} /></Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
