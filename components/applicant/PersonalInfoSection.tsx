@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 
 type Props = {
   index: number;
@@ -94,7 +95,22 @@ export function PersonalInfoSection(props: Props) {
           </label>
           <label className="grid gap-1 text-sm sm:col-span-2">
             <span className="font-medium">Street address</span>
-            <Input value={form.address} onChange={(e) => setField("address", e.target.value)} />
+            <AddressAutocomplete
+              value={form.address}
+              onChange={(v) => setField("address", v)}
+              autoFillCombined={false}
+              onSelectSuggestion={(s) => {
+                setForm((prev) => ({
+                  ...prev,
+                  address: s.street || prev.address,
+                  city: s.city || prev.city,
+                  state: s.state || prev.state,
+                  zip: s.zip || prev.zip
+                }));
+              }}
+              placeholder="Start typing your street address…"
+            />
+            <span className="text-xs text-slate-500">Suggestions auto-fill city, state, and ZIP.</span>
           </label>
           <label className="grid gap-1 text-sm">
             <span className="font-medium">City</span>

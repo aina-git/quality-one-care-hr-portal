@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type ApplicationFormData,
   type EmployerEntry,
@@ -144,7 +145,11 @@ export function ApplicationFormStep(props: Props) {
               <Input type="email" value={form.emailAddress} onChange={(e) => update("emailAddress", e.target.value)} />
             </Field>
             <Field label="Mailing Address (street, city, state, ZIP)" required className="sm:col-span-2">
-              <Input value={form.mailingAddress} onChange={(e) => update("mailingAddress", e.target.value)} />
+              <AddressAutocomplete
+                value={form.mailingAddress}
+                onChange={(v) => update("mailingAddress", v)}
+                placeholder="Start typing — we'll suggest the full address"
+              />
             </Field>
             <Field label="Phone (Mobile)" required>
               <Input value={form.phoneMobile} onChange={(e) => update("phoneMobile", e.target.value)} />

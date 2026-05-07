@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type W9Data,
   W9_CERTIFICATION,
@@ -143,7 +144,18 @@ export function W9Step(props: Props) {
         <CardContent>
           <div className="grid gap-4">
             <Field label="Line 5 — Street address (number, street, apt/suite)" required>
-              <Input value={form.addressStreet} onChange={(e) => update("addressStreet", e.target.value)} />
+              <AddressAutocomplete
+                value={form.addressStreet}
+                onChange={(v) => update("addressStreet", v)}
+                autoFillCombined={false}
+                onSelectSuggestion={(s) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    addressStreet: s.street || prev.addressStreet,
+                    addressCityStateZip: [s.city, [s.state, s.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ")
+                  }));
+                }}
+              />
             </Field>
             <Field label="Line 6 — City, state, ZIP" required>
               <Input value={form.addressCityStateZip} onChange={(e) => update("addressCityStateZip", e.target.value)} placeholder="Silver Spring, MD 20910" />

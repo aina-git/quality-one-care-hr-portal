@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type MW507Data,
   MD_COUNTIES,
@@ -115,7 +116,21 @@ export function MW507Step(props: Props) {
                 {MD_COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Address" required className="sm:col-span-2"><Input value={form.address} onChange={(e) => update("address", e.target.value)} /></Field>
+            <Field label="Address" required className="sm:col-span-2">
+              <AddressAutocomplete
+                value={form.address}
+                onChange={(v) => update("address", v)}
+                autoFillCombined={false}
+                onSelectSuggestion={(s) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    address: s.street || prev.address,
+                    cityStateZip: [s.city, [s.state, s.zip].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+                    countyOfResidence: prev.countyOfResidence
+                  }));
+                }}
+              />
+            </Field>
             <Field label="City, State, ZIP" required className="sm:col-span-2"><Input value={form.cityStateZip} onChange={(e) => update("cityStateZip", e.target.value)} /></Field>
             <Field label="Maryland filing status" className="sm:col-span-2">
               <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">

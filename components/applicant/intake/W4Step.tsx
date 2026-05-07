@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type W4Data,
   W4_FILING_STATUSES,
@@ -120,7 +121,20 @@ export function W4Step(props: Props) {
                 <Button type="button" variant="outline" onClick={() => setShowSsn((v) => !v)}>{showSsn ? "Hide" : "Show"}</Button>
               </div>
             </Field>
-            <Field label="(a) Address" required className="sm:col-span-2"><Input value={form.address} onChange={(e) => update("address", e.target.value)} /></Field>
+            <Field label="(a) Address" required className="sm:col-span-2">
+              <AddressAutocomplete
+                value={form.address}
+                onChange={(v) => update("address", v)}
+                autoFillCombined={false}
+                onSelectSuggestion={(s) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    address: s.street || prev.address,
+                    cityStateZip: [s.city, [s.state, s.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ")
+                  }));
+                }}
+              />
+            </Field>
             <Field label="(a) City, state, ZIP" required className="sm:col-span-2"><Input value={form.cityStateZip} onChange={(e) => update("cityStateZip", e.target.value)} placeholder="Silver Spring, MD 20910" /></Field>
             <Field label="(c) Filing status" required className="sm:col-span-2">
               <div className="grid gap-2 text-sm">
