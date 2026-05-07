@@ -31,6 +31,7 @@ import { getIntakeProgress } from "@/services/intake/intakeWizardService";
 import { prisma } from "@/lib/prisma";
 import { ConfirmContactInfoBanner } from "@/components/applicant/ConfirmContactInfoBanner";
 import { inferRoleFromDesired } from "@/services/intake/jobDescriptionSchema";
+import { getApplicantKnownAddress } from "@/services/intake/applicantAddressResolver";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
@@ -92,6 +93,11 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
   const prev = previousStepKey(stepKey, applicable);
   const next = nextStepKey(stepKey, applicable);
   const applicantProfile = await prisma.applicantProfile.findUnique({ where: { id: application.applicantProfileId } });
+
+  // For tax-form steps, look up the applicant's best-known address so the
+  // form pre-fills and they only need to enter remaining fields (SSN, etc).
+  const needsAddressPrefill = stepKey === "w9" || stepKey === "w4" || stepKey === "mw507";
+  const knownAddress = needsAddressPrefill ? await getApplicantKnownAddress(application.id) : null;
 
   // For the final New Hire Checklist, we need a snapshot of every other
   // step's status plus the count of documents uploaded so far.
@@ -194,6 +200,7 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialData={stepRow.data}
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
+            prefillAddress={knownAddress}
           />
         ) : stepKey === "w4" ? (
           <W4Step
@@ -201,6 +208,7 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialData={stepRow.data}
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
+            prefillAddress={knownAddress}
           />
         ) : stepKey === "mw507" ? (
           <MW507Step
@@ -208,6 +216,7 @@ export default async function ApplicantIntakeStepPage({ params }: { params: Prom
             initialData={stepRow.data}
             initialStatus={stepRow.status}
             applicantName={user.name ?? ""}
+            prefillAddress={knownAddress}
           />
         ) : stepKey === "skills_checklist" ? (
           <SkillsChecklistStep

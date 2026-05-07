@@ -17,11 +17,20 @@ import {
   validateW9ForCompletion
 } from "@/services/intake/w9Schema";
 
+type PrefillAddress = {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  fullName: string;
+} | null;
+
 type Props = {
   applicationId: string;
   initialData: unknown;
   initialStatus: IntakeStepStatus;
   applicantName: string;
+  prefillAddress?: PrefillAddress;
 };
 
 const fieldClass = "flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -31,9 +40,15 @@ export function W9Step(props: Props) {
   const router = useRouter();
   const [form, setForm] = useState<W9Data>(() => {
     const merged = mergeW9Data(props.initialData);
-    if (!merged.fullName) merged.fullName = props.applicantName;
-    if (!merged.signatureName) merged.signatureName = props.applicantName;
+    const prefill = props.prefillAddress;
+    if (!merged.fullName) merged.fullName = prefill?.fullName || props.applicantName;
+    if (!merged.signatureName) merged.signatureName = prefill?.fullName || props.applicantName;
     if (!merged.signatureDate) merged.signatureDate = new Date().toISOString().slice(0, 10);
+    if (!merged.addressStreet && prefill?.street) merged.addressStreet = prefill.street;
+    if (!merged.addressCityStateZip && prefill) {
+      const cityStateZip = [prefill.city, [prefill.state, prefill.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+      if (cityStateZip) merged.addressCityStateZip = cityStateZip;
+    }
     return merged;
   });
   const [busy, setBusy] = useState(false);
