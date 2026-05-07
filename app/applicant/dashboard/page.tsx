@@ -15,6 +15,7 @@ import { outcomeColorFor, colorClasses, colorLabel, stageLabel } from "@/lib/out
 import { ApplicantProgressTimeline } from "@/components/ApplicantProgressTimeline";
 import { getApplicationProgress } from "@/services/applicantProgressService";
 import { getIntakeProgress } from "@/services/intake/intakeWizardService";
+import { NotificationPreferencesCard } from "@/components/applicant/NotificationPreferencesCard";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
@@ -100,7 +101,7 @@ export default async function ApplicantDashboardPage() {
     );
   }
 
-  const [validation, documents, messages, profilePhoto, onboardingChecklist, openLicenseAlerts, progress, intakeProgress] = await Promise.all([
+  const [validation, documents, messages, profilePhoto, onboardingChecklist, openLicenseAlerts, progress, intakeProgress, applicantProfile] = await Promise.all([
     validateApplication(application.id, user.id),
     prisma.uploadedDocument.findMany({ where: { applicationId: application.id }, orderBy: { createdAt: "desc" } }),
     prisma.applicantMessage.findMany({ where: { applicationId: application.id, visibleToApplicant: true }, orderBy: { createdAt: "desc" }, take: 3 }),
@@ -108,7 +109,8 @@ export default async function ApplicantDashboardPage() {
     prisma.onboardingChecklist.findUnique({ where: { applicationId: application.id }, include: { items: { orderBy: { createdAt: "asc" } } } }),
     prisma.licenseAlert.findMany({ where: { applicationId: application.id, resolved: false }, orderBy: { createdAt: "desc" }, take: 3 }),
     getApplicationProgress(application.id),
-    getIntakeProgress(application.id, { desiredRole: application.desiredRole, isExistingEmployee: false }).catch(() => [])
+    getIntakeProgress(application.id, { desiredRole: application.desiredRole, isExistingEmployee: false }).catch(() => []),
+    prisma.applicantProfile.findUnique({ where: { id: application.applicantProfileId } })
   ]);
   const intakeCompleted = intakeProgress.filter((p) => p.status === "completed" || p.status === "refused").length;
   const intakeTotal = intakeProgress.length;
@@ -303,6 +305,14 @@ export default async function ApplicantDashboardPage() {
                 </CardContent>
               </Card>
             )}
+
+            <NotificationPreferencesCard
+              applicantEmail={user.email}
+              defaultPhone={applicantProfile?.phone ?? ""}
+              defaultCarrier={applicantProfile?.phoneCarrier ?? ""}
+              defaultSmsOverride={applicantProfile?.smsEmailOverride ?? ""}
+              defaultOptIn={applicantProfile?.notificationOptIn ?? true}
+            />
           </div>
 
           {/* RIGHT — recent messages + alerts */}
