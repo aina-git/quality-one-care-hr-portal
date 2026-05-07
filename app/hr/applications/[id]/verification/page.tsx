@@ -22,6 +22,7 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { categoryCanExpire, defaultVerificationItems, describeBlockerReason, getVerificationChecklist, itemRequiresCompletion, summarizeChecklist } from "@/services/verification/verificationService";
 import { BlockerQuickFix } from "@/components/BlockerQuickFix";
+import { CopyableLoginHint } from "@/components/CopyableLoginHint";
 import { getVerificationLink } from "@/services/verification/verificationLinks";
 import { splitMatchedAndUnmatchedDocuments } from "@/services/verification/documentMatchingService";
 
@@ -369,9 +370,12 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
                             <p className="mt-1 text-xs text-slate-500">Agency: Quality One Care Home Health Inc. · MA Provider Number: 420641000</p>
                           )}
                           {link && (
-                            <a href={link.searchUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-orange-700 hover:underline">
-                              <ExternalLink size={12} /> Open {link.providerName}
-                            </a>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <a href={link.searchUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-orange-700 hover:underline">
+                                <ExternalLink size={12} /> Open {link.providerName}
+                              </a>
+                              {link.loginHint && <CopyableLoginHint email={link.loginHint} />}
+                            </div>
                           )}
                           {item.notes && <p className="mt-2 text-sm text-slate-700">{item.notes}</p>}
                           {item.result && <p className="mt-1 text-sm text-slate-700">Result: {item.result}</p>}

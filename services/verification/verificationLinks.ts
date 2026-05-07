@@ -7,7 +7,16 @@ export type VerificationLink = {
   label: string;
   searchUrl: string;
   notes: string;
+  /**
+   * Optional hint shown to HR next to the link when external services
+   * require an agency-level login (e.g. the CJIS Google Form requires
+   * signing in with the agency Gmail). Sourced from env vars when set so
+   * specific credentials don't have to live in source control.
+   */
+  loginHint?: string;
 };
+
+const CJIS_LOGIN_EMAIL = process.env.CJIS_LOGIN_EMAIL ?? "qualityonecare39@gmail.com";
 
 export const verificationLinks: VerificationLink[] = [
   {
@@ -48,7 +57,8 @@ export const verificationLinks: VerificationLink[] = [
     providerName: "CJIS / CGIS Background Check",
     label: "CJIS/CGIS background check request form",
     searchUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf5wiEUBXK5XQno2ThbO7dsv_8Ds57Gb6LBi_AYnQHuKuXogA/viewform?pli=1",
-    notes: "Submit the CJIS/CGIS request form linked here. Then record agency, MA provider number, tracking number, date sent or verified, and receipt evidence."
+    notes: "Submit the CJIS/CGIS request form linked here. Then record agency, MA provider number, tracking number, date sent or verified, and receipt evidence.",
+    loginHint: CJIS_LOGIN_EMAIL
   },
   {
     category: "liability_insurance_nso",
