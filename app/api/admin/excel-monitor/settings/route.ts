@@ -26,7 +26,6 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const settings = await saveExcelCredentialMonitorSettings({
       enabled: Boolean(body.enabled),
-      excelPath: sanitizeText(body.excelPath, 1000),
       worksheetName: sanitizeText(body.worksheetName, 120),
       hrCopyEmails: splitEmails(body.hrCopyEmails),
       subjectPrefix: sanitizeText(body.subjectPrefix, 160)

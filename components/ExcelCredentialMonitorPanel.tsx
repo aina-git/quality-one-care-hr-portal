@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mail, Play, RefreshCw, Save, Upload } from "lucide-react";
+import { Mail, Play, RefreshCw, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +10,13 @@ import { getCsrfHeaders } from "@/lib/csrf-client";
 
 type Settings = {
   enabled: boolean;
-  excelPath: string;
   worksheetName?: string;
   hrCopyEmails: string[];
   subjectPrefix: string;
+  fileName: string | null;
+  fileSize: number | null;
+  fileUploadedAt: string | null;
+  hasFile: boolean;
 };
 
 type AlertRow = {
@@ -31,10 +34,13 @@ type AlertRow = {
 
 const emptySettings: Settings = {
   enabled: false,
-  excelPath: "",
   worksheetName: "",
   hrCopyEmails: [],
-  subjectPrefix: "Credential expiration notice"
+  subjectPrefix: "Credential expiration notice",
+  fileName: null,
+  fileSize: null,
+  fileUploadedAt: null,
+  hasFile: false
 };
 
 function bucketLabel(bucket: string) {
@@ -43,6 +49,20 @@ function bucketLabel(bucket: string) {
   if (bucket === "lt30") return "< 30 days";
   if (bucket === "lt60") return "< 60 days";
   return "< 90 days";
+}
+
+function formatBytes(bytes: number | null) {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatUploadedAt(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString();
 }
 
 export function ExcelCredentialMonitorPanel() {
@@ -86,7 +106,12 @@ export function ExcelCredentialMonitorPanel() {
     const response = await fetch("/api/admin/excel-monitor/settings", {
       method: "POST",
       headers: getCsrfHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(settings)
+      body: JSON.stringify({
+        enabled: settings.enabled,
+        worksheetName: settings.worksheetName,
+        hrCopyEmails: settings.hrCopyEmails,
+        subjectPrefix: settings.subjectPrefix
+      })
     });
     const payload = await response.json().catch(() => ({}));
     if (response.ok) {
@@ -132,10 +157,29 @@ export function ExcelCredentialMonitorPanel() {
     const payload = await response.json().catch(() => ({}));
     if (response.ok) {
       setSettings(payload.settings);
-      setMessage(`Uploaded ${payload.filename} (${Math.round(payload.bytes / 1024)} KB) to persistent storage.`);
+      setMessage(`Uploaded ${payload.filename} (${formatBytes(payload.bytes)}).`);
       await preview();
     } else {
       setMessage(payload.error ?? "Upload failed.");
+    }
+    setBusy(false);
+  }
+
+  async function handleRemove() {
+    if (!settings.hasFile) return;
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/excel-monitor/upload", {
+      method: "DELETE",
+      headers: getCsrfHeaders()
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setSettings(payload.settings);
+      setRows([]);
+      setMessage("Uploaded workbook removed.");
+    } else {
+      setMessage(payload.error ?? "Could not remove workbook.");
     }
     setBusy(false);
   }
@@ -156,7 +200,7 @@ export function ExcelCredentialMonitorPanel() {
             <label
               className={`inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-white px-4 py-2 text-sm font-medium hover:bg-orange-50 hover:text-orange-700 ${busy ? "pointer-events-none opacity-50" : ""}`}
             >
-              <Upload size={16} /> Upload Excel
+              <Upload size={16} /> {settings.hasFile ? "Replace Excel" : "Upload Excel"}
               <input
                 type="file"
                 accept=".xlsx,.xlsm,.xls"
@@ -172,7 +216,7 @@ export function ExcelCredentialMonitorPanel() {
             <Button type="button" variant="outline" onClick={preview} disabled={busy}>
               <RefreshCw size={16} /> Preview
             </Button>
-            <Button type="button" onClick={() => run(false)} disabled={busy}>
+            <Button type="button" onClick={() => run(false)} disabled={busy || !settings.hasFile}>
               <Play size={16} /> Run Due
             </Button>
           </div>
@@ -182,14 +226,23 @@ export function ExcelCredentialMonitorPanel() {
       <section className="grid gap-4 rounded-lg border bg-white p-5 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
           <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="excelPath">Excel file path</Label>
-              <Input
-                id="excelPath"
-                value={settings.excelPath}
-                onChange={(event) => setSettings({ ...settings, excelPath: event.target.value })}
-                placeholder="C:\Users\honpa\Documents\nurses.xlsx"
-              />
+            <div className="rounded-md border bg-slate-50 p-3 text-sm">
+              {settings.hasFile ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-slate-900">{settings.fileName}</p>
+                    <p className="text-xs text-slate-500">
+                      {formatBytes(settings.fileSize)}
+                      {settings.fileUploadedAt ? ` - uploaded ${formatUploadedAt(settings.fileUploadedAt)}` : ""}
+                    </p>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={handleRemove} disabled={busy}>
+                    <Trash2 size={14} /> Remove
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-slate-600">No workbook uploaded yet. Use Upload Excel to add one. The file is stored in the database, so it survives Railway redeploys.</p>
+              )}
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
@@ -233,7 +286,7 @@ export function ExcelCredentialMonitorPanel() {
             <Button type="button" onClick={save} disabled={busy}>
               <Save size={16} /> Save Settings
             </Button>
-            <Button type="button" variant="outline" onClick={() => run(true)} disabled={busy}>
+            <Button type="button" variant="outline" onClick={() => run(true)} disabled={busy || !settings.hasFile}>
               <Mail size={16} /> Send All Now
             </Button>
             {message ? <p className="text-xs text-slate-600">{message}</p> : null}
