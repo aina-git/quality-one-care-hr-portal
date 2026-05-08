@@ -1,17 +1,12 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
-import {
-  getExcelCredentialMonitorSettings,
-  saveExcelCredentialMonitorSettings
-} from "@/services/excel/excelCredentialMonitorService";
+import { logAction } from "@/lib/audit";
+import { clearUploadedWorkbook, saveUploadedWorkbook } from "@/services/excel/excelCredentialMonitorService";
 import { handleApiError } from "@/services/monitoring/errorService";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 const ALLOWED_EXT = [".xlsx", ".xlsm", ".xls"];
-const uploadDir = path.join(process.cwd(), "storage", "excel-monitor");
-const uploadFilename = "nurses.xlsx";
 
 export async function POST(request: Request) {
   const user = await requireRole(["admin", "super_admin_hr"]);
@@ -32,20 +27,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Only .xlsx/.xlsm/.xls files are accepted." }, { status: 400 });
     }
 
-    await fs.mkdir(uploadDir, { recursive: true });
-    const target = path.join(uploadDir, uploadFilename);
     const buffer = Buffer.from(await entry.arrayBuffer());
-    await fs.writeFile(target, buffer);
-
-    const current = await getExcelCredentialMonitorSettings();
-    const settings = await saveExcelCredentialMonitorSettings({
-      ...current,
-      excelPath: target
+    const settings = await saveUploadedWorkbook({
+      fileName: entry.name,
+      fileSize: entry.size,
+      buffer
+    });
+    await logAction(user.id, "excel_monitor_workbook_uploaded", "excel_monitor", null, {
+      fileName: entry.name,
+      fileSize: entry.size
     });
 
     return NextResponse.json({
       ok: true,
-      path: target,
       bytes: entry.size,
       filename: entry.name,
       settings
@@ -57,6 +51,23 @@ export async function POST(request: Request) {
       userId: user.id,
       entityType: "excel_monitor",
       fallbackMessage: "Excel upload failed."
+    });
+  }
+}
+
+export async function DELETE() {
+  const user = await requireRole(["admin", "super_admin_hr"]);
+  try {
+    const settings = await clearUploadedWorkbook();
+    await logAction(user.id, "excel_monitor_workbook_cleared", "excel_monitor", null);
+    return NextResponse.json({ ok: true, settings });
+  } catch (error) {
+    return handleApiError(error, {
+      scope: "admin.excelMonitor",
+      action: "excel_monitor_clear_failed",
+      userId: user.id,
+      entityType: "excel_monitor",
+      fallbackMessage: "Could not remove uploaded workbook."
     });
   }
 }

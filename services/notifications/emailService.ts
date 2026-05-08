@@ -1,3 +1,4 @@
+import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/audit";
 import { getEmailProvider } from "@/lib/env";
@@ -13,7 +14,32 @@ type EmailInput = {
 };
 
 export function isEmailProviderConfigured() {
-  return Boolean(getEmailProvider() && process.env.EMAIL_API_KEY);
+  const provider = getEmailProvider();
+  if (!provider) return false;
+  if (provider === "smtp") {
+    return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  }
+  return Boolean(process.env.EMAIL_API_KEY);
+}
+
+let cachedSmtpTransport: nodemailer.Transporter | null = null;
+let cachedSmtpKey = "";
+
+function getSmtpTransport() {
+  const host = process.env.SMTP_HOST ?? "";
+  const port = Number.parseInt(process.env.SMTP_PORT ?? "587", 10);
+  const user = process.env.SMTP_USER ?? "";
+  const pass = process.env.SMTP_PASS ?? "";
+  const key = `${host}|${port}|${user}|${pass}`;
+  if (cachedSmtpTransport && cachedSmtpKey === key) return cachedSmtpTransport;
+  cachedSmtpTransport = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass }
+  });
+  cachedSmtpKey = key;
+  return cachedSmtpTransport;
 }
 
 async function sendWithProvider(input: EmailInput) {
@@ -59,7 +85,31 @@ async function sendWithProvider(input: EmailInput) {
     return { provider, providerMessageId: null };
   }
 
+  if (provider === "smtp") {
+    const transport = getSmtpTransport();
+    const result = await transport.sendMail({
+      from: process.env.EMAIL_FROM ?? process.env.SMTP_USER,
+      to: input.toEmail,
+      subject: input.subject,
+      text: input.body
+    });
+    return { provider, providerMessageId: result.messageId ?? null };
+  }
+
   throw new Error("Unsupported email provider.");
+}
+
+export async function sendTestEmail(toEmail: string) {
+  if (!isEmailProviderConfigured()) {
+    throw new Error("Email provider is not configured. Set EMAIL_PROVIDER plus the credentials it needs (EMAIL_API_KEY for Resend/SendGrid, or SMTP_HOST/SMTP_USER/SMTP_PASS for SMTP).");
+  }
+  const provider = getEmailProvider();
+  const result = await sendWithProvider({
+    toEmail,
+    subject: "Quality One Care HR test email",
+    body: `This is a test email from Quality One Care HR.\n\nIf you can read this, ${provider} is delivering messages from ${process.env.EMAIL_FROM ?? "the configured sender"} correctly.`
+  });
+  return result;
 }
 
 async function syncMessageAttempt(messageId: string | null | undefined, updates: { retryCount?: number; lastAttemptAt?: Date | null }) {

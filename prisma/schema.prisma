@@ -613,17 +613,17 @@ model IntakeLocation {
 }
 
 model HRReviewQueue {
-  id            String      @id @default(cuid())
-  applicationId String      @unique
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  status        String      @default("pending")
-  assignedToId  String?
-  taskId        String?
-  startedAt     DateTime?
-  completedAt   DateTime?
-  lastActivityAt DateTime   @default(now())
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  applicationId  String      @unique
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status         String      @default("pending")
+  assignedToId   String?
+  taskId         String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  lastActivityAt DateTime    @default(now())
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   @@index([status])
   @@index([assignedToId])
@@ -1477,14 +1477,14 @@ model ExternalVerificationRecord {
 }
 
 model PersonalTodo {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  text        String
-  completed   Boolean  @default(false)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  completed Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, completed])
   @@index([userId, sortOrder])
@@ -1508,4 +1508,26 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@index([action, createdAt])
+}
+
+model ExcelCredentialMonitorConfig {
+  id             String    @id
+  enabled        Boolean   @default(false)
+  worksheetName  String?
+  hrCopyEmails   String[]
+  subjectPrefix  String    @default("Credential expiration notice")
+  fileName       String?
+  fileBytes      Bytes?
+  fileSize       Int?
+  fileUploadedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model ExcelCredentialMonitorSendLog {
+  id       String   @id @default(cuid())
+  alertKey String
+  sentAt   DateTime @default(now())
+
+  @@index([alertKey, sentAt])
 }

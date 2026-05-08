@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { DashboardShell } from "@/components/DashboardShell";
 import { DashboardClock } from "@/components/DashboardClock";
 import { PersonalTodoList } from "@/components/PersonalTodoList";
+import { WeatherWidget } from "@/components/WeatherWidget";
 import { MetricCard } from "@/components/MetricCard";
 import { OperationalPulse } from "@/components/OperationalPulse";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -113,15 +115,16 @@ export default async function AdminDashboardPage() {
         </section>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <OperationalPulse label="Unread Alerts" value={unreadNotifications} icon="bell" color="orange" />
-          <OperationalPulse label="Overdue Tasks" value={overdueTasks} icon="alert" color="red" />
-          <OperationalPulse label="Events Today" value={todayEvents} icon="calendar" color="blue" />
-          <OperationalPulse label="Queued Messages" value={queuedMessages} icon="message" color="purple" />
+          <OperationalPulse label="Unread Alerts" value={unreadNotifications} icon="bell" color="orange" href="/admin/notifications" />
+          <OperationalPulse label="Overdue Tasks" value={overdueTasks} icon="alert" color="red" href="/admin/tasks" />
+          <OperationalPulse label="Events Today" value={todayEvents} icon="calendar" color="blue" href="/admin/calendar" />
+          <OperationalPulse label="Queued Messages" value={queuedMessages} icon="message" color="purple" href="/admin/notifications" />
         </div>
 
-        {/* Clock + Personal To-Do */}
-        <div className="grid gap-4 lg:grid-cols-[auto_1fr]">
+        {/* Clock + Weather + Personal To-Do */}
+        <div className="grid gap-4 lg:grid-cols-[auto_minmax(320px,360px)_1fr]">
           <DashboardClock />
+          <WeatherWidget />
           <PersonalTodoList />
         </div>
 
@@ -179,21 +182,21 @@ export default async function AdminDashboardPage() {
         </Card>
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-900 shadow-sm">
+          <Link href="/admin/notifications" className="qoc-card rounded-xl border border-red-200 bg-red-50 p-5 text-red-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-sm font-semibold">Critical Operations</p>
             <p className="mt-3 text-3xl font-semibold">{criticalAlerts}</p>
             <p className="mt-1 text-sm">High-priority unresolved system alerts.</p>
-          </div>
-          <div className="rounded-xl border border-teal-200 bg-teal-50 p-5 text-teal-900 shadow-sm">
+          </Link>
+          <Link href="/admin/don-approval-queue" className="qoc-card rounded-xl border border-teal-200 bg-teal-50 p-5 text-teal-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-sm font-semibold">DON Queue</p>
             <p className="mt-3 text-3xl font-semibold">{donApprovalQueue}</p>
             <p className="mt-1 text-sm">Applicants ready for final approval review.</p>
-          </div>
-          <div className="rounded-xl border border-purple-200 bg-purple-50 p-5 text-purple-900 shadow-sm">
+          </Link>
+          <Link href="/admin/verification-queue" className="qoc-card rounded-xl border border-purple-200 bg-purple-50 p-5 text-purple-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-sm font-semibold">Screening + Training</p>
             <p className="mt-3 text-3xl font-semibold">{verificationCompletionRate}</p>
             <p className="mt-1 text-sm">Verification readiness across final checklists.</p>
-          </div>
+          </Link>
         </div>
       </div>
     </DashboardShell>

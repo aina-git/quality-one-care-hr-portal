@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AlertTriangle, Bell, CalendarDays, CheckCircle2, Clock, MessageSquare, Sparkles, Stethoscope } from "lucide-react";
 
 const iconMap = {
@@ -25,21 +26,33 @@ export function OperationalPulse({
   label,
   value,
   icon = "clock",
-  color = "blue"
+  color = "blue",
+  href
 }: {
   label: string;
   value: string | number;
   icon?: keyof typeof iconMap;
   color?: keyof typeof colors;
+  href?: string;
 }) {
   const Icon = iconMap[icon];
-  return (
-    <div className={`qoc-card rounded-xl border p-4 shadow-sm ${colors[color]}`}>
+  const body = (
+    <>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium">{label}</p>
         <Icon className="h-5 w-5" />
       </div>
       <p className="mt-3 text-3xl font-semibold tracking-normal">{value}</p>
-    </div>
+    </>
   );
+  const className = `qoc-card rounded-xl border p-4 shadow-sm ${colors[color]}`;
+
+  if (href) {
+    return (
+      <Link href={href} className={`${className} block transition hover:-translate-y-0.5 hover:shadow-md`}>
+        {body}
+      </Link>
+    );
+  }
+  return <div className={className}>{body}</div>;
 }
