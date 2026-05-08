@@ -15,6 +15,14 @@ const reviewStatuses: ApplicationStatus[] = ["hr_review_pending", "hr_review_sta
 const waitingStatuses: ApplicationStatus[] = ["hr_review_pending", "submitted"];
 const startedStatuses: ApplicationStatus[] = ["hr_review_started", "under_review"];
 
+const TABS = [
+  { key: "pending", label: "Pending", statuses: waitingStatuses },
+  { key: "started", label: "Started", statuses: startedStatuses },
+  { key: "all", label: "All", statuses: reviewStatuses }
+] as const;
+
+type TabKey = typeof TABS[number]["key"];
+
 function formatDate(date?: Date | null) {
   return date ? date.toLocaleString("en-US") : "Not recorded";
 }
@@ -29,13 +37,16 @@ function actionLabel(status: ApplicationStatus) {
   return waitingStatuses.includes(status) ? "Start HR Review" : "Open Review";
 }
 
-export default async function AdminHrReviewQueuePage() {
+export default async function AdminHrReviewQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const user = await requireRole(["admin", "super_admin_hr"]);
+  const { tab } = await searchParams;
+  const activeTab: TabKey = (TABS.find((t) => t.key === tab)?.key ?? "pending") as TabKey;
+  const activeStatuses = TABS.find((t) => t.key === activeTab)!.statuses as unknown as ApplicationStatus[];
 
   await repairHrReviewWorkflowIntegrity(user.id);
 
   const applications = await prisma.application.findMany({
-    where: { status: { in: reviewStatuses } },
+    where: { status: { in: activeStatuses } },
     include: {
       applicantProfile: { include: { user: true } },
       documents: { select: { id: true, documentType: true, processingStatus: true, detectedDocumentType: true } },
@@ -60,10 +71,13 @@ export default async function AdminHrReviewQueuePage() {
     take: 100
   });
 
-  const waitingCount = applications.filter((application) => waitingStatuses.includes(application.status)).length;
-  const startedCount = applications.filter((application) => startedStatuses.includes(application.status)).length;
+  const [waitingCount, startedCount] = await Promise.all([
+    prisma.application.count({ where: { status: { in: waitingStatuses } } }),
+    prisma.application.count({ where: { status: { in: startedStatuses } } })
+  ]);
   const unresolvedIssueCount = applications.reduce((total, application) => total + application.validationIssues.length, 0);
   const withDocumentsCount = applications.filter((application) => application.documents.length > 0).length;
+  const tabCounts: Record<TabKey, number> = { pending: waitingCount, started: startedCount, all: waitingCount + startedCount };
 
   return (
     <DashboardShell user={user} nav={adminNav}>
@@ -84,10 +98,22 @@ export default async function AdminHrReviewQueuePage() {
         </div>
       </section>
 
+      <div className="flex flex-wrap gap-2 text-sm">
+        {TABS.map((entry) => (
+          <Link
+            key={entry.key}
+            href={`/admin/hr-review-queue?tab=${entry.key}`}
+            className={`rounded-full border px-3 py-1 ${activeTab === entry.key ? "bg-orange-600 text-white" : "bg-white"}`}
+          >
+            {entry.label} ({tabCounts[entry.key]})
+          </Link>
+        ))}
+      </div>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Waiting for HR Review" value={waitingCount} href="/admin/hr-review-queue" />
-        <MetricCard label="HR Review Started" value={startedCount} href="/admin/hr-review-queue" />
-        <MetricCard label="Missing or Unclear Items" value={unresolvedIssueCount} href="/admin/hr-review-queue" />
+        <MetricCard label="Waiting for HR Review" value={waitingCount} href="/admin/hr-review-queue?tab=pending" />
+        <MetricCard label="HR Review Started" value={startedCount} href="/admin/hr-review-queue?tab=started" />
+        <MetricCard label="Missing or Unclear Items" value={unresolvedIssueCount} href="/admin/hr-review-queue?tab=all" />
         <MetricCard label="With Uploaded Documents" value={withDocumentsCount} href="/admin/applications" />
       </section>
 

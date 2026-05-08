@@ -129,19 +129,19 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Total Users" value={metrics.totalUsers} href="/admin/users" />
-          <MetricCard label="Applicants" value={metrics.applicants} href="/admin/applications" />
-          <MetricCard label="HR Users" value={metrics.hrUsers} href="/admin/users" />
+          <MetricCard label="Total Users" value={metrics.totalUsers} href="/admin/users?tab=all" />
+          <MetricCard label="Applicants" value={metrics.applicants} href="/admin/users?tab=applicants" />
+          <MetricCard label="HR Staff" value={metrics.totalUsers - metrics.applicants} href="/admin/users?tab=staff" />
           <MetricCard label="Applications" value={metrics.applications} href="/admin/applications" />
-          <MetricCard label="Pending HR Review" value={pendingHrReview} href="/admin/hr-review-queue" />
-          <MetricCard label="HR Review Started" value={hrReviewStarted} href="/admin/hr-review-queue" />
-          <MetricCard label="Verification Pending" value={verificationPending} href="/admin/verification-queue" />
-          <MetricCard label="Verification In Progress" value={verificationInProgress} href="/admin/verification-queue" />
-          <MetricCard label="Ready for DON Review" value={readyForDonReview} href="/admin/don-approval-queue" />
-          <MetricCard label="DON Approval Queue" value={donApprovalQueue} href="/admin/don-approval-queue" />
+          <MetricCard label="Pending HR Review" value={pendingHrReview} href="/admin/hr-review-queue?tab=pending" />
+          <MetricCard label="HR Review Started" value={hrReviewStarted} href="/admin/hr-review-queue?tab=started" />
+          <MetricCard label="Verification Pending" value={verificationPending} href="/admin/verification-queue?tab=pending" />
+          <MetricCard label="Verification In Progress" value={verificationInProgress} href="/admin/verification-queue?tab=in_progress" />
+          <MetricCard label="Ready for DON Review" value={readyForDonReview} href="/admin/don-approval-queue?tab=awaiting" />
+          <MetricCard label="DON Approval Queue" value={donApprovalQueue} href="/admin/don-approval-queue?tab=all" />
           <MetricCard label="Missing Documents Requested" value={missingDocumentsRequested} href="/admin/notifications" />
-          <MetricCard label="Overdue Applications" value={overdueApplications} href="/admin/hr-review-queue" />
-          <MetricCard label="Verification Completion Rate" value={verificationCompletionRate} href="/admin/verification-queue" />
+          <MetricCard label="Overdue Applications" value={overdueApplications} href="/admin/hr-review-queue?tab=all" />
+          <MetricCard label="Verification Completion Rate" value={verificationCompletionRate} href="/admin/verification-queue?tab=all" />
         </div>
 
         <Card>
@@ -187,12 +187,12 @@ export default async function AdminDashboardPage() {
             <p className="mt-3 text-3xl font-semibold">{criticalAlerts}</p>
             <p className="mt-1 text-sm">High-priority unresolved system alerts.</p>
           </Link>
-          <Link href="/admin/don-approval-queue" className="qoc-card rounded-xl border border-teal-200 bg-teal-50 p-5 text-teal-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <Link href="/admin/don-approval-queue?tab=awaiting" className="qoc-card rounded-xl border border-teal-200 bg-teal-50 p-5 text-teal-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-sm font-semibold">DON Queue</p>
             <p className="mt-3 text-3xl font-semibold">{donApprovalQueue}</p>
             <p className="mt-1 text-sm">Applicants ready for final approval review.</p>
           </Link>
-          <Link href="/admin/verification-queue" className="qoc-card rounded-xl border border-purple-200 bg-purple-50 p-5 text-purple-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <Link href="/admin/verification-queue?tab=all" className="qoc-card rounded-xl border border-purple-200 bg-purple-50 p-5 text-purple-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-sm font-semibold">Screening + Training</p>
             <p className="mt-3 text-3xl font-semibold">{verificationCompletionRate}</p>
             <p className="mt-1 text-sm">Verification readiness across final checklists.</p>

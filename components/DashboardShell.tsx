@@ -119,6 +119,7 @@ export async function DashboardShell({
   const homeHref = user.role === "applicant" ? "/applicant/dashboard" : user.role === "scheduler_limited" ? "/scheduler/dashboard" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/dashboard" : "/hr/dashboard";
   const notificationHref = user.role === "applicant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
   const tasksHref = user.role === "applicant" ? "/applicant/tasks" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/tasks" : "/hr/tasks";
+  const searchHref = user.role === "applicant" || user.role === "scheduler_limited" || user.role === "don_approver" ? null : "/admin/search";
 
   return (
     <div className={cn("min-h-screen text-slate-950", shellBackground(user.role))}>
@@ -184,10 +185,26 @@ export async function DashboardShell({
         <main className={cn("grid min-w-0 gap-5 rounded-3xl p-3 transition-colors", workspaceBackground)}>
           <div className="sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 md:max-w-xl">
-                <Search size={16} />
-                <span className="truncate">Search applicants, documents, tasks, or messages</span>
-              </div>
+              {searchHref ? (
+                <form
+                  action={searchHref}
+                  method="get"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 md:max-w-xl focus-within:border-orange-300 focus-within:bg-white"
+                >
+                  <Search size={16} className="shrink-0 text-slate-500" />
+                  <input
+                    type="text"
+                    name="q"
+                    placeholder="Search applicants, documents, tasks, or messages"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none"
+                  />
+                </form>
+              ) : (
+                <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 md:max-w-xl">
+                  <Search size={16} />
+                  <span className="truncate">Quality One Care</span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Link href={notificationHref} className="relative rounded-xl border border-slate-200 bg-white p-2 text-slate-600 transition hover:border-orange-200 hover:text-orange-700">
                   <Bell size={18} />
