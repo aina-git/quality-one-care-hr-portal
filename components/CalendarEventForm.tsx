@@ -39,6 +39,12 @@ export function CalendarEventForm({ applicationId, applicantUserId }: { applicat
       setBusy(false);
       return;
     }
+    // datetime-local inputs return "YYYY-MM-DDTHH:MM" with no timezone. The
+    // server is UTC, so without converting we'd save 9:30 AM as 9:30 UTC
+    // (= 5:30 AM Eastern). Construct a Date in the browser's local time and
+    // serialise to ISO so the timezone offset rides along.
+    const startIso = new Date(startStr).toISOString();
+    const endIso = new Date(endStr).toISOString();
     const response = await fetch("/api/calendar/events", {
       method: "POST",
       headers: getCsrfHeaders({ "Content-Type": "application/json" }),
@@ -46,8 +52,8 @@ export function CalendarEventForm({ applicationId, applicantUserId }: { applicat
         title: form.get("title"),
         description: form.get("description"),
         eventType: form.get("eventType"),
-        startDateTime: startStr,
-        endDateTime: endStr,
+        startDateTime: startIso,
+        endDateTime: endIso,
         location: form.get("location"),
         meetingLink: form.get("meetingLink"),
         visibility: form.get("visibility"),

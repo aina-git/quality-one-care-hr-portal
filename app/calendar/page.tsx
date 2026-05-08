@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { ArrowLeft, CalendarDays, Clock, MapPin, Plus, Users } from "lucide-react";
+import { CalendarEventActions } from "@/components/CalendarEventActions";
 import { CalendarEventForm } from "@/components/CalendarEventForm";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,6 +134,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: Pr
   const todayCount = events.filter((e) => e.startDateTime.toDateString() === now.toDateString()).length;
   const upcomingCount = events.filter((e) => e.startDateTime >= now).length;
   const canCreate = !["executive_view_only", "don_approver", "applicant"].includes(user.role);
+  const canEdit = !["executive_view_only", "don_approver", "applicant"].includes(user.role);
 
   const grouped = new Map<string, typeof events>();
   for (const ev of events) {
@@ -248,6 +250,21 @@ export default async function CalendarPage({ searchParams }: { searchParams?: Pr
                         {ev.eventType.replace(/_/g, " ")}
                       </span>
                     </div>
+                    {canEdit && (
+                      <CalendarEventActions
+                        event={{
+                          id: ev.id,
+                          title: ev.title,
+                          description: ev.description,
+                          eventType: ev.eventType,
+                          startDateTime: ev.startDateTime.toISOString(),
+                          endDateTime: ev.endDateTime.toISOString(),
+                          location: ev.location,
+                          meetingLink: ev.meetingLink,
+                          visibility: ev.visibility
+                        }}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
