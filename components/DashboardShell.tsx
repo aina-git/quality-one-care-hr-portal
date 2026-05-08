@@ -18,7 +18,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/audit";
+import { navForRole } from "@/lib/sidebarNav";
 import { countUniqueUnreadNotifications } from "@/services/operations/notificationService";
+import { HorizontalTabs } from "@/components/HorizontalTabs";
 
 type NavItem = {
   href: string;
@@ -89,8 +91,8 @@ function shellBackground(role: SessionUser["role"]) {
   return "bg-[#f7f9fb]";
 }
 
-function mainBackground(role: SessionUser["role"], nav: NavItem[]) {
-  const isDonArea = role === "don_approver" || nav.some((item) => item.href.startsWith("/don"));
+function mainBackground(role: SessionUser["role"], nav: NavItem[] | undefined) {
+  const isDonArea = role === "don_approver" || (nav?.some((item) => item.href.startsWith("/don")) ?? false);
   if (isDonArea) return "bg-pink-50/80";
   if (role === "hr" || role === "super_admin_hr" || role === "admin" || role === "executive_view_only") return "bg-sky-50/80";
   return "";
@@ -102,7 +104,7 @@ export async function DashboardShell({
   children
 }: {
   user: SessionUser;
-  nav: NavItem[];
+  nav?: NavItem[];
   children: ReactNode;
 }) {
   await logAction(user.id, "page_access", "route", null, { role: user.role }).catch(() => null);
@@ -114,7 +116,14 @@ export async function DashboardShell({
       dueDate: { lte: new Date(Date.now() + 24 * 60 * 60 * 1000) }
     }
   }).catch(() => 0);
-  const items = primaryNav(user, nav);
+  // Always derive nav from the user's role so every page shows the full list.
+  // If a page passes its own nav we still merge with the role-default so nothing
+  // gets dropped silently when an old page hardcodes a subset.
+  const roleNav = navForRole(user.role);
+  const baseNav = nav && nav.length > 0
+    ? [...roleNav, ...nav.filter((item) => !roleNav.some((existing) => existing.href === item.href))]
+    : roleNav;
+  const items = primaryNav(user, baseNav);
   const workspaceBackground = mainBackground(user.role, nav);
   const homeHref = user.role === "applicant" ? "/applicant/dashboard" : user.role === "scheduler_limited" ? "/scheduler/dashboard" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/dashboard" : "/hr/dashboard";
   const notificationHref = user.role === "applicant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
@@ -200,6 +209,7 @@ export async function DashboardShell({
               </div>
             </div>
           </div>
+          <HorizontalTabs tabs={items} />
           {user.role !== "applicant" && (
             <div className="qoc-fade-in rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-950">
               Machine-learning-assisted review. Final approval must be completed by the authorized DON reviewer.
