@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/DashboardShell";
 import { DashboardClock } from "@/components/DashboardClock";
 import { PersonalTodoList } from "@/components/PersonalTodoList";
+import { WeatherWidget } from "@/components/WeatherWidget";
 import { MetricCard } from "@/components/MetricCard";
 import { OperationalPulse } from "@/components/OperationalPulse";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -120,9 +121,10 @@ export default async function AdminDashboardPage() {
           <OperationalPulse label="Queued Messages" value={queuedMessages} icon="message" color="purple" href="/admin/notifications" />
         </div>
 
-        {/* Clock + Personal To-Do */}
-        <div className="grid gap-4 lg:grid-cols-[auto_1fr]">
+        {/* Clock + Weather + Personal To-Do */}
+        <div className="grid gap-4 lg:grid-cols-[auto_minmax(260px,300px)_1fr]">
           <DashboardClock />
+          <WeatherWidget />
           <PersonalTodoList />
         </div>
 
