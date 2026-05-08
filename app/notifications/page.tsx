@@ -41,30 +41,44 @@ export default async function NotificationsPage({ searchParams }: { searchParams
           </div>
         </section>
         <div className="grid gap-4 sm:grid-cols-3">
-          <OperationalPulse label="Unread" value={unread} icon="bell" color="orange" />
-          <OperationalPulse label="Urgent/High" value={notifications.filter((g) => g.priority === "urgent" || g.priority === "high").length} icon="alert" color="red" />
-          <OperationalPulse label="Messages" value={notifications.filter((g) => g.notificationType === "message").length} icon="message" color="blue" />
+          <OperationalPulse label="Unread" value={unread} icon="bell" color="orange" href="/notifications?filter=unread" />
+          <OperationalPulse label="Urgent/High" value={notifications.filter((g) => g.priority === "urgent" || g.priority === "high").length} icon="alert" color="red" href="/notifications?filter=urgent" />
+          <OperationalPulse label="Messages" value={notifications.filter((g) => g.notificationType === "message").length} icon="message" color="blue" href="/notifications?filter=messages" />
         </div>
         <Card>
           <CardHeader><CardTitle>Activity Feed</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
-            {notifications.map((g) => (
-              <div key={g.representativeId} className={`rounded-md border p-3 ${color(g.priority)}`}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-medium">
-                    {g.title}
-                    {g.duplicateCount > 1 ? <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-xs font-semibold text-slate-700">×{g.duplicateCount}</span> : null}
-                  </p>
-                  <span className="text-xs uppercase">{g.unreadCount > 0 ? "unread" : "read"} - {g.notificationType.replace(/_/g, " ")}</span>
+            {notifications.map((g) => {
+              const card = (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-medium">
+                      {g.title}
+                      {g.duplicateCount > 1 ? <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-xs font-semibold text-slate-700">×{g.duplicateCount}</span> : null}
+                    </p>
+                    <span className="text-xs uppercase">{g.unreadCount > 0 ? "unread" : "read"} - {g.notificationType.replace(/_/g, " ")}</span>
+                  </div>
+                  <p className="mt-1 text-sm">{g.body}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                    <span>{g.createdAt.toLocaleString()}</span>
+                    {g.duplicateCount > 1 ? <span className="text-slate-600">{g.unreadCount} unread of {g.duplicateCount} repeats</span> : null}
+                    {g.route ? <span className="underline">Open related item</span> : null}
+                  </div>
+                </>
+              );
+              if (g.route) {
+                return (
+                  <Link key={g.representativeId} href={g.route} className={`block rounded-md border p-3 transition hover:-translate-y-0.5 hover:shadow-md ${color(g.priority)}`}>
+                    {card}
+                  </Link>
+                );
+              }
+              return (
+                <div key={g.representativeId} className={`rounded-md border p-3 ${color(g.priority)}`}>
+                  {card}
                 </div>
-                <p className="mt-1 text-sm">{g.body}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                  <span>{g.createdAt.toLocaleString()}</span>
-                  {g.duplicateCount > 1 ? <span className="text-slate-600">{g.unreadCount} unread of {g.duplicateCount} repeats</span> : null}
-                  {g.route ? <Link className="underline" href={g.route}>Open related item</Link> : null}
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {!notifications.length ? <p className="text-sm text-muted-foreground">No notifications match this filter.</p> : null}
           </CardContent>
         </Card>

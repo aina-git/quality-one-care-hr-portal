@@ -83,35 +83,54 @@ export default async function AdminNotificationsPage() {
           </div>
         </section>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <OperationalPulse label="Unread" value={unread} icon="bell" color="orange" />
-          <OperationalPulse label="Pending HR Reviews" value={pendingHrReviews} icon="check" color="blue" />
-          <OperationalPulse label="Missing Documents" value={missingDocuments} icon="alert" color="red" />
-          <OperationalPulse label="Ready for DON" value={readyForDon} icon="check" color="green" />
-          <OperationalPulse label="Expiring Licenses" value={expiringLicenses} icon="clock" color="orange" />
-          <OperationalPulse label="Queued Messages" value={queuedMessages} icon="message" color="purple" />
-          <OperationalPulse label="Overdue Tasks" value={overdueTasks} icon="alert" color="red" />
-          <OperationalPulse label="System Alerts" value={systemAlerts.length} icon="bell" color="blue" />
+          <OperationalPulse label="Unread" value={unread} icon="bell" color="orange" href="#notification-feed" />
+          <OperationalPulse label="Pending HR Reviews" value={pendingHrReviews} icon="check" color="blue" href="/admin/hr-review-queue" />
+          <OperationalPulse label="Missing Documents" value={missingDocuments} icon="alert" color="red" href="/admin/hr-review-queue" />
+          <OperationalPulse label="Ready for DON" value={readyForDon} icon="check" color="green" href="/admin/don-approval-queue" />
+          <OperationalPulse label="Expiring Licenses" value={expiringLicenses} icon="clock" color="orange" href="/admin/excel-monitor" />
+          <OperationalPulse label="Queued Messages" value={queuedMessages} icon="message" color="purple" href="#notification-feed" />
+          <OperationalPulse label="Overdue Tasks" value={overdueTasks} icon="alert" color="red" href="/admin/tasks" />
+          <OperationalPulse label="System Alerts" value={systemAlerts.length} icon="bell" color="blue" href="#notification-feed" />
         </div>
-        <Card>
+        <Card id="notification-feed">
           <CardHeader><CardTitle>Active Notification Feed</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
-            {activeItems.map((item) => (
-              <div key={item.id} className={`rounded-xl border p-4 ${priorityClass(item.priority)}`}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-semibold">
-                    {item.title}
-                    {item.duplicateCount > 1 ? <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-xs font-semibold text-slate-700">×{item.duplicateCount}</span> : null}
-                  </p>
-                  <span className="rounded-full bg-white/70 px-2 py-1 text-xs font-semibold uppercase">{item.type.replace(/_/g, " ")}</span>
+            {activeItems.map((item) => {
+              const itemRoute = item.route
+                ? item.route.startsWith("/hr/applications")
+                  ? item.route.replace("/hr/applications", "/admin/applications")
+                  : item.route
+                : null;
+              const card = (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-semibold">
+                      {item.title}
+                      {item.duplicateCount > 1 ? <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-xs font-semibold text-slate-700">×{item.duplicateCount}</span> : null}
+                    </p>
+                    <span className="rounded-full bg-white/70 px-2 py-1 text-xs font-semibold uppercase">{item.type.replace(/_/g, " ")}</span>
+                  </div>
+                  <p className="mt-2 text-sm">{item.body}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+                    <span>{item.createdAt.toLocaleString()}</span>
+                    {item.duplicateCount > 1 ? <span className="text-slate-600">{item.unreadCount} unread of {item.duplicateCount} repeats</span> : null}
+                    {itemRoute ? <span className="font-semibold underline">Open related item</span> : null}
+                  </div>
+                </>
+              );
+              if (itemRoute) {
+                return (
+                  <Link key={item.id} href={itemRoute} className={`block rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md ${priorityClass(item.priority)}`}>
+                    {card}
+                  </Link>
+                );
+              }
+              return (
+                <div key={item.id} className={`rounded-xl border p-4 ${priorityClass(item.priority)}`}>
+                  {card}
                 </div>
-                <p className="mt-2 text-sm">{item.body}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-                  <span>{item.createdAt.toLocaleString()}</span>
-                  {item.duplicateCount > 1 ? <span className="text-slate-600">{item.unreadCount} unread of {item.duplicateCount} repeats</span> : null}
-                  {item.route ? <Link className="font-semibold underline" href={item.route.startsWith("/hr/applications") ? item.route.replace("/hr/applications", "/admin/applications") : item.route}>Open related item</Link> : null}
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {!activeItems.length ? (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-600">
                 No active notifications at this time.
