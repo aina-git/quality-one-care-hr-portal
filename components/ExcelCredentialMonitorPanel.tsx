@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mail, Play, RefreshCw, Save, Send, Trash2, Upload } from "lucide-react";
+import { Mail, Play, Plus, RefreshCw, Save, Send, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,12 +65,18 @@ function formatUploadedAt(value: string | null) {
   return date.toLocaleString();
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 export function ExcelCredentialMonitorPanel() {
   const [settings, setSettings] = useState<Settings>(emptySettings);
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [newRecipient, setNewRecipient] = useState("");
+  const [recipientError, setRecipientError] = useState("");
 
   const counts = useMemo(() => ({
     total: rows.length,
@@ -161,6 +167,73 @@ export function ExcelCredentialMonitorPanel() {
       await preview();
     } else {
       setMessage(payload.error ?? "Upload failed.");
+    }
+    setBusy(false);
+  }
+
+  async function addRecipient() {
+    const trimmed = newRecipient.trim();
+    if (!trimmed) {
+      setRecipientError("Enter an email address.");
+      return;
+    }
+    if (!isValidEmail(trimmed)) {
+      setRecipientError("That doesn't look like a valid email address.");
+      return;
+    }
+    if (settings.hrCopyEmails.some((existing) => existing.toLowerCase() === trimmed.toLowerCase())) {
+      setRecipientError("That address is already on the list.");
+      return;
+    }
+    const next: Settings = { ...settings, hrCopyEmails: [...settings.hrCopyEmails, trimmed] };
+    setSettings(next);
+    setNewRecipient("");
+    setRecipientError("");
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/excel-monitor/settings", {
+      method: "POST",
+      headers: getCsrfHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        enabled: next.enabled,
+        worksheetName: next.worksheetName,
+        hrCopyEmails: next.hrCopyEmails,
+        subjectPrefix: next.subjectPrefix
+      })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setSettings(payload.settings);
+      setMessage(`Added ${trimmed} to the always-notify list.`);
+    } else {
+      setMessage(payload.error ?? "Could not save the new recipient.");
+      setSettings(settings);
+    }
+    setBusy(false);
+  }
+
+  async function removeRecipient(email: string) {
+    const next: Settings = { ...settings, hrCopyEmails: settings.hrCopyEmails.filter((existing) => existing !== email) };
+    setSettings(next);
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/excel-monitor/settings", {
+      method: "POST",
+      headers: getCsrfHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        enabled: next.enabled,
+        worksheetName: next.worksheetName,
+        hrCopyEmails: next.hrCopyEmails,
+        subjectPrefix: next.subjectPrefix
+      })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setSettings(payload.settings);
+      setMessage(`Removed ${email}.`);
+    } else {
+      setMessage(payload.error ?? "Could not remove that recipient.");
+      setSettings(settings);
     }
     setBusy(false);
   }
@@ -283,16 +356,6 @@ export function ExcelCredentialMonitorPanel() {
                 />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="hrCopyEmails">HR copy emails</Label>
-              <textarea
-                id="hrCopyEmails"
-                className="min-h-20 rounded-md border border-input bg-white px-3 py-2 text-sm"
-                value={settings.hrCopyEmails.join("\n")}
-                onChange={(event) => setSettings({ ...settings, hrCopyEmails: event.target.value.split(/[\n,;]+/).map((email) => email.trim()).filter(Boolean) })}
-                placeholder="Optional. One email per line."
-              />
-            </div>
           </div>
           <div className="grid gap-3 rounded-md border bg-slate-50 p-4 text-sm">
             <label className="flex items-center gap-2 font-medium">
@@ -318,6 +381,65 @@ export function ExcelCredentialMonitorPanel() {
         <p className="text-xs text-slate-500">
           Expected columns: nurse name, email, email to SMS, document or license type, expiration date.
         </p>
+      </section>
+
+      <section className="rounded-lg border bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Always notify these extra addresses</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Anyone added here gets a copy of every credential alert, even if they aren&apos;t listed in the uploaded Excel. Useful for HR managers, supervisors, or a personal backup mailbox.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="grid min-w-[260px] flex-1 gap-2">
+            <Label htmlFor="newRecipient">Email address</Label>
+            <Input
+              id="newRecipient"
+              type="email"
+              autoComplete="email"
+              value={newRecipient}
+              onChange={(event) => {
+                setNewRecipient(event.target.value);
+                if (recipientError) setRecipientError("");
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void addRecipient();
+                }
+              }}
+              placeholder="someone@example.com"
+              disabled={busy}
+            />
+          </div>
+          <Button type="button" onClick={addRecipient} disabled={busy || !newRecipient.trim()}>
+            <Plus size={16} /> Add recipient
+          </Button>
+        </div>
+        {recipientError ? <p className="mt-2 text-sm text-red-700">{recipientError}</p> : null}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {settings.hrCopyEmails.length === 0 ? (
+            <p className="text-sm italic text-slate-500">No extra recipients yet. Only the people listed in the Excel will be notified.</p>
+          ) : (
+            settings.hrCopyEmails.map((email) => (
+              <span key={email} className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-900">
+                <Mail size={12} />
+                {email}
+                <button
+                  type="button"
+                  className="rounded-full p-0.5 text-blue-700 transition hover:bg-blue-100 hover:text-blue-900 disabled:opacity-40"
+                  onClick={() => removeRecipient(email)}
+                  disabled={busy}
+                  aria-label={`Remove ${email}`}
+                >
+                  <X size={14} />
+                </button>
+              </span>
+            ))
+          )}
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-4">
