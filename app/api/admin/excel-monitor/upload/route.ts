@@ -1,6 +1,7 @@
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
+import { logAction } from "@/lib/audit";
 import { clearUploadedWorkbook, saveUploadedWorkbook } from "@/services/excel/excelCredentialMonitorService";
 import { handleApiError } from "@/services/monitoring/errorService";
 
@@ -32,6 +33,10 @@ export async function POST(request: Request) {
       fileSize: entry.size,
       buffer
     });
+    await logAction(user.id, "excel_monitor_workbook_uploaded", "excel_monitor", null, {
+      fileName: entry.name,
+      fileSize: entry.size
+    });
 
     return NextResponse.json({
       ok: true,
@@ -54,6 +59,7 @@ export async function DELETE() {
   const user = await requireRole(["admin", "super_admin_hr"]);
   try {
     const settings = await clearUploadedWorkbook();
+    await logAction(user.id, "excel_monitor_workbook_cleared", "excel_monitor", null);
     return NextResponse.json({ ok: true, settings });
   } catch (error) {
     return handleApiError(error, {

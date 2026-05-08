@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mail, Play, RefreshCw, Save, Trash2, Upload } from "lucide-react";
+import { Mail, Play, RefreshCw, Save, Send, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -165,6 +165,26 @@ export function ExcelCredentialMonitorPanel() {
     setBusy(false);
   }
 
+  async function handleTestSend() {
+    const defaultRecipient = settings.hrCopyEmails[0] ?? "";
+    const toEmail = window.prompt("Send a test email to which address?", defaultRecipient);
+    if (!toEmail) return;
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/email/test-send", {
+      method: "POST",
+      headers: getCsrfHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ toEmail })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setMessage(`Test email sent via ${payload.provider}. Check ${toEmail}.`);
+    } else {
+      setMessage(payload.error ?? "Test email failed.");
+    }
+    setBusy(false);
+  }
+
   async function handleRemove() {
     if (!settings.hasFile) return;
     setBusy(true);
@@ -288,6 +308,9 @@ export function ExcelCredentialMonitorPanel() {
             </Button>
             <Button type="button" variant="outline" onClick={() => run(true)} disabled={busy || !settings.hasFile}>
               <Mail size={16} /> Send All Now
+            </Button>
+            <Button type="button" variant="outline" onClick={handleTestSend} disabled={busy}>
+              <Send size={16} /> Send Test Email
             </Button>
             {message ? <p className="text-xs text-slate-600">{message}</p> : null}
           </div>

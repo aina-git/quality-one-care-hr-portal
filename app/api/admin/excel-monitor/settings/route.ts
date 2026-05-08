@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
+import { logAction } from "@/lib/audit";
 import { sanitizeText } from "@/lib/security";
 import {
   getExcelCredentialMonitorSettings,
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
       worksheetName: sanitizeText(body.worksheetName, 120),
       hrCopyEmails: splitEmails(body.hrCopyEmails),
       subjectPrefix: sanitizeText(body.subjectPrefix, 160)
+    });
+    await logAction(user.id, "excel_monitor_settings_saved", "excel_monitor", null, {
+      enabled: settings.enabled,
+      hrCopyEmailCount: settings.hrCopyEmails.length
     });
     return NextResponse.json({ settings });
   } catch (error) {
