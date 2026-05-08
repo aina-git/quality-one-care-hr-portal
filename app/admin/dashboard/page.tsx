@@ -122,7 +122,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Clock + Weather + Personal To-Do */}
-        <div className="grid gap-4 lg:grid-cols-[auto_minmax(260px,300px)_1fr]">
+        <div className="grid gap-4 lg:grid-cols-[auto_minmax(320px,360px)_1fr]">
           <DashboardClock />
           <WeatherWidget />
           <PersonalTodoList />
