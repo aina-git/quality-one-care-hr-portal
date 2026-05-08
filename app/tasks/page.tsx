@@ -137,34 +137,36 @@ export default async function TasksPage() {
         </Card>
 
         {overdue.length > 0 && (
-          <Card className="border-red-300 bg-red-50">
-            <CardContent className="p-4 flex items-start gap-3">
-              <AlertTriangle size={18} className="text-red-700 mt-0.5" />
-              <div>
-                <p className="font-semibold text-red-900">{overdue.length} overdue task{overdue.length === 1 ? "" : "s"}</p>
-                <p className="mt-1 text-sm text-red-800">These are blocking the workflow — close them first.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <Link href="#overdue-column" className="block">
+            <Card className="border-red-300 bg-red-50 transition hover:-translate-y-0.5 hover:shadow-md">
+              <CardContent className="p-4 flex items-start gap-3">
+                <AlertTriangle size={18} className="text-red-700 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-red-900">{overdue.length} overdue task{overdue.length === 1 ? "" : "s"}</p>
+                  <p className="mt-1 text-sm text-red-800">These are blocking the workflow — close them first.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         )}
 
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 text-sm">
-          <div className="rounded-md border bg-white p-3">
+          <Link href="#open-column" className="rounded-md border bg-white p-3 transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-xs font-medium text-slate-500">Open</p>
             <p className="mt-1 text-2xl font-bold text-blue-700">{open.length}</p>
-          </div>
-          <div className="rounded-md border bg-white p-3">
+          </Link>
+          <Link href="#open-column" className="rounded-md border bg-white p-3 transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-xs font-medium text-slate-500">In progress</p>
             <p className="mt-1 text-2xl font-bold text-amber-700">{inProgress.length}</p>
-          </div>
-          <div className="rounded-md border bg-white p-3">
+          </Link>
+          <Link href="#overdue-column" className="rounded-md border bg-white p-3 transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-xs font-medium text-slate-500">Overdue</p>
             <p className={`mt-1 text-2xl font-bold ${overdue.length > 0 ? "text-red-700" : "text-slate-900"}`}>{overdue.length}</p>
-          </div>
-          <div className="rounded-md border bg-white p-3">
+          </Link>
+          <Link href="#completed-column" className="rounded-md border bg-white p-3 transition hover:-translate-y-0.5 hover:shadow-md">
             <p className="text-xs font-medium text-slate-500">Completed</p>
             <p className="mt-1 text-2xl font-bold text-emerald-700">{completed.length}</p>
-          </div>
+          </Link>
         </div>
 
         {canCreate && (
@@ -177,7 +179,7 @@ export default async function TasksPage() {
         )}
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-lg border border-red-200 bg-red-50/30 p-3">
+          <div id="overdue-column" className="rounded-lg border border-red-200 bg-red-50/30 p-3 scroll-mt-20">
             <div className="flex items-center justify-between mb-2 px-1">
               <p className="text-sm font-semibold text-red-900 flex items-center gap-1.5"><AlertTriangle size={14} /> Overdue</p>
               <span className="rounded-full bg-red-200 px-2 py-0.5 text-xs font-bold text-red-900">{overdue.length}</span>
@@ -188,7 +190,7 @@ export default async function TasksPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-blue-200 bg-blue-50/30 p-3">
+          <div id="open-column" className="rounded-lg border border-blue-200 bg-blue-50/30 p-3 scroll-mt-20">
             <div className="flex items-center justify-between mb-2 px-1">
               <p className="text-sm font-semibold text-blue-900 flex items-center gap-1.5"><Clock size={14} /> Open / In Progress</p>
               <span className="rounded-full bg-blue-200 px-2 py-0.5 text-xs font-bold text-blue-900">{open.length + inProgress.length}</span>
@@ -199,7 +201,7 @@ export default async function TasksPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50/30 p-3">
+          <div id="completed-column" className="rounded-lg border border-emerald-200 bg-emerald-50/30 p-3 scroll-mt-20">
             <div className="flex items-center justify-between mb-2 px-1">
               <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5"><CheckCircle2 size={14} /> Completed</p>
               <span className="rounded-full bg-emerald-200 px-2 py-0.5 text-xs font-bold text-emerald-900">{completed.length}</span>
