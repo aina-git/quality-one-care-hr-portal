@@ -1,18 +1,16 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import * as XLSX from "xlsx";
+import { prisma } from "@/lib/prisma";
 import { queueOrSendEmail } from "@/services/notifications/emailService";
 
 export type ExcelCredentialMonitorSettings = {
   enabled: boolean;
-  excelPath: string;
   worksheetName?: string;
   hrCopyEmails: string[];
   subjectPrefix: string;
-};
-
-type MonitorState = {
-  sent: Record<string, string[]>;
+  fileName: string | null;
+  fileSize: number | null;
+  fileUploadedAt: string | null;
+  hasFile: boolean;
 };
 
 type CredentialRow = {
@@ -33,17 +31,18 @@ export type CredentialAlert = CredentialRow & {
 
 type AlertBucket = "expired" | "lt15" | "lt30" | "lt60" | "lt90";
 
+const CONFIG_ID = "default";
+
 const defaultSettings: ExcelCredentialMonitorSettings = {
   enabled: false,
-  excelPath: "",
   worksheetName: "",
   hrCopyEmails: [],
-  subjectPrefix: "Credential expiration notice"
+  subjectPrefix: "Credential expiration notice",
+  fileName: null,
+  fileSize: null,
+  fileUploadedAt: null,
+  hasFile: false
 };
-
-const monitorDir = path.join(process.cwd(), "storage", "excel-monitor");
-const settingsPath = path.join(monitorDir, "settings.json");
-const statePath = path.join(monitorDir, "state.json");
 
 const bucketRules: Record<AlertBucket, { label: string; maxPerWindow: number; windowDays: number }> = {
   expired: { label: "Expired - three times per day", maxPerWindow: 3, windowDays: 1 },
@@ -101,69 +100,136 @@ function bucketFor(daysUntilExpiration: number): AlertBucket | null {
   return null;
 }
 
-function stateKey(alert: CredentialAlert) {
-  return [alert.nurseName, alert.documentName, dateKey(alert.expiresAt), alert.bucket].map((part) => part.toLowerCase()).join("|");
+function alertKey(alert: CredentialAlert) {
+  return [alert.nurseName, alert.documentName, dateKey(alert.expiresAt), alert.bucket]
+    .map((part) => part.toLowerCase())
+    .join("|");
 }
 
-async function ensureMonitorDir() {
-  await fs.mkdir(monitorDir, { recursive: true });
+async function getOrCreateConfig() {
+  const existing = await prisma.excelCredentialMonitorConfig.findUnique({ where: { id: CONFIG_ID } });
+  if (existing) return existing;
+  return prisma.excelCredentialMonitorConfig.create({
+    data: {
+      id: CONFIG_ID,
+      enabled: false,
+      hrCopyEmails: [],
+      subjectPrefix: defaultSettings.subjectPrefix
+    }
+  });
 }
 
-export async function getExcelCredentialMonitorSettings() {
-  await ensureMonitorDir();
-  try {
-    const raw = await fs.readFile(settingsPath, "utf8");
-    return { ...defaultSettings, ...(JSON.parse(raw) as Partial<ExcelCredentialMonitorSettings>) };
-  } catch {
-    return defaultSettings;
-  }
-}
-
-export async function saveExcelCredentialMonitorSettings(settings: ExcelCredentialMonitorSettings) {
-  await ensureMonitorDir();
-  const clean: ExcelCredentialMonitorSettings = {
-    enabled: Boolean(settings.enabled),
-    excelPath: settings.excelPath.trim(),
-    worksheetName: settings.worksheetName?.trim() ?? "",
-    hrCopyEmails: settings.hrCopyEmails.map((email) => email.trim()).filter(Boolean),
-    subjectPrefix: settings.subjectPrefix.trim() || defaultSettings.subjectPrefix
+function toSettings(record: {
+  enabled: boolean;
+  worksheetName: string | null;
+  hrCopyEmails: string[];
+  subjectPrefix: string;
+  fileName: string | null;
+  fileSize: number | null;
+  fileUploadedAt: Date | null;
+  fileBytes: Buffer | Uint8Array | null;
+}): ExcelCredentialMonitorSettings {
+  return {
+    enabled: record.enabled,
+    worksheetName: record.worksheetName ?? "",
+    hrCopyEmails: record.hrCopyEmails,
+    subjectPrefix: record.subjectPrefix,
+    fileName: record.fileName,
+    fileSize: record.fileSize,
+    fileUploadedAt: record.fileUploadedAt ? record.fileUploadedAt.toISOString() : null,
+    hasFile: Boolean(record.fileBytes && record.fileSize && record.fileSize > 0)
   };
-  await fs.writeFile(settingsPath, JSON.stringify(clean, null, 2), "utf8");
-  return clean;
 }
 
-async function readState(): Promise<MonitorState> {
-  await ensureMonitorDir();
-  try {
-    return JSON.parse(await fs.readFile(statePath, "utf8")) as MonitorState;
-  } catch {
-    return { sent: {} };
-  }
+export async function getExcelCredentialMonitorSettings(): Promise<ExcelCredentialMonitorSettings> {
+  const record = await getOrCreateConfig();
+  return toSettings(record);
 }
 
-async function writeState(state: MonitorState) {
-  await fs.writeFile(statePath, JSON.stringify(state, null, 2), "utf8");
+export async function saveExcelCredentialMonitorSettings(input: {
+  enabled: boolean;
+  worksheetName?: string;
+  hrCopyEmails: string[];
+  subjectPrefix: string;
+}): Promise<ExcelCredentialMonitorSettings> {
+  await getOrCreateConfig();
+  const updated = await prisma.excelCredentialMonitorConfig.update({
+    where: { id: CONFIG_ID },
+    data: {
+      enabled: Boolean(input.enabled),
+      worksheetName: input.worksheetName?.trim() || null,
+      hrCopyEmails: input.hrCopyEmails.map((email) => email.trim()).filter(Boolean),
+      subjectPrefix: input.subjectPrefix.trim() || defaultSettings.subjectPrefix
+    }
+  });
+  return toSettings(updated);
 }
 
-function shouldSend(alert: CredentialAlert, state: MonitorState, now: Date) {
+export async function saveUploadedWorkbook(input: { fileName: string; fileSize: number; buffer: Buffer }) {
+  await getOrCreateConfig();
+  const bytes = new Uint8Array(input.buffer.byteLength);
+  bytes.set(input.buffer);
+  const updated = await prisma.excelCredentialMonitorConfig.update({
+    where: { id: CONFIG_ID },
+    data: {
+      fileName: input.fileName,
+      fileSize: input.fileSize,
+      fileBytes: bytes,
+      fileUploadedAt: new Date()
+    }
+  });
+  return toSettings(updated);
+}
+
+export async function clearUploadedWorkbook() {
+  await getOrCreateConfig();
+  const updated = await prisma.excelCredentialMonitorConfig.update({
+    where: { id: CONFIG_ID },
+    data: {
+      fileName: null,
+      fileSize: null,
+      fileBytes: null,
+      fileUploadedAt: null
+    }
+  });
+  return toSettings(updated);
+}
+
+async function shouldSend(alert: CredentialAlert, now: Date) {
   const rule = bucketRules[alert.bucket];
-  const cutoff = now.getTime() - rule.windowDays * 24 * 60 * 60 * 1000;
-  const recent = (state.sent[stateKey(alert)] ?? []).filter((stamp) => new Date(stamp).getTime() >= cutoff);
-  return recent.length < rule.maxPerWindow;
+  const cutoff = new Date(now.getTime() - rule.windowDays * 24 * 60 * 60 * 1000);
+  const recent = await prisma.excelCredentialMonitorSendLog.count({
+    where: {
+      alertKey: alertKey(alert),
+      sentAt: { gte: cutoff }
+    }
+  });
+  return recent < rule.maxPerWindow;
 }
 
 export async function readCredentialAlerts(now = new Date()) {
-  const settings = await getExcelCredentialMonitorSettings();
-  if (!settings.excelPath) return { settings, rows: [] as CredentialAlert[], warnings: ["Excel file path is not configured."] };
+  const record = await getOrCreateConfig();
+  const settings = toSettings(record);
+  const warnings: string[] = [];
 
-  const workbook = XLSX.readFile(settings.excelPath, { cellDates: true });
+  if (!record.fileBytes || !record.fileSize) {
+    warnings.push("No Excel workbook uploaded yet.");
+    return { settings, rows: [] as CredentialAlert[], warnings };
+  }
+
+  const buffer = Buffer.isBuffer(record.fileBytes) ? record.fileBytes : Buffer.from(record.fileBytes);
+  const workbook = XLSX.read(buffer, { type: "buffer", cellDates: true });
   const sheetName = settings.worksheetName && workbook.SheetNames.includes(settings.worksheetName)
     ? settings.worksheetName
     : workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
+  if (!worksheet) {
+    warnings.push(`Worksheet "${sheetName}" not found in the uploaded workbook.`);
+    return { settings, rows: [] as CredentialAlert[], warnings };
+  }
+
   const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" });
   const today = startOfDay(now);
-  const warnings: string[] = [];
 
   const rows = rawRows.flatMap((row, index) => {
     const firstName = pick(row, ["first name", "firstname"]);
@@ -197,8 +263,10 @@ export async function readCredentialAlerts(now = new Date()) {
     }];
   });
 
-  const state = await readState();
-  const alerts = rows.map((row) => ({ ...row, dueNow: shouldSend(row, state, now) }));
+  const alerts: CredentialAlert[] = [];
+  for (const row of rows) {
+    alerts.push({ ...row, dueNow: await shouldSend(row, now) });
+  }
   return { settings, rows: alerts, warnings };
 }
 
@@ -223,13 +291,15 @@ export async function runExcelCredentialMonitor({ force = false }: { force?: boo
   if (!settings.enabled && !force) {
     return { scanned: rows.length, sent: 0, skipped: rows.length, warnings: ["Excel monitor is disabled.", ...warnings] };
   }
+  if (!settings.hasFile) {
+    return { scanned: 0, sent: 0, skipped: 0, warnings };
+  }
 
-  const state = await readState();
   let sent = 0;
   let skipped = 0;
 
   for (const alert of rows) {
-    if (!force && !shouldSend(alert, state, now)) {
+    if (!force && !(await shouldSend(alert, now))) {
       skipped += 1;
       continue;
     }
@@ -247,10 +317,10 @@ export async function runExcelCredentialMonitor({ force = false }: { force?: boo
       await queueOrSendEmail({ toEmail, subject, body });
       sent += 1;
     }
-    const key = stateKey(alert);
-    state.sent[key] = [...(state.sent[key] ?? []), now.toISOString()].slice(-30);
+    await prisma.excelCredentialMonitorSendLog.create({
+      data: { alertKey: alertKey(alert) }
+    });
   }
 
-  await writeState(state);
   return { scanned: rows.length, sent, skipped, warnings };
 }

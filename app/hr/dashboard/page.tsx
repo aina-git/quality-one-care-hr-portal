@@ -266,16 +266,30 @@ export default async function HrDashboardPage() {
               <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><AlertTriangle size={16} className="text-amber-600" /> Operational alerts</CardTitle></CardHeader>
               <CardContent className="pt-0 grid gap-2 text-sm">
                 {phase5Metrics.activeAlerts.length === 0 && <p className="text-slate-400 italic">No active alerts.</p>}
-                {phase5Metrics.activeAlerts.slice(0, 5).map((alert) => (
-                  <div key={alert.id} className="rounded-md border border-slate-100 bg-slate-50 p-2.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <AlertPriorityBadge priority={alert.priority} />
-                      <p className="font-semibold text-slate-900">{alert.title}</p>
+                {phase5Metrics.activeAlerts.slice(0, 5).map((alert) => {
+                  const card = (
+                    <>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <AlertPriorityBadge priority={alert.priority} />
+                        <p className="font-semibold text-slate-900">{alert.title}</p>
+                      </div>
+                      <p className="mt-1 text-slate-700">{alert.message}</p>
+                      {alert.route && <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-orange-700">Open <ArrowRight size={12} /></p>}
+                    </>
+                  );
+                  if (alert.route) {
+                    return (
+                      <Link key={alert.id} href={alert.route} className="block rounded-md border border-slate-100 bg-slate-50 p-2.5 transition hover:border-orange-200 hover:bg-orange-50">
+                        {card}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <div key={alert.id} className="rounded-md border border-slate-100 bg-slate-50 p-2.5">
+                      {card}
                     </div>
-                    <p className="mt-1 text-slate-700">{alert.message}</p>
-                    {alert.route && <Link href={alert.route} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-orange-700 hover:underline">Open <ArrowRight size={12} /></Link>}
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
 

@@ -7,6 +7,10 @@ const optionalEnv = [
   "EMAIL_PROVIDER",
   "EMAIL_API_KEY",
   "EMAIL_FROM",
+  "SMTP_HOST",
+  "SMTP_PORT",
+  "SMTP_USER",
+  "SMTP_PASS",
   "STORAGE_PROVIDER",
   "STORAGE_BUCKET",
   "STORAGE_ACCESS_KEY",
@@ -30,8 +34,15 @@ export function validateEnvironment() {
   }
 
   const warnings: string[] = [];
-  if (!process.env.EMAIL_PROVIDER || !process.env.EMAIL_API_KEY) {
+  const emailProvider = (process.env.EMAIL_PROVIDER ?? "").trim().toLowerCase();
+  if (!emailProvider) {
     warnings.push("Email provider is not configured. Emails will remain queued.");
+  } else if (emailProvider === "smtp") {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      warnings.push("EMAIL_PROVIDER=smtp requires SMTP_HOST, SMTP_USER, and SMTP_PASS. Emails will remain queued until set.");
+    }
+  } else if (!process.env.EMAIL_API_KEY) {
+    warnings.push(`EMAIL_PROVIDER=${emailProvider} requires EMAIL_API_KEY. Emails will remain queued until set.`);
   }
   const ocrProvider = (process.env.OCR_PROVIDER ?? "").trim().toLowerCase();
   if (!ocrProvider) {
