@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type W9Data,
   W9_CERTIFICATION,
@@ -16,11 +17,20 @@ import {
   validateW9ForCompletion
 } from "@/services/intake/w9Schema";
 
+type PrefillAddress = {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  fullName: string;
+} | null;
+
 type Props = {
   applicationId: string;
   initialData: unknown;
   initialStatus: IntakeStepStatus;
   applicantName: string;
+  prefillAddress?: PrefillAddress;
 };
 
 const fieldClass = "flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -30,9 +40,15 @@ export function W9Step(props: Props) {
   const router = useRouter();
   const [form, setForm] = useState<W9Data>(() => {
     const merged = mergeW9Data(props.initialData);
-    if (!merged.fullName) merged.fullName = props.applicantName;
-    if (!merged.signatureName) merged.signatureName = props.applicantName;
+    const prefill = props.prefillAddress;
+    if (!merged.fullName) merged.fullName = prefill?.fullName || props.applicantName;
+    if (!merged.signatureName) merged.signatureName = prefill?.fullName || props.applicantName;
     if (!merged.signatureDate) merged.signatureDate = new Date().toISOString().slice(0, 10);
+    if (!merged.addressStreet && prefill?.street) merged.addressStreet = prefill.street;
+    if (!merged.addressCityStateZip && prefill) {
+      const cityStateZip = [prefill.city, [prefill.state, prefill.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+      if (cityStateZip) merged.addressCityStateZip = cityStateZip;
+    }
     return merged;
   });
   const [busy, setBusy] = useState(false);
@@ -143,7 +159,18 @@ export function W9Step(props: Props) {
         <CardContent>
           <div className="grid gap-4">
             <Field label="Line 5 — Street address (number, street, apt/suite)" required>
-              <Input value={form.addressStreet} onChange={(e) => update("addressStreet", e.target.value)} />
+              <AddressAutocomplete
+                value={form.addressStreet}
+                onChange={(v) => update("addressStreet", v)}
+                autoFillCombined={false}
+                onSelectSuggestion={(s) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    addressStreet: s.street || prev.addressStreet,
+                    addressCityStateZip: [s.city, [s.state, s.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ")
+                  }));
+                }}
+              />
             </Field>
             <Field label="Line 6 — City, state, ZIP" required>
               <Input value={form.addressCityStateZip} onChange={(e) => update("addressCityStateZip", e.target.value)} placeholder="Silver Spring, MD 20910" />

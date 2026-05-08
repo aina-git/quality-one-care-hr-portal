@@ -61,7 +61,7 @@ export default async function AdminApplicationsPage() {
                     <TableCell className="text-sm">
                       {application.intakeLocation?.name ?? <span className="text-slate-400">—</span>}
                     </TableCell>
-                    <TableCell>{(application.applicationSubmittedAt ?? application.submittedAt ?? application.updatedAt).toLocaleString()}</TableCell>
+                    <TableCell>{(application.applicationSubmittedAt ?? application.submittedAt ?? application.updatedAt).toLocaleString("en-US")}</TableCell>
                     <TableCell>{application.hrReviewQueue?.status ?? application.finalVerificationChecklist?.status ?? "-"}</TableCell>
                     <TableCell>{application.validationIssues.length}</TableCell>
                     <TableCell className="flex flex-wrap gap-2">

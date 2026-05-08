@@ -36,7 +36,7 @@ export function ApplicantProgressTimeline({
                 <div>
                   <p className={`text-sm font-semibold ${stage.complete || stage.active ? tone.text : "text-slate-600"}`}>{stage.label}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {stage.date ? stage.date.toLocaleString() : stage.complete ? "Complete" : "Pending"}
+                    {stage.date ? stage.date.toLocaleString("en-US") : stage.complete ? "Complete" : "Pending"}
                   </p>
                   {stage.active ? <p className="mt-2 inline-flex rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-orange-700">Current stage</p> : null}
                 </div>

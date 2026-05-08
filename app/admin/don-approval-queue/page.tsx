@@ -27,7 +27,7 @@ export default async function AdminDonApprovalQueuePage() {
                 <TableRow key={row.id}>
                   <TableCell className="font-medium">{row.application.applicantProfile.user.name ?? row.application.applicantProfile.user.email}</TableCell>
                   <TableCell className="font-mono text-xs">{row.applicationId}</TableCell>
-                  <TableCell>{row.submittedToDonAt?.toLocaleString() ?? row.updatedAt.toLocaleString()}</TableCell>
+                  <TableCell>{row.submittedToDonAt?.toLocaleString("en-US") ?? row.updatedAt.toLocaleString("en-US")}</TableCell>
                   <TableCell className="capitalize">{row.status.replace(/_/g, " ")}</TableCell>
                   <TableCell><Button asChild size="sm"><Link href={`/don/final-approval/${row.applicationId}`}>Open Final Approval</Link></Button></TableCell>
                 </TableRow>

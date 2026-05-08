@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type MW507Data,
   MD_COUNTIES,
@@ -16,11 +17,20 @@ import {
   validateMW507ForCompletion
 } from "@/services/intake/mw507Schema";
 
+type PrefillAddress = {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  fullName: string;
+} | null;
+
 type Props = {
   applicationId: string;
   initialData: unknown;
   initialStatus: IntakeStepStatus;
   applicantName: string;
+  prefillAddress?: PrefillAddress;
 };
 
 const fieldClass = "flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -30,9 +40,26 @@ export function MW507Step(props: Props) {
   const router = useRouter();
   const [form, setForm] = useState<MW507Data>(() => {
     const merged = mergeMW507Data(props.initialData);
-    if (!merged.fullName) merged.fullName = props.applicantName;
-    if (!merged.signatureName) merged.signatureName = props.applicantName;
+    const prefill = props.prefillAddress;
+    const sourceName = prefill?.fullName || props.applicantName;
+    if (!merged.fullName) merged.fullName = sourceName;
+    if (!merged.signatureName) merged.signatureName = sourceName;
     if (!merged.signatureDate) merged.signatureDate = new Date().toISOString().slice(0, 10);
+    if (!merged.address && prefill?.street) merged.address = prefill.street;
+    if (!merged.cityStateZip && prefill) {
+      const cityStateZip = [prefill.city, [prefill.state, prefill.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+      if (cityStateZip) merged.cityStateZip = cityStateZip;
+    }
+    // MW507 has a Maryland county dropdown — auto-pick the county only when
+    // we know the state is MD; otherwise leave blank for the applicant.
+    if (!merged.countyOfResidence && prefill?.state) {
+      const isMd = /^(md|maryland)$/i.test(prefill.state.trim());
+      if (isMd && prefill.city) {
+        // Don't guess the county from city — let the applicant pick.
+        // (City -> county mapping isn't 1:1 in MD, e.g. Bethesda is Montgomery,
+        // Towson is Baltimore County, and we don't want a wrong default.)
+      }
+    }
     return merged;
   });
   const [busy, setBusy] = useState(false);
@@ -115,7 +142,21 @@ export function MW507Step(props: Props) {
                 {MD_COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Address" required className="sm:col-span-2"><Input value={form.address} onChange={(e) => update("address", e.target.value)} /></Field>
+            <Field label="Address" required className="sm:col-span-2">
+              <AddressAutocomplete
+                value={form.address}
+                onChange={(v) => update("address", v)}
+                autoFillCombined={false}
+                onSelectSuggestion={(s) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    address: s.street || prev.address,
+                    cityStateZip: [s.city, [s.state, s.zip].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+                    countyOfResidence: prev.countyOfResidence
+                  }));
+                }}
+              />
+            </Field>
             <Field label="City, State, ZIP" required className="sm:col-span-2"><Input value={form.cityStateZip} onChange={(e) => update("cityStateZip", e.target.value)} /></Field>
             <Field label="Maryland filing status" className="sm:col-span-2">
               <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">

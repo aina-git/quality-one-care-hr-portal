@@ -83,7 +83,7 @@ If you don't have a Personal Access Token:
 | `JOB_RUNNER_ENABLED` | `true` |
 | `OCR_PROVIDER` | `local` |
 | `STORAGE_PROVIDER` | `local` |
-| `EMAIL_FROM` | `noreply@qualityonecare.local` |
+| `EMAIL_FROM` | `hr@qualityonecare.com` |
 
 4. Click **Deploy** to trigger a redeploy with the new env vars
 

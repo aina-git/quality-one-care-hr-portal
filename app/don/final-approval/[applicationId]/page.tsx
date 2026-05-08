@@ -25,7 +25,7 @@ function label(value: string | null | undefined) {
 
 function formatDate(d: Date | null | undefined) {
   if (!d) return "—";
-  return d instanceof Date && !Number.isNaN(d.getTime()) ? d.toLocaleDateString() : "—";
+  return d instanceof Date && !Number.isNaN(d.getTime()) ? d.toLocaleDateString("en-US") : "—";
 }
 
 function VerificationStatusBadge({ status }: { status: string }) {

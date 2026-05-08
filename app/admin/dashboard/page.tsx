@@ -165,7 +165,7 @@ export default async function AdminDashboardPage() {
                   <TableRow key={application.id}>
                     <TableCell className="font-medium">{application.applicantProfile.user.name ?? application.applicantProfile.user.email}</TableCell>
                     <TableCell className="font-mono text-xs">{application.id}</TableCell>
-                    <TableCell>{(application.applicationSubmittedAt ?? application.submittedAt ?? application.updatedAt).toLocaleString()}</TableCell>
+                    <TableCell>{(application.applicationSubmittedAt ?? application.submittedAt ?? application.updatedAt).toLocaleString("en-US")}</TableCell>
                     <TableCell><StatusBadge status={application.status} /></TableCell>
                     <TableCell>{application.validationIssues.length}</TableCell>
                     <TableCell>

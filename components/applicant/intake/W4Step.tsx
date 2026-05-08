@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCsrfHeaders } from "@/lib/csrf-client";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   type W4Data,
   W4_FILING_STATUSES,
@@ -15,11 +16,20 @@ import {
   validateW4ForCompletion
 } from "@/services/intake/w4Schema";
 
+type PrefillAddress = {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  fullName: string;
+} | null;
+
 type Props = {
   applicationId: string;
   initialData: unknown;
   initialStatus: IntakeStepStatus;
   applicantName: string;
+  prefillAddress?: PrefillAddress;
 };
 
 const fieldClass = "flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -28,16 +38,23 @@ export function W4Step(props: Props) {
   const router = useRouter();
   const [form, setForm] = useState<W4Data>(() => {
     const merged = mergeW4Data(props.initialData);
-    if (!merged.signatureName) merged.signatureName = props.applicantName;
+    const prefill = props.prefillAddress;
+    const sourceName = prefill?.fullName || props.applicantName;
+    if (!merged.signatureName) merged.signatureName = sourceName;
     if (!merged.signatureDate) merged.signatureDate = new Date().toISOString().slice(0, 10);
-    if (!merged.firstNameAndMI && !merged.lastName && props.applicantName) {
-      const parts = props.applicantName.trim().split(/\s+/);
+    if (!merged.firstNameAndMI && !merged.lastName && sourceName) {
+      const parts = sourceName.trim().split(/\s+/);
       if (parts.length === 1) {
         merged.firstNameAndMI = parts[0];
       } else if (parts.length >= 2) {
         merged.lastName = parts[parts.length - 1];
         merged.firstNameAndMI = parts.slice(0, -1).join(" ");
       }
+    }
+    if (!merged.address && prefill?.street) merged.address = prefill.street;
+    if (!merged.cityStateZip && prefill) {
+      const cityStateZip = [prefill.city, [prefill.state, prefill.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+      if (cityStateZip) merged.cityStateZip = cityStateZip;
     }
     return merged;
   });
@@ -120,7 +137,20 @@ export function W4Step(props: Props) {
                 <Button type="button" variant="outline" onClick={() => setShowSsn((v) => !v)}>{showSsn ? "Hide" : "Show"}</Button>
               </div>
             </Field>
-            <Field label="(a) Address" required className="sm:col-span-2"><Input value={form.address} onChange={(e) => update("address", e.target.value)} /></Field>
+            <Field label="(a) Address" required className="sm:col-span-2">
+              <AddressAutocomplete
+                value={form.address}
+                onChange={(v) => update("address", v)}
+                autoFillCombined={false}
+                onSelectSuggestion={(s) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    address: s.street || prev.address,
+                    cityStateZip: [s.city, [s.state, s.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ")
+                  }));
+                }}
+              />
+            </Field>
             <Field label="(a) City, state, ZIP" required className="sm:col-span-2"><Input value={form.cityStateZip} onChange={(e) => update("cityStateZip", e.target.value)} placeholder="Silver Spring, MD 20910" /></Field>
             <Field label="(c) Filing status" required className="sm:col-span-2">
               <div className="grid gap-2 text-sm">

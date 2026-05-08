@@ -16,6 +16,7 @@ import { ApplicantProgressTimeline } from "@/components/ApplicantProgressTimelin
 import { getApplicationProgress } from "@/services/applicantProgressService";
 import { getIntakeProgress } from "@/services/intake/intakeWizardService";
 import { NotificationPreferencesCard } from "@/components/applicant/NotificationPreferencesCard";
+import { ConfirmContactInfoBanner } from "@/components/applicant/ConfirmContactInfoBanner";
 
 const APPLICANT_NAV = [
   { href: "/applicant/dashboard", label: "Dashboard" },
@@ -127,6 +128,14 @@ export default async function ApplicantDashboardPage() {
     <DashboardShell user={user} nav={APPLICANT_NAV}>
       <div className="grid gap-5">
         <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700">Applicant Application Dashboard</div>
+
+        <ConfirmContactInfoBanner
+          emailIsTemporary={Boolean(applicantProfile?.emailIsTemporary)}
+          phoneIsTemporary={Boolean(applicantProfile?.phoneIsTemporary)}
+          currentEmail={user.email}
+          currentPhone={applicantProfile?.phone ?? ""}
+          currentCarrier={applicantProfile?.phoneCarrier ?? ""}
+        />
 
         {progress?.stages?.length ? (
           <Card>

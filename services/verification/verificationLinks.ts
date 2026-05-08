@@ -7,7 +7,16 @@ export type VerificationLink = {
   label: string;
   searchUrl: string;
   notes: string;
+  /**
+   * Optional hint shown to HR next to the link when external services
+   * require an agency-level login (e.g. the CJIS Google Form requires
+   * signing in with the agency Gmail). Sourced from env vars when set so
+   * specific credentials don't have to live in source control.
+   */
+  loginHint?: string;
 };
+
+const CJIS_LOGIN_EMAIL = process.env.CJIS_LOGIN_EMAIL ?? "qualityonecare39@gmail.com";
 
 export const verificationLinks: VerificationLink[] = [
   {
@@ -15,15 +24,15 @@ export const verificationLinks: VerificationLink[] = [
     verificationType: "maryland_board_of_nursing",
     providerName: "Maryland Board of Nursing",
     label: "Maryland Board of Nursing license lookup",
-    searchUrl: "https://mbon.maryland.gov/",
-    notes: "Provider-ready link. HR must manually record the active/current result."
+    searchUrl: "https://lookup.mbon.org/verification/",
+    notes: "Provider-ready link to the Maryland Board of Nursing public verification lookup. HR must manually record the active/current result."
   },
   {
     category: "nursys",
     verificationType: "nursys",
     providerName: "Nursys",
     label: "Nursys license verification",
-    searchUrl: "https://www.nursys.com/",
+    searchUrl: "https://www.nursys.com/LQC/LQCSearch.aspx",
     notes: "Provider-ready link. No private credentials are stored."
   },
   {
@@ -45,10 +54,11 @@ export const verificationLinks: VerificationLink[] = [
   {
     category: "background_check_cgis",
     verificationType: "cgis",
-    providerName: "CGIS Background Check",
-    label: "CGIS/background check receipt",
-    searchUrl: "",
-    notes: "Record agency, MA provider number, tracking number, date sent or verified, and receipt evidence."
+    providerName: "CJIS / CGIS Background Check",
+    label: "CJIS/CGIS background check request form",
+    searchUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf5wiEUBXK5XQno2ThbO7dsv_8Ds57Gb6LBi_AYnQHuKuXogA/viewform?pli=1",
+    notes: "Submit the CJIS/CGIS request form linked here. Then record agency, MA provider number, tracking number, date sent or verified, and receipt evidence.",
+    loginHint: CJIS_LOGIN_EMAIL
   },
   {
     category: "liability_insurance_nso",

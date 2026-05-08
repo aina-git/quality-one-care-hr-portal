@@ -58,7 +58,7 @@ export async function createCalendarEvent({
       notificationType: "calendar",
       priority: eventType === "interview" ? "high" : "normal",
       title: `Calendar event: ${event.title}`,
-      body: `${event.startDateTime.toLocaleString()}${event.location ? ` - ${event.location}` : ""}`,
+      body: `${event.startDateTime.toLocaleString("en-US")}${event.location ? ` - ${event.location}` : ""}`,
       route: "/calendar",
       relatedCalendarEventId: event.id
     });

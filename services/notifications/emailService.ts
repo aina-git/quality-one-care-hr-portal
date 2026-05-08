@@ -52,7 +52,7 @@ async function sendWithProvider(input: EmailInput) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM ?? "noreply@qualityonecare.local",
+        from: process.env.EMAIL_FROM ?? "hr@qualityonecare.com",
         to: input.toEmail,
         subject: input.subject,
         text: input.body
@@ -74,7 +74,7 @@ async function sendWithProvider(input: EmailInput) {
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: input.toEmail }] }],
-        from: { email: process.env.EMAIL_FROM ?? "noreply@qualityonecare.local" },
+        from: { email: process.env.EMAIL_FROM ?? "hr@qualityonecare.com" },
         subject: input.subject,
         content: [{ type: "text/plain", value: input.body }]
       })

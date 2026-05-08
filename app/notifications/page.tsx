@@ -60,7 +60,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
                   </div>
                   <p className="mt-1 text-sm">{g.body}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                    <span>{g.createdAt.toLocaleString()}</span>
+                    <span>{g.createdAt.toLocaleString("en-US")}</span>
                     {g.duplicateCount > 1 ? <span className="text-slate-600">{g.unreadCount} unread of {g.duplicateCount} repeats</span> : null}
                     {g.route ? <span className="underline">Open related item</span> : null}
                   </div>

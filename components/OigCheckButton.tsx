@@ -72,7 +72,7 @@ export function OigCheckButton({ applicationId }: { applicationId: string }) {
           <ShieldCheck size={14} className="text-emerald-700 mt-0.5" />
           <div>
             <p className="font-semibold">No match on OIG LEIE</p>
-            <p className="text-[11px] text-emerald-700">Checked against {result.recordCount.toLocaleString()} records · Dataset updated {result.datasetLastUpdated?.slice(0, 10) ?? "unknown"}</p>
+            <p className="text-[11px] text-emerald-700">Checked against {result.recordCount.toLocaleString("en-US")} records · Dataset updated {result.datasetLastUpdated?.slice(0, 10) ?? "unknown"}</p>
           </div>
         </div>
       )}

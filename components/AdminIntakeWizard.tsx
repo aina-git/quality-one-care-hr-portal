@@ -35,6 +35,9 @@ export function AdminIntakeWizard() {
   // Stage 1 form state
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [emailIsTemporary, setEmailIsTemporary] = useState(false);
+  const [phoneIsTemporary, setPhoneIsTemporary] = useState(false);
   const [desiredRole, setDesiredRole] = useState("Home Health Care");
   const [tempPassword, setTempPassword] = useState("");
   const [created, setCreated] = useState<Created | null>(null);
@@ -55,7 +58,7 @@ export function AdminIntakeWizard() {
     const response = await fetch("/api/admin/applications", {
       method: "POST",
       headers: getCsrfHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ email, name, desiredRole, tempPassword, intakeMode: "paper_intake" })
+      body: JSON.stringify({ email, name, desiredRole, tempPassword, phone, emailIsTemporary, phoneIsTemporary, intakeMode: "paper_intake" })
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -181,16 +184,28 @@ export function AdminIntakeWizard() {
                 <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Jatta Fatmata" />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="email">Applicant email</Label>
-                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="applicant@example.com" />
+                <Label htmlFor="email">Applicant email <span className="text-xs text-slate-500">(use placeholder if not yet known)</span></Label>
+                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="applicant@example.com or placeholder@qoc.local" />
+                <label className="inline-flex items-center gap-1.5 text-xs text-slate-700">
+                  <input type="checkbox" checked={emailIsTemporary} onChange={(e) => setEmailIsTemporary(e.target.checked)} />
+                  This is a temporary placeholder — prompt the applicant to confirm their real email later
+                </label>
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="phone">Applicant mobile <span className="text-xs text-slate-500">(any number works for now)</span></Label>
+                <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="555-123-4567" />
+                <label className="inline-flex items-center gap-1.5 text-xs text-slate-700">
+                  <input type="checkbox" checked={phoneIsTemporary} onChange={(e) => setPhoneIsTemporary(e.target.checked)} />
+                  This is a temporary placeholder — prompt the applicant to confirm their real phone later
+                </label>
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="desiredRole">Position applied for</Label>
                 <Input id="desiredRole" value={desiredRole} onChange={(e) => setDesiredRole(e.target.value)} />
               </div>
-              <div className="grid gap-1.5 md:col-span-2">
-                <Label htmlFor="tempPassword">Temporary password (8+ chars, share with applicant later if they need to log in)</Label>
-                <Input id="tempPassword" type="text" required minLength={8} value={tempPassword} onChange={(e) => setTempPassword(e.target.value)} placeholder="A password the applicant can use later if needed" />
+              <div className="grid gap-1.5">
+                <Label htmlFor="tempPassword">Temporary password (8+ chars)</Label>
+                <Input id="tempPassword" type="text" required minLength={8} value={tempPassword} onChange={(e) => setTempPassword(e.target.value)} placeholder="A password the applicant can use later" />
               </div>
               {createMessage ? (
                 <div role="alert" className="md:col-span-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">

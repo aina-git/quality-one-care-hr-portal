@@ -101,7 +101,7 @@ export default async function AdminAuditPage({
               <TableBody>
                 {logs.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell>{entry.createdAt.toLocaleString()}</TableCell>
+                    <TableCell>{entry.createdAt.toLocaleString("en-US")}</TableCell>
                     <TableCell>{entry.user?.email ?? "System"}</TableCell>
                     <TableCell>{entry.action}</TableCell>
                     <TableCell>{entry.entityType}{entry.entityId ? `:${entry.entityId}` : ""}</TableCell>

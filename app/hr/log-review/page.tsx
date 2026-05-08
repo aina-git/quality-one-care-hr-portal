@@ -146,7 +146,7 @@ export default async function LogReviewPage({
             {applicationTimeline.map((log) => (
               <div key={log.id} className="rounded-xl border bg-slate-50 p-3">
                 <p className="font-semibold">{log.action}</p>
-                <p className="text-xs text-slate-500">{log.createdAt.toLocaleString()} - {log.user?.email ?? "System"} - {log.requestPath ?? "-"}</p>
+                <p className="text-xs text-slate-500">{log.createdAt.toLocaleString("en-US")} - {log.user?.email ?? "System"} - {log.requestPath ?? "-"}</p>
               </div>
             ))}
             {!applicationTimeline.length ? <p className="text-muted-foreground">No application activity found for the selected filters.</p> : null}
@@ -171,7 +171,7 @@ export default async function LogReviewPage({
               <TableBody>
                 {logs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell>{log.createdAt.toLocaleString()}</TableCell>
+                    <TableCell>{log.createdAt.toLocaleString("en-US")}</TableCell>
                     <TableCell>{log.user?.email ?? "System"}</TableCell>
                     <TableCell>{valueLabel(log.user?.role ?? detailsRole(log.details))}</TableCell>
                     <TableCell>{log.action}</TableCell>

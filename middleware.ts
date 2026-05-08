@@ -35,7 +35,8 @@ const apiProtectedRoutes: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/api/don", roles: ["admin", "super_admin_hr", "don_approver"] },
   { prefix: "/api/todos", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
   { prefix: "/api/admin/users", roles: ["admin", "super_admin_hr"] },
-  { prefix: "/api/admin", roles: ["admin", "super_admin_hr"] }
+  { prefix: "/api/admin", roles: ["admin", "super_admin_hr"] },
+  { prefix: "/api/address", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] }
 ];
 
 const rateLimitRules = [

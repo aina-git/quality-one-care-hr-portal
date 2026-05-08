@@ -179,7 +179,7 @@ export function describeBlockerReason(item: {
   category: VerificationCategory;
 }) {
   if (itemIsExpiredByDate(item)) {
-    const dateText = item.expirationDate ? item.expirationDate.toLocaleDateString() : "";
+    const dateText = item.expirationDate ? item.expirationDate.toLocaleDateString("en-US") : "";
     return `Expired${dateText ? ` ${dateText}` : ""}`;
   }
   if (item.status === "expired" && expirableCategories.has(item.category)) return "Expired";

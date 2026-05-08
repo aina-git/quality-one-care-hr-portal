@@ -52,7 +52,7 @@ const sources: AssistantSource[] = [
     ],
     captureFields: [
       { key: "licenseStatus", label: "License status (e.g. Active, Inactive, Disciplined)", required: true, placeholder: "Active" },
-      { key: "expirationDate", label: "Expiration date (YYYY-MM-DD)", placeholder: "2027-06-30" },
+      { key: "expirationDate", label: "Expiration date (MM/DD/YYYY)", placeholder: "06/30/2027" },
       { key: "disciplinaryActions", label: "Any disciplinary actions noted?", placeholder: "None / details" }
     ]
   },
@@ -61,8 +61,8 @@ const sources: AssistantSource[] = [
     providerName: "Maryland Board of Nursing",
     description: "Maryland-issued RN/LPN/CNA license lookup. Public search by name or license number.",
     buildUrl: (input) => {
-      // MBON portal — most reliable entry is the license verification landing page
-      const url = new URL("https://mbon.maryland.gov/Pages/license-verification.aspx");
+      // MBON public verification portal
+      const url = new URL("https://lookup.mbon.org/verification/");
       return url.toString();
     },
     searchHints: [
@@ -74,7 +74,7 @@ const sources: AssistantSource[] = [
     captureFields: [
       { key: "licenseStatus", label: "Status (must be Active for hire)", required: true, placeholder: "Active" },
       { key: "licenseNumber", label: "License number (verify match)", placeholder: "R012345" },
-      { key: "expirationDate", label: "Expiration date", placeholder: "2027-06-30" },
+      { key: "expirationDate", label: "Expiration date (MM/DD/YYYY)", placeholder: "06/30/2027" },
       { key: "publicActions", label: "Any public actions on the record?", placeholder: "None / details" }
     ]
   },
@@ -101,18 +101,18 @@ const sources: AssistantSource[] = [
   },
   {
     category: "background_check_cgis",
-    providerName: "CGIS / Maryland CJIS",
-    description: "Criminal background check via Maryland CJIS-Central Repository. Requires fingerprints + agency authorization (cannot be automated).",
-    buildUrl: () => "https://dpscs.maryland.gov/publicservs/bgchecks.shtml",
+    providerName: "CJIS / CGIS Background Check",
+    description: "Maryland criminal background check submitted via the CJIS/CGIS request form. Requires applicant fingerprints + agency authorization.",
+    buildUrl: () => "https://docs.google.com/forms/d/e/1FAIpQLSf5wiEUBXK5XQno2ThbO7dsv_8Ds57Gb6LBi_AYnQHuKuXogA/viewform?pli=1",
     searchHints: [
       "Agency: Quality One Care Home Health Inc.",
       "MA Provider Number: 420641000",
       "Applicant must provide fingerprints at an authorized site",
-      "Capture the receipt + tracking number when submitted"
+      "Submit the request form, then capture the receipt + tracking number"
     ],
     captureFields: [
-      { key: "trackingNumber", label: "CGIS tracking number", required: true, placeholder: "TRK-XXXXXX" },
-      { key: "submittedDate", label: "Date submitted", required: true },
+      { key: "trackingNumber", label: "CJIS/CGIS tracking number", required: true, placeholder: "TRK-XXXXXX" },
+      { key: "submittedDate", label: "Date submitted (MM/DD/YYYY)", required: true, placeholder: "05/07/2026" },
       { key: "result", label: "Result (Cleared / Pending / Concerns)", placeholder: "Pending" },
       { key: "receiptUploaded", label: "Receipt uploaded?", placeholder: "yes/no" }
     ]

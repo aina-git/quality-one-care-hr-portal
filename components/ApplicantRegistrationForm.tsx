@@ -1,15 +1,21 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, RotateCcw, Upload } from "lucide-react";
+import { Camera, Mail, MessageSquare, RotateCcw, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SMS_CARRIERS } from "@/services/notifications/smsGateway";
+
+type ContactMode = "email" | "phone";
 
 export function ApplicantRegistrationForm({ csrfToken }: { csrfToken: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [step, setStep] = useState(1);
+  const [contactMode, setContactMode] = useState<ContactMode>("email");
+  const [phone, setPhone] = useState("");
+  const [phoneCarrier, setPhoneCarrier] = useState("");
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [photoName, setPhotoName] = useState("camera-profile-photo.jpg");
   const [photoPreview, setPhotoPreview] = useState("");
@@ -96,11 +102,24 @@ export function ApplicantRegistrationForm({ csrfToken }: { csrfToken: string }) 
       setMessage("Identity photo and consent are required before account creation.");
       return;
     }
+    if (contactMode === "phone") {
+      if (!phone.trim()) {
+        setMessage("Enter your mobile phone number.");
+        return;
+      }
+      if (!phoneCarrier) {
+        setMessage("Select your mobile carrier so we can text you your login.");
+        return;
+      }
+    }
     setBusy(true);
     const form = new FormData(formRef.current);
     form.set("csrfToken", csrfToken);
     form.set("photoSource", photoSource);
     form.set("photoConsent", consent ? "yes" : "");
+    form.set("contactMode", contactMode);
+    form.set("phone", phone);
+    form.set("phoneCarrier", phoneCarrier);
     form.set("identityPhoto", new File([photoBlob], photoName, { type: photoBlob.type || "image/jpeg" }));
     const response = await fetch("/api/auth/register", { method: "POST", body: form });
     if (response.redirected) {
@@ -122,18 +141,71 @@ export function ApplicantRegistrationForm({ csrfToken }: { csrfToken: string }) 
 
       <form ref={formRef} className={step === 1 ? "grid gap-4" : "hidden"}>
         <input type="hidden" name="csrfToken" value={csrfToken} />
+
+        <div className="grid grid-cols-2 gap-2 rounded-md border bg-slate-50 p-1 text-xs">
+          <button
+            type="button"
+            onClick={() => setContactMode("email")}
+            className={`flex items-center justify-center gap-1.5 rounded px-3 py-2 font-semibold transition ${contactMode === "email" ? "bg-white text-orange-700 shadow" : "text-slate-600 hover:text-slate-900"}`}
+          >
+            <Mail size={14} /> Sign up with email
+          </button>
+          <button
+            type="button"
+            onClick={() => setContactMode("phone")}
+            className={`flex items-center justify-center gap-1.5 rounded px-3 py-2 font-semibold transition ${contactMode === "phone" ? "bg-white text-orange-700 shadow" : "text-slate-600 hover:text-slate-900"}`}
+          >
+            <MessageSquare size={14} /> Sign up with phone
+          </button>
+        </div>
+
         <div className="grid gap-2">
           <Label htmlFor="name">Full name</Label>
           <Input id="name" name="name" required autoComplete="name" />
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" required autoComplete="email" />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" />
-        </div>
+
+        {contactMode === "email" ? (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" required autoComplete="email" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid gap-2">
+              <Label htmlFor="phone-input">Mobile phone (10-digit US number)</Label>
+              <Input
+                id="phone-input"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                inputMode="tel"
+                placeholder="555-123-4567"
+                autoComplete="tel"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="carrier-select">Mobile carrier</Label>
+              <select
+                id="carrier-select"
+                value={phoneCarrier}
+                onChange={(e) => setPhoneCarrier(e.target.value)}
+                className="h-10 rounded-md border border-input bg-white px-3 text-sm"
+              >
+                <option value="">— Select your carrier —</option>
+                {SMS_CARRIERS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+              <p className="font-semibold">We&apos;ll text you your login details.</p>
+              <p className="mt-1 text-xs">Standard SMS rates from your carrier may apply. We use a free email-to-SMS gateway, so you don&apos;t need to install anything.</p>
+            </div>
+          </>
+        )}
       </form>
 
       {step === 2 ? (

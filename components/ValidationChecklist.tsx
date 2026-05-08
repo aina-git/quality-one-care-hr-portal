@@ -36,7 +36,7 @@ export function ValidationChecklist({
                 <p className="mt-1 text-xs text-red-800">Reason: {issue.reason ?? issue.message}</p>
                 <p className="text-xs text-red-800">What was checked: uploaded scanned applications, extracted fields, applicant corrections, manual entries, and linked supporting documents.</p>
                 <p className="text-xs text-red-800">Required action: {issue.requiredAction ?? "Review and correct this item."}</p>
-                <p className="text-xs text-red-800">Responsible party: {issue.responsibleParty ?? "Applicant"} - Flagged: {issue.flaggedAt.toLocaleDateString()}</p>
+                <p className="text-xs text-red-800">Responsible party: {issue.responsibleParty ?? "Applicant"} - Flagged: {issue.flaggedAt.toLocaleDateString("en-US")}</p>
                 <ValidationIssueActions issueId={issue.id} fieldKey={issue.fieldKey} documents={documents} />
               </div>
             ))}

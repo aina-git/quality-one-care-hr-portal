@@ -43,7 +43,7 @@ export default async function DonFinalApprovalPrintPage({ params }: { params: Pr
         <p>Email: <span className="font-semibold">{applicant.user.email}</span></p>
         <p>License Type: <span className="font-semibold">{latestLicense?.type ?? "Not recorded"}</span></p>
         <p>License Number: <span className="font-semibold">{latestLicense?.licenseNumber ?? "Not recorded"}</span></p>
-        <p>Application Submitted: <span className="font-semibold">{application.submittedAt ? application.submittedAt.toLocaleString() : "Not submitted"}</span></p>
+        <p>Application Submitted: <span className="font-semibold">{application.submittedAt ? application.submittedAt.toLocaleString("en-US") : "Not submitted"}</span></p>
         <p>Completion: <span className="font-semibold">{summary.completionPercentage}%</span></p>
       </section>
 
@@ -74,10 +74,10 @@ export default async function DonFinalApprovalPrintPage({ params }: { params: Pr
                 <td className="border p-2 align-top">{item.requirement}</td>
                 <td className="border p-2 align-top">{label(item.status)}</td>
                 <td className="border p-2 align-top">{item.result ?? "-"}</td>
-                <td className="border p-2 align-top">{item.expirationDate ? item.expirationDate.toLocaleDateString() : "-"}</td>
+                <td className="border p-2 align-top">{item.expirationDate ? item.expirationDate.toLocaleDateString("en-US") : "-"}</td>
                 <td className="border p-2 align-top">{item.document ? item.document.fileName : "-"}</td>
                 <td className="border p-2 align-top">{item.verifiedByUser ? item.verifiedByUser.name ?? item.verifiedByUser.email : "-"}</td>
-                <td className="border p-2 align-top">{item.verifiedAt ? item.verifiedAt.toLocaleDateString() : "-"}</td>
+                <td className="border p-2 align-top">{item.verifiedAt ? item.verifiedAt.toLocaleDateString("en-US") : "-"}</td>
                 <td className="border p-2 align-top">{item.notes ?? "-"}</td>
               </tr>
             ))}
@@ -90,7 +90,7 @@ export default async function DonFinalApprovalPrintPage({ params }: { params: Pr
         <p>Decision: <span className="font-semibold">{label(checklist.donDecision)}</span></p>
         <p>Comments: <span className="font-semibold">{checklist.donComment ?? "-"}</span></p>
         <p>DON/Admin Name: <span className="font-semibold">{checklist.approvedByUser ? checklist.approvedByUser.name ?? checklist.approvedByUser.email : "-"}</span></p>
-        <p>Date/Time: <span className="font-semibold">{(checklist.approvedAt ?? checklist.rejectedAt)?.toLocaleString() ?? "-"}</span></p>
+        <p>Date/Time: <span className="font-semibold">{(checklist.approvedAt ?? checklist.rejectedAt)?.toLocaleString("en-US") ?? "-"}</span></p>
         <div className="mt-10 grid grid-cols-2 gap-8">
           <p className="border-t pt-2">DON Signature</p>
           <p className="border-t pt-2">Date</p>
