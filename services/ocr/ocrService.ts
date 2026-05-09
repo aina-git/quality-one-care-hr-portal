@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { extractWithAnthropic } from "./anthropicOcr";
 
 export type OcrResult = {
   rawText: string;
@@ -83,10 +84,20 @@ async function extractPdfTextWithPdfjs(filePath: string) {
 }
 
 export async function extractTextFromDocument(filePath: string, mimeType: string): Promise<OcrResult> {
-  const provider = process.env.OCR_PROVIDER?.trim();
+  const provider = process.env.OCR_PROVIDER?.trim().toLowerCase();
   const apiKey = process.env.OCR_API_KEY?.trim();
 
-  if (provider && apiKey) {
+  // Cloud-first: when OCR_PROVIDER=anthropic and OCR_API_KEY are set,
+  // run Claude vision. It returns null on unsupported types or API
+  // failure, in which case we transparently fall back to local Tesseract
+  // so the upload path never breaks.
+  if (provider === "anthropic" && apiKey) {
+    const cloud = await extractWithAnthropic(filePath, mimeType);
+    if (cloud && cloud.rawText && !cloud.usedFallback) {
+      return cloud;
+    }
+    // null or empty result — fall through to local pipeline below.
+  } else if (provider && apiKey) {
     console.warn(`[OCR] Cloud provider "${provider}" configured but not yet implemented. Falling back to local OCR.`);
   }
 
