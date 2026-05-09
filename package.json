@@ -32,6 +32,7 @@
     "@types/adm-zip": "^0.5.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^24.10.1",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "adm-zip": "^0.5.17",
@@ -58,7 +59,6 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/nodemailer": "^8.0.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "^15.5.6"
   },
