@@ -7,11 +7,13 @@ import {
   ClipboardCheck,
   LayoutDashboard,
   LogOut,
+  Menu,
   MessageSquare,
   Search,
   ShieldCheck,
   UserCircle,
-  Users
+  Users,
+  X
 } from "lucide-react";
 import type { SessionUser } from "@/types/auth";
 import { Button } from "@/components/ui/button";
@@ -123,8 +125,42 @@ export async function DashboardShell({
 
   return (
     <div className={cn("min-h-screen text-slate-950", shellBackground(user.role))}>
-      <div className="mx-auto grid max-w-[1540px] gap-6 px-4 py-5 lg:grid-cols-[282px_1fr]">
-        <aside className="sticky top-5 h-fit rounded-2xl border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      {/* Auto-close mobile drawer when the applicant taps a sidebar link.
+          Without this the checkbox stays "checked" across client-side
+          Next.js navigation and the drawer stays open. Tiny inline
+          listener — runs once per page load. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.addEventListener('click',function(e){var l=e.target.closest&&e.target.closest('aside a, aside button[type=submit]');if(!l)return;var t=document.getElementById('qoc-nav-toggle');if(t&&t.checked)t.checked=false;},{passive:true});`,
+        }}
+      />
+      {/* Mobile off-canvas nav: pure-CSS drawer using a hidden checkbox.
+          - Below lg: sidebar is fixed-positioned off-screen, slides in
+            when the user taps the hamburger (label[for="qoc-nav-toggle"]).
+          - lg and up: sidebar reverts to its original sticky column.
+          A backdrop label closes the drawer on tap. */}
+      <input id="qoc-nav-toggle" type="checkbox" className="peer hidden" />
+      <label
+        htmlFor="qoc-nav-toggle"
+        className="fixed inset-0 z-30 hidden bg-slate-950/40 backdrop-blur-sm peer-checked:block lg:peer-checked:hidden"
+        aria-hidden="true"
+      />
+      <div className="mx-auto grid max-w-[1540px] gap-6 px-3 py-3 sm:px-4 sm:py-5 lg:grid-cols-[282px_1fr]">
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 w-[88vw] max-w-[320px] -translate-x-full overflow-y-auto rounded-r-3xl border-r border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.18)] transition-transform duration-200 peer-checked:translate-x-0",
+            // Desktop reset — back to the original sticky column.
+            "lg:static lg:inset-y-auto lg:z-auto lg:translate-x-0 lg:w-auto lg:max-w-none lg:overflow-visible lg:rounded-2xl lg:rounded-r-2xl lg:border lg:shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:sticky lg:top-5 lg:h-fit"
+          )}
+        >
+          {/* Mobile-only "close drawer" affordance */}
+          <label
+            htmlFor="qoc-nav-toggle"
+            className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 lg:hidden"
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </label>
           <div className="border-b border-slate-100 p-5">
             <Link href={homeHref} className="block rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">Quality One Care</p>
@@ -182,9 +218,17 @@ export async function DashboardShell({
             </form>
           </div>
         </aside>
-        <main className={cn("grid min-w-0 gap-5 rounded-3xl p-3 transition-colors", workspaceBackground)}>
-          <div className="sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+        <main className={cn("grid min-w-0 gap-5 rounded-3xl p-2 transition-colors sm:p-3", workspaceBackground)}>
+          <div className="sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur sm:px-4 sm:py-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
+              {/* Mobile-only hamburger to open the nav drawer */}
+              <label
+                htmlFor="qoc-nav-toggle"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 lg:hidden"
+                aria-label="Open menu"
+              >
+                <Menu size={20} />
+              </label>
               {searchHref ? (
                 <form
                   action={searchHref}

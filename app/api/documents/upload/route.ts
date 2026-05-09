@@ -11,7 +11,8 @@ import { updateApplicationLifecycle } from "@/services/applicationLifecycleServi
 
 export const runtime = "nodejs";
 
-const maxSize = 10 * 1024 * 1024;
+// 50 MB cap — see comment in app/api/admin/applications/[id]/upload/route.ts.
+const maxSize = 50 * 1024 * 1024;
 const allowedTypes = new Map([
   ["application/pdf", ".pdf"],
   ["image/png", ".png"],
@@ -91,7 +92,7 @@ export async function POST(request: Request) {
       throw new AppError("Unsupported file type. Upload PDF, PNG, JPG, JPEG, or DOCX.", { statusCode: 400, code: "MIME_INVALID" });
     }
     if (file.size < 1 || file.size > maxSize) {
-      throw new AppError("File is too large. Maximum size is 10MB.", { statusCode: 400, code: "FILE_TOO_LARGE" });
+      throw new AppError("File is too large. Maximum size is 50MB.", { statusCode: 400, code: "FILE_TOO_LARGE" });
     }
 
     const expectedExt = allowedTypes.get(file.type) ?? "";

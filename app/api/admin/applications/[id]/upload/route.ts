@@ -11,7 +11,11 @@ import { updateApplicationLifecycle } from "@/services/applicationLifecycleServi
 
 export const runtime = "nodejs";
 
-const maxSize = 10 * 1024 * 1024;
+// 50 MB cap. Real-world scanned PDFs (multi-page licenses, vaccine records,
+// I-9 supporting docs) routinely exceed 10 MB. Bumped from 10 → 50 MB so
+// applicants don't hit a wall mid-intake. The Server Actions body limit
+// in next.config.ts is matched at 50 MB.
+const maxSize = 50 * 1024 * 1024;
 const allowedTypes = new Map([
   ["application/pdf", ".pdf"],
   ["image/png", ".png"],
@@ -94,7 +98,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       throw new AppError("Unsupported file type. Upload PDF, PNG, JPG, JPEG, or DOCX.", { statusCode: 400, code: "MIME_INVALID" });
     }
     if (file.size < 1 || file.size > maxSize) {
-      throw new AppError("File is too large. Maximum size is 10MB.", { statusCode: 400, code: "FILE_TOO_LARGE" });
+      throw new AppError("File is too large. Maximum size is 50MB.", { statusCode: 400, code: "FILE_TOO_LARGE" });
     }
 
     const expectedExt = allowedTypes.get(file.type) ?? "";
