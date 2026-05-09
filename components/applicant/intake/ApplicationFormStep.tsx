@@ -269,7 +269,7 @@ export function ApplicationFormStep(props: Props) {
             </Field>
             {form.hasConviction === "yes" && (
               <Field label="If yes, please explain (date, nature, jurisdiction, disposition)" required>
-                <textarea className={textareaClass} value={form.convictionExplanation} onChange={(e) => update("convictionExplanation", e.target.value)} />
+                <DictatableTextarea className={textareaClass} value={form.convictionExplanation} onChange={(e) => update("convictionExplanation", e.target.value)} />
               </Field>
             )}
           </div>
@@ -286,7 +286,7 @@ export function ApplicationFormStep(props: Props) {
             </Field>
             {form.needsAccommodation === "yes" && (
               <Field label="If yes, briefly describe the accommodation requested">
-                <textarea className={textareaClass} value={form.accommodationDescription} onChange={(e) => update("accommodationDescription", e.target.value)} />
+                <DictatableTextarea className={textareaClass} value={form.accommodationDescription} onChange={(e) => update("accommodationDescription", e.target.value)} />
               </Field>
             )}
           </div>

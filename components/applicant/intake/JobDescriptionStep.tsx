@@ -181,7 +181,7 @@ export function JobDescriptionStep(props: Props) {
                 {form.ableToPerform === "yes_with_accommodation" && (
                   <label className="grid gap-1">
                     <span className="font-medium">Describe the accommodation</span>
-                    <textarea className={textareaClass} value={form.accommodationDescription} onChange={(e) => update("accommodationDescription", e.target.value)} />
+                    <DictatableTextarea className={textareaClass} value={form.accommodationDescription} onChange={(e) => update("accommodationDescription", e.target.value)} />
                   </label>
                 )}
               </div>

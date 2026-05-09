@@ -166,7 +166,7 @@ export function SkillsChecklistStep(props: Props) {
                       );
                     })}
                   </div>
-                  <textarea className={`${textareaClass} mt-2`} value={rating.notes} onChange={(e) => setRatingNotes(area.key, e.target.value)} placeholder="Optional notes (e.g., specific equipment you've used, recent training, last patient setting)" />
+                  <DictatableTextarea className={`${textareaClass} mt-2`} value={rating.notes} onChange={(e) => setRatingNotes(area.key, e.target.value)} placeholder="Optional notes (e.g., specific equipment you've used, recent training, last patient setting)" />
                 </div>
               );
             })}

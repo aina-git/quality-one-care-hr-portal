@@ -116,8 +116,8 @@ export function PhysicalHealthStep(props: Props) {
             <Field label="Address" className="sm:col-span-2"><Input value={form.address} onChange={(e) => update("address", e.target.value)} /></Field>
             <Field label="Email"><Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} /></Field>
             <Field label="Date of Examination"><input type="date" className={fieldClass} value={form.dateOfExamination} onChange={(e) => update("dateOfExamination", e.target.value)} /></Field>
-            <Field label="Known allergies" className="sm:col-span-2"><textarea className={textareaClass} value={form.knownAllergies} onChange={(e) => update("knownAllergies", e.target.value)} /></Field>
-            <Field label="Current medications (name and dose)" className="sm:col-span-2"><textarea className={textareaClass} value={form.currentMedications} onChange={(e) => update("currentMedications", e.target.value)} /></Field>
+            <Field label="Known allergies" className="sm:col-span-2"><DictatableTextarea className={textareaClass} value={form.knownAllergies} onChange={(e) => update("knownAllergies", e.target.value)} /></Field>
+            <Field label="Current medications (name and dose)" className="sm:col-span-2"><DictatableTextarea className={textareaClass} value={form.currentMedications} onChange={(e) => update("currentMedications", e.target.value)} /></Field>
           </div>
         </CardContent>
       </Card>
@@ -174,9 +174,9 @@ export function PhysicalHealthStep(props: Props) {
                     <Field label="Induration (mm)"><Input value={form.tbInductionMm} onChange={(e) => update("tbInductionMm", e.target.value)} /></Field>
                   )}
                   {form.tbResult === "positive" && (
-                    <Field label="Chest X-ray date and result" className="sm:col-span-2"><textarea className={textareaClass} value={form.tbChestXrayResult} onChange={(e) => update("tbChestXrayResult", e.target.value)} /></Field>
+                    <Field label="Chest X-ray date and result" className="sm:col-span-2"><DictatableTextarea className={textareaClass} value={form.tbChestXrayResult} onChange={(e) => update("tbChestXrayResult", e.target.value)} /></Field>
                   )}
-                  <Field label="Notes / follow-up plan" className="sm:col-span-2"><textarea className={textareaClass} value={form.tbNotes} onChange={(e) => update("tbNotes", e.target.value)} /></Field>
+                  <Field label="Notes / follow-up plan" className="sm:col-span-2"><DictatableTextarea className={textareaClass} value={form.tbNotes} onChange={(e) => update("tbNotes", e.target.value)} /></Field>
                 </div>
               )}
             </CardContent>
@@ -230,7 +230,7 @@ export function PhysicalHealthStep(props: Props) {
                 <RadioOption name="determination" label="Not cleared at this time (specify below)" checked={form.determination === "not_cleared"} onSelect={() => update("determination", "not_cleared")} />
               </div>
               {(form.determination === "cleared_with_restriction" || form.determination === "not_cleared") && (
-                <Field label="Restrictions / accommodations recommended" required className="mt-3"><textarea className={textareaClass} value={form.restrictionsNotes} onChange={(e) => update("restrictionsNotes", e.target.value)} /></Field>
+                <Field label="Restrictions / accommodations recommended" required className="mt-3"><DictatableTextarea className={textareaClass} value={form.restrictionsNotes} onChange={(e) => update("restrictionsNotes", e.target.value)} /></Field>
               )}
               <Field label="Date of next required reassessment" className="mt-3"><input type="date" className={fieldClass} value={form.nextReassessmentDate} onChange={(e) => update("nextReassessmentDate", e.target.value)} /></Field>
             </CardContent>

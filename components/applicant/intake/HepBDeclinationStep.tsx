@@ -221,7 +221,7 @@ export function HepBDeclinationStep(props: Props) {
             </p>
             <label className="mt-3 grid gap-1 text-sm">
               <span className="font-medium">Note (optional)</span>
-              <textarea className={textareaClass} value={form.alreadyReceivedNote} onChange={(e) => update("alreadyReceivedNote", e.target.value)} placeholder="e.g. completed series in 2019 at MedStar; titer attached." />
+              <DictatableTextarea className={textareaClass} value={form.alreadyReceivedNote} onChange={(e) => update("alreadyReceivedNote", e.target.value)} placeholder="e.g. completed series in 2019 at MedStar; titer attached." />
             </label>
           </CardContent>
         </Card>

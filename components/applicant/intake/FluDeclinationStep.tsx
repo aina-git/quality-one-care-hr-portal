@@ -215,12 +215,12 @@ export function FluDeclinationStep(props: Props) {
             </div>
             {form.declineReason === "Medical contraindication" && (
               <Field label="Specify the medical contraindication (provider note may be required)" required className="mt-3">
-                <textarea className={textareaClass} value={form.medicalContraindicationDetails} onChange={(e) => update("medicalContraindicationDetails", e.target.value)} />
+                <DictatableTextarea className={textareaClass} value={form.medicalContraindicationDetails} onChange={(e) => update("medicalContraindicationDetails", e.target.value)} />
               </Field>
             )}
             {form.declineReason === "Other" && (
               <Field label="Please describe" required className="mt-3">
-                <textarea className={textareaClass} value={form.declineOtherDescription} onChange={(e) => update("declineOtherDescription", e.target.value)} />
+                <DictatableTextarea className={textareaClass} value={form.declineOtherDescription} onChange={(e) => update("declineOtherDescription", e.target.value)} />
               </Field>
             )}
           </CardContent>
@@ -238,7 +238,7 @@ export function FluDeclinationStep(props: Props) {
             </p>
             <label className="mt-3 grid gap-1 text-sm">
               <span className="font-medium">Note (optional)</span>
-              <textarea className={textareaClass} value={form.alreadyReceivedNote} onChange={(e) => update("alreadyReceivedNote", e.target.value)} />
+              <DictatableTextarea className={textareaClass} value={form.alreadyReceivedNote} onChange={(e) => update("alreadyReceivedNote", e.target.value)} />
             </label>
           </CardContent>
         </Card>

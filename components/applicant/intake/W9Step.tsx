@@ -176,7 +176,7 @@ export function W9Step(props: Props) {
               <Input value={form.addressCityStateZip} onChange={(e) => update("addressCityStateZip", e.target.value)} placeholder="Silver Spring, MD 20910" />
             </Field>
             <Field label="Line 7 — Requester's name and address (pre-filled)">
-              <textarea className={textareaClass} value={form.requesterNameAddress} onChange={(e) => update("requesterNameAddress", e.target.value)} />
+              <DictatableTextarea className={textareaClass} value={form.requesterNameAddress} onChange={(e) => update("requesterNameAddress", e.target.value)} />
             </Field>
             <Field label="Account number(s) (optional)">
               <Input value={form.accountNumbers} onChange={(e) => update("accountNumbers", e.target.value)} />
