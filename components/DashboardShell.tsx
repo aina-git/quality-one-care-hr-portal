@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CheckSquare,
   ClipboardCheck,
+  Info,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { logAction } from "@/lib/audit";
 import { countUniqueUnreadNotifications } from "@/services/operations/notificationService";
+import { APP_VERSION } from "@/lib/version";
 
 type NavItem = {
   href: string;
@@ -51,7 +53,8 @@ const navIcons: Record<string, ComponentType<{ size?: number; className?: string
   onboarding: CheckSquare,
   training: ClipboardCheck,
   notifications: Bell,
-  profile: UserCircle
+  profile: UserCircle,
+  about: Info
 };
 
 function iconFor(label: string, href: string) {
@@ -210,7 +213,17 @@ export async function DashboardShell({
               );
             })}
           </nav>
-          <div className="border-t border-slate-100 p-4">
+          <div className="border-t border-slate-100 p-4 grid gap-2">
+            <Link
+              href="/about"
+              className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-50 hover:text-orange-700"
+            >
+              <span className="inline-flex items-center gap-3">
+                <Info size={16} className="text-slate-400" />
+                About
+              </span>
+              <span className="text-xs text-slate-400">v{APP_VERSION}</span>
+            </Link>
             <form action="/api/auth/logout" method="post">
               <Button type="submit" variant="outline" className="w-full justify-start">
                 <LogOut size={16} /> Sign out
