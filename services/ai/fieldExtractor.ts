@@ -15,6 +15,11 @@ const fieldMap: Record<string, { label: string; section: string }> = {
   email: { label: "Email", section: "Personal Info" },
   dateOfBirth: { label: "Date of Birth", section: "Personal Info" },
   address: { label: "Address", section: "Personal Info" },
+  city: { label: "City", section: "Personal Info" },
+  state: { label: "State", section: "Personal Info" },
+  zipCode: { label: "Zip Code", section: "Personal Info" },
+  positionAppliedFor: { label: "Position Applied For", section: "Personal Info" },
+  salaryDesired: { label: "Salary Desired", section: "Personal Info" },
   employerName: { label: "Employer Name", section: "Employment History" },
   jobTitle: { label: "Job Title", section: "Employment History" },
   startDate: { label: "Start Date", section: "Employment History" },
@@ -23,6 +28,7 @@ const fieldMap: Record<string, { label: string; section: string }> = {
   supervisorPhone: { label: "Supervisor Phone", section: "Employment History" },
   hasPediatricExperience: { label: "Has Pediatric Experience", section: "Pediatric Experience" },
   pediatricExperienceYears: { label: "Pediatric Experience Years", section: "Pediatric Experience" },
+  nonPediatricExperienceYears: { label: "Non-Pediatric Experience Years", section: "Pediatric Experience" },
   pediatricCareDuties: { label: "Pediatric Care Duties", section: "Pediatric Experience" },
   licenseType: { label: "License Type", section: "Licenses" },
   licenseNumber: { label: "License Number", section: "Licenses" },
@@ -31,6 +37,8 @@ const fieldMap: Record<string, { label: string; section: string }> = {
   expirationDate: { label: "Expiration Date", section: "Licenses" },
   certificationType: { label: "Certification Type", section: "Certifications" },
   name: { label: "Reference Name", section: "References" },
+  referenceName: { label: "Reference Name", section: "References" },
+  referencePhone: { label: "Reference Phone", section: "References" },
   relationship: { label: "Relationship", section: "References" },
   employer: { label: "Reference Employer", section: "References" }
 };
@@ -258,9 +266,70 @@ function extractReferenceInfo(text: string, detectedType: DetectedDocumentType, 
 // A real Yes/No answer requires reading a checkbox, which Tesseract can't do
 // reliably. HR can fill this manually via the HrPediatricExperienceEditor.
 
+function isQocApplicationForm(text: string): boolean {
+  return /quality\s+one\s+care/i.test(text) && /employment\s+application/i.test(text);
+}
+
+function extractQocApplicationFields(text: string, fields: ExtractedFieldCandidate[]) {
+  const fn = matchClean(text, [/first\s*name\s*[:\-]\s*([^\n]+)/i], { maxLen: 80 });
+  if (fn) add(fields, "firstName", fn, 0.88);
+  const ln = matchClean(text, [/last\s*name\s*[:\-]\s*([^\n]+)/i], { maxLen: 80 });
+  if (ln) add(fields, "lastName", ln, 0.88);
+
+  add(fields, "phone", extractApplicantPhone(text), 0.85);
+  add(fields, "email", extractEmail(text), 0.9);
+  add(fields, "address", matchClean(text, [/^address\s*[:\-]\s*([^\n]+)/im], { maxLen: 200, excludeLineRegex: /quality\s+one\s+care/i }), 0.78);
+
+  const city = matchClean(text, [/city\s*[:\-]\s*([^\n]+)/i], { maxLen: 80 });
+  if (city) add(fields, "city", city, 0.78);
+  const state = matchClean(text, [/state\s*[:\-]\s*([A-Z]{2})/i], { maxLen: 4 });
+  if (state) add(fields, "state", state, 0.8);
+  const zip = matchClean(text, [/zip\s*(?:code)?\s*[:\-]\s*(\d{5}(?:-\d{4})?)/i], { maxLen: 12 });
+  if (zip) add(fields, "zipCode", zip, 0.82);
+
+  const pos = matchClean(text, [/(?:title\s*\/?\s*position\s+applying\s+for|position\s+applying\s+for)\s*[:\-]\s*([^\n]+)/i], { maxLen: 100 });
+  if (pos) add(fields, "positionAppliedFor", pos, 0.82);
+
+  const salary = matchClean(text, [/salary\s+desired\s*[:\-]\s*([^\n]+)/i], { maxLen: 40 });
+  if (salary) add(fields, "salaryDesired", salary, 0.7);
+
+  const pedYears = matchClean(text, [/(?:how\s+many\s+)?years?\s+of\s+pediatric\s+experience\s*[:\-]?\s*(\d+)/i]);
+  if (pedYears) add(fields, "pediatricExperienceYears", pedYears, 0.82);
+
+  const nonPedYears = matchClean(text, [/(?:how\s+many\s+)?years?\s+of\s+non[- ]?pediatric\s+experience\s*[:\-]?\s*(\d+)/i]);
+  if (nonPedYears) add(fields, "nonPediatricExperienceYears", nonPedYears, 0.78);
+
+  // Employer blocks
+  for (const ordinal of ["1st", "2nd", "3rd"]) {
+    const empPattern = new RegExp(`name\\s+of\\s+the\\s+${ordinal}\\s+previous\\s+employer\\s*[:\\-]?\\s*([^\\n]+)`, "i");
+    const emp = matchClean(text, [empPattern], { maxLen: 200 });
+    if (emp) add(fields, "employerName", emp, 0.78);
+  }
+
+  // References
+  const refPattern = /name\s*[:\-]\s*(.+?)\s+relationship\s*[:\-]\s*(.+?)\s+phone\s*#?\s*[:\-]\s*([^\n]+)/gi;
+  let refMatch;
+  while ((refMatch = refPattern.exec(text)) !== null) {
+    const refName = refMatch[1]?.trim();
+    const refRel = refMatch[2]?.trim();
+    if (refName && refRel && !/supervisor|employer/i.test(refName)) {
+      add(fields, "referenceName", refName, 0.7);
+      add(fields, "relationship", refRel, 0.65);
+      add(fields, "referencePhone", refMatch[3]?.trim() || "", 0.65);
+    }
+  }
+}
+
 export function extractFields(rawText: string, detectedType: DetectedDocumentType): ExtractedFieldCandidate[] {
   const text = rawText.replace(/\r/g, "\n");
   const fields: ExtractedFieldCandidate[] = [];
+
+  if (detectedType === "application_form" && isQocApplicationForm(text)) {
+    extractQocApplicationFields(text, fields);
+    extractEmploymentInfo(text, fields);
+    extractLicenseInfo(text, detectedType, fields);
+    return fields;
+  }
 
   extractPersonalInfo(text, fields);
   extractEmploymentInfo(text, fields);

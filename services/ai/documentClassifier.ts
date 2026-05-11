@@ -31,10 +31,13 @@ const rules: Array<{ type: DetectedDocumentType; confidence: number; patterns: R
 export function classifyDocument(fileName: string, rawText: string): ClassificationResult {
   const haystack = `${fileName}\n${rawText}`;
   if (/application/i.test(fileName) || /employment application|qoc employment checklist|table of checklist for employment verification/i.test(rawText)) {
+    const isQoc = /quality\s+one\s+care/i.test(rawText) || /qoc/i.test(fileName);
     return {
       detectedType: "application_form",
-      confidence: 0.9,
-      reasoning: "Scanned employment application package detected from filename or packet headings."
+      confidence: isQoc ? 0.95 : 0.9,
+      reasoning: isQoc
+        ? "QOC Employment Application form detected from company branding and application keywords."
+        : "Scanned employment application package detected from filename or packet headings."
     };
   }
   for (const rule of rules) {

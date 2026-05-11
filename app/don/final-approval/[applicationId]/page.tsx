@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, AlertTriangle, CheckCircle2, FileText, Printer } from "lucide-react";
 import { DonDecisionForm } from "@/components/DonDecisionForm";
+import { DuplicateApplicantAlert } from "@/components/DuplicateApplicantAlert";
+import { EmploymentGapAlert } from "@/components/EmploymentGapAlert";
 import { PostDonDeleteApplicantButton } from "@/components/PostDonDeleteApplicantButton";
 import { DashboardShell } from "@/components/DashboardShell";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
@@ -147,6 +149,10 @@ export default async function DonFinalApprovalPage({ params }: { params: Promise
             </CardContent>
           </Card>
         )}
+
+        {/* Automated alerts */}
+        <DuplicateApplicantAlert applicationId={application.id} />
+        <EmploymentGapAlert applicationId={application.id} />
 
         {/* TWO COLUMN: applicant facts | checklist summary */}
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

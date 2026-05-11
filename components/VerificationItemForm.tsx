@@ -15,6 +15,15 @@ const statuses: Array<[VerificationItemStatus, string]> = [
   ["not_applicable", "Not Applicable"]
 ];
 
+const nonExpirableCategories = new Set<VerificationCategory>([
+  "professional_employment_verification",
+  "character_reference",
+  "oig_exclusion",
+  "maryland_case_search",
+  "employment_history",
+  "final_decision"
+]);
+
 const typeByCategory: Partial<Record<VerificationCategory, ExternalVerificationType>> = {
   maryland_board_of_nursing: "maryland_board_of_nursing",
   nursys: "nursys",
@@ -78,13 +87,18 @@ export function VerificationItemForm({
     setTimeout(() => window.location.reload(), 700);
   }
 
+  const canExpire = !nonExpirableCategories.has(category);
+  const availableStatuses = canExpire ? statuses : statuses.filter(([v]) => v !== "expired");
+
   return (
     <form onSubmit={submit} className="grid gap-2">
       <select value={status} onChange={(event) => setStatus(event.target.value as VerificationItemStatus)} className="h-10 rounded-md border bg-white px-3 text-sm">
-        {statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        {availableStatuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
       </select>
       <input value={result} onChange={(event) => setResult(event.target.value)} placeholder="Verification result" className="h-10 rounded-md border bg-white px-3 text-sm" />
-      <input value={expirationDate} onChange={(event) => setExpirationDate(event.target.value)} type="date" className="h-10 rounded-md border bg-white px-3 text-sm" />
+      {canExpire && (
+        <input value={expirationDate} onChange={(event) => setExpirationDate(event.target.value)} type="date" className="h-10 rounded-md border bg-white px-3 text-sm" />
+      )}
       <input value={externalReferenceNumber} onChange={(event) => setExternalReferenceNumber(event.target.value)} placeholder="Reference or tracking number" className="h-10 rounded-md border bg-white px-3 text-sm" />
       <select value={documentId} onChange={(event) => setDocumentId(event.target.value)} className="h-10 rounded-md border bg-white px-3 text-sm">
         <option value="">No evidence document</option>

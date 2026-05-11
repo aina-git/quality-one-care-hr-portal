@@ -8,6 +8,7 @@ import { resolveDocumentPath } from "@/services/storage/storageService";
 import { validateApplication } from "@/services/validation/applicationValidationService";
 import { organizeDocumentForIntake } from "@/services/intake/documentOrganizationService";
 import { autoMapHighConfidenceFields } from "@/services/intake/mappingService";
+import { resolveIdentityFromOtherDocuments } from "@/services/verification/documentIdentityFallback";
 import { analyzeDocumentWithProvider, getAnalysisSettings } from "@/services/analysis/documentAnalysisProvider";
 import { reviewReasonForField, sourceSnippetFor } from "@/services/analysis/precisionReviewService";
 
@@ -123,6 +124,7 @@ export async function processUploadedDocument(documentId: string, userId: string
       autoMapped: autoMap.mapped,
       autoMapPending: autoMap.skipped
     });
+    await resolveIdentityFromOtherDocuments(document.applicationId, userId);
     await organizeDocumentForIntake(documentId, userId);
     await validateApplication(document.applicationId, userId);
   } catch (error) {

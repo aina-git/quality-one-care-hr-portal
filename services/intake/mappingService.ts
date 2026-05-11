@@ -23,8 +23,17 @@ async function applyFieldToProfile(field: ExtractedField, application: LoadedApp
   if (!value) return;
 
   if (field.mappedSection === "Personal Info") {
-    if (field.fieldKey === "name") {
-      await prisma.user.update({ where: { id: profile.userId }, data: { name: value } });
+    if (field.fieldKey === "name" || field.fieldKey === "firstName" || field.fieldKey === "lastName") {
+      const currentName = profile.user.name || "";
+      if (field.fieldKey === "firstName") {
+        const lastName = currentName.split(" ").slice(1).join(" ");
+        await prisma.user.update({ where: { id: profile.userId }, data: { name: `${value} ${lastName}`.trim() } });
+      } else if (field.fieldKey === "lastName") {
+        const firstName = currentName.split(" ")[0] || "";
+        await prisma.user.update({ where: { id: profile.userId }, data: { name: `${firstName} ${value}`.trim() } });
+      } else {
+        await prisma.user.update({ where: { id: profile.userId }, data: { name: value } });
+      }
     }
     if (field.fieldKey === "phone") {
       await prisma.applicantProfile.update({ where: { id: profile.id }, data: { phone: value } });
@@ -33,8 +42,14 @@ async function applyFieldToProfile(field: ExtractedField, application: LoadedApp
       const date = parseDate(value);
       if (date) await prisma.applicantProfile.update({ where: { id: profile.id }, data: { dateOfBirth: date } });
     }
-    if (field.fieldKey === "address") {
-      await prisma.applicantProfile.update({ where: { id: profile.id }, data: { address: value } });
+    if (field.fieldKey === "address" || field.fieldKey === "city" || field.fieldKey === "state" || field.fieldKey === "zipCode") {
+      const current = profile.address || "";
+      if (field.fieldKey === "address") {
+        await prisma.applicantProfile.update({ where: { id: profile.id }, data: { address: value } });
+      } else {
+        const combined = current ? `${current}, ${value}` : value;
+        await prisma.applicantProfile.update({ where: { id: profile.id }, data: { address: combined } });
+      }
     }
     return;
   }
@@ -117,7 +132,7 @@ async function applyFieldToProfile(field: ExtractedField, application: LoadedApp
     if (field.fieldKey === "email") data.email = value;
     if (field.fieldKey === "employer") data.employer = value;
     if (current) await prisma.reference.update({ where: { id: current.id }, data });
-    else await prisma.reference.create({ data: { applicantProfileId: profile.id, applicationId: application.id, name: field.fieldKey === "name" ? value : "Manual entry required", ...data } });
+    else await prisma.reference.create({ data: { applicantProfileId: profile.id, applicationId: application.id, name: (field.fieldKey === "name" || field.fieldKey === "referenceName") ? value : "Manual entry required", ...data } });
   }
 }
 

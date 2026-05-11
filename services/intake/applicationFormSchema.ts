@@ -1,27 +1,32 @@
 // Field shape for intake step "application_form" — mirrors the Quality One Care
-// "Application For Employment" PDF (XXX Application For Employment-1.pdf).
+// "Employment Application" PDF exactly (QOC_Employment_Application_Form.pdf).
 
-export const NURSING_DUTIES = [
-  "Pediatric private duty nursing",
-  "Adult / geriatric care",
-  "Tracheostomy care & suctioning",
-  "Mechanical ventilator management",
-  "G-tube / J-tube / NG-tube feeding",
-  "Wound care",
-  "Medication administration (oral, IV, IM, SubQ)",
-  "Central line care",
+export const QOC_NURSING_DUTIES = [
+  "Work with pediatric private duty nursing",
+  "Adults",
+  "G-tube care",
+  "G-tube change",
+  "G-tube feeding care",
+  "GJ-tube care",
+  "J-tube care",
+  "Trach care",
+  "Trach suction",
+  "Trach change",
+  "Ventilator care",
+  "Cpap/Bipap care",
+  "Medication administrations",
+  "Nebulizer medications",
   "Urinary catheterization",
-  "Colostomy / ileostomy care",
-  "Seizure management",
-  "Tracheostomy ties change",
-  "Pulse oximetry / O2 administration",
-  "Nebulizer treatment",
+  "Colostomy/ileostomy care",
+  "Central line care",
   "TPN administration",
-  "CPAP / BiPAP management",
-  "Chest physiotherapy",
-  "Diabetic care / glucose monitoring"
+  "Wound care"
 ] as const;
 
+export const NURSING_DUTIES = QOC_NURSING_DUTIES;
+
+export const EMPLOYMENT_TYPES = ["Full-Time", "Part-Time", "PRN / Per Diem", "Contract"] as const;
+export const SHIFT_PREFERENCES = ["Day", "Evening", "Night", "Weekend", "Rotating"] as const;
 export const PEDIATRIC_SETTINGS = [
   "Home / private duty",
   "NICU",
@@ -32,54 +37,85 @@ export const PEDIATRIC_SETTINGS = [
   "Other"
 ] as const;
 
-export const EMPLOYMENT_TYPES = ["Full-Time", "Part-Time", "PRN / Per Diem", "Contract"] as const;
-export const SHIFT_PREFERENCES = ["Day", "Evening", "Night", "Weekend", "Rotating"] as const;
+export type EducationEntry = {
+  nameAndLocation: string;
+  yearsAttended: string;
+  dateGraduated: string;
+  degreeDiploma: string;
+};
 
 export type EmployerEntry = {
   employerName: string;
   employerPhone: string;
   employerAddress: string;
-  positionTitle: string;
-  datesEmployed: string;
-  finalPayRate: string;
-  reasonForLeaving: string;
+  from: string;
+  to: string;
+  positionJobTitle: string;
   supervisorName: string;
-  supervisorTitle: string;
   supervisorPhone: string;
-  supervisorEmail: string;
-  mayContactSupervisor: "yes" | "no" | "";
+  startPay: string;
+  endPay: string;
+  reasonForLeaving: string;
   duties: string[];
   otherDuties: string;
-  pediatricYears: string;
-  nonPediatricYears: string;
+};
+
+export type ReferenceEntry = {
+  name: string;
+  relationship: string;
+  phone: string;
 };
 
 export type ApplicationFormData = {
+  // Personal Information (QOC PDF Section 1)
+  firstName: string;
+  lastName: string;
+  dateOfApplication: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  ssn: string;
+  usAuthorized: "yes" | "no" | "";
+  phone: string;
+  email: string;
+
   // Position Information
   positionAppliedFor: string;
-  dateOfApplication: string;
-  sourceOfReferral: string;
-  dateAvailableToStart: string;
-  employmentType: (typeof EMPLOYMENT_TYPES)[number] | "";
-  shiftPreferences: string[];
-  salaryExpected: string;
-  isOver18: "yes" | "no" | "";
+  otherPosition: string;
+  workPreference: string;
+  shift: string;
+  dateAvailableToWork: string;
+  salaryDesired: string;
 
-  // Personal Information
-  fullLegalName: string;
-  preferredName: string;
-  mailingAddress: string;
-  phoneMobile: string;
-  phoneAlternate: string;
-  emailAddress: string;
-  yearsAtAddress: string;
-  countryOfCitizenship: string;
+  // Background Questions
+  felonyConviction: "yes" | "no" | "";
+  felonyExplanation: string;
+  appliedBefore: "yes" | "no" | "";
+  currentlyEmployed: "yes" | "no" | "";
+  mayContactEmployer: "yes" | "no" | "";
 
-  // Employment Eligibility
-  authorizedToWorkUS: "yes" | "no" | "";
-  requiresSponsorship: "yes" | "no" | "";
+  // Education (QOC PDF table: High School, College, Certificate/License)
+  highSchool: EducationEntry;
+  college: EducationEntry;
+  certificateLicense: EducationEntry;
 
-  // Professional Licensure
+  // Employment History (QOC PDF has 2 slots, we keep 3)
+  employer1: EmployerEntry;
+  employer2: EmployerEntry;
+  employer3: EmployerEntry;
+
+  // Experience Summary (bottom of QOC PDF employment section)
+  pediatricYearsTotal: string;
+  nonPediatricYearsTotal: string;
+
+  // Extended clinical fields (internal use, not on PDF)
+  pediatricYearsLast2: string;
+  totalNursingYears: string;
+  pediatricSettings: string[];
+  pediatricSettingsOther: string;
+
+  // Licensure (internal tracking)
   mdNursingLicenseNumber: string;
   mdNursingLicenseExp: string;
   cprProvider: string;
@@ -87,106 +123,87 @@ export type ApplicationFormData = {
   otherLicense: string;
   otherLicenseExp: string;
 
-  // Clinical Experience Summary
-  pediatricYearsTotal: string;
-  pediatricYearsLast2: string;
-  nonPediatricYears: string;
-  totalNursingYears: string;
-  pediatricSettings: string[];
-  pediatricSettingsOther: string;
+  // Personal References (QOC PDF section, 3 entries)
+  reference1: ReferenceEntry;
+  reference2: ReferenceEntry;
+  reference3: ReferenceEntry;
 
-  // Education
-  highSchoolGed: string;
-  highSchoolYear: string;
-  nursingSchool: string;
-  nursingSchoolYearDegree: string;
-  additionalEducation: string;
-  additionalEducationYear: string;
-
-  // Employment History (3 employers)
-  employer1: EmployerEntry;
-  employer2: EmployerEntry;
-  employer3: EmployerEntry;
-
-  // Background — Criminal History
-  hasConviction: "yes" | "no" | "";
-  convictionExplanation: string;
-
-  // ADA
-  needsAccommodation: "yes" | "no" | "";
-  accommodationDescription: string;
-
-  // Certification
+  // Authorization / Signature
   signatureName: string;
   signatureDate: string;
 };
+
+export function emptyEducationEntry(): EducationEntry {
+  return { nameAndLocation: "", yearsAttended: "", dateGraduated: "", degreeDiploma: "" };
+}
 
 export function emptyEmployerEntry(): EmployerEntry {
   return {
     employerName: "",
     employerPhone: "",
     employerAddress: "",
-    positionTitle: "",
-    datesEmployed: "",
-    finalPayRate: "",
-    reasonForLeaving: "",
+    from: "",
+    to: "",
+    positionJobTitle: "",
     supervisorName: "",
-    supervisorTitle: "",
     supervisorPhone: "",
-    supervisorEmail: "",
-    mayContactSupervisor: "",
+    startPay: "",
+    endPay: "",
+    reasonForLeaving: "",
     duties: [],
-    otherDuties: "",
-    pediatricYears: "",
-    nonPediatricYears: ""
+    otherDuties: ""
   };
+}
+
+export function emptyReferenceEntry(): ReferenceEntry {
+  return { name: "", relationship: "", phone: "" };
 }
 
 export function emptyApplicationFormData(): ApplicationFormData {
   return {
-    positionAppliedFor: "",
+    firstName: "",
+    lastName: "",
     dateOfApplication: "",
-    sourceOfReferral: "",
-    dateAvailableToStart: "",
-    employmentType: "",
-    shiftPreferences: [],
-    salaryExpected: "",
-    isOver18: "",
-    fullLegalName: "",
-    preferredName: "",
-    mailingAddress: "",
-    phoneMobile: "",
-    phoneAlternate: "",
-    emailAddress: "",
-    yearsAtAddress: "",
-    countryOfCitizenship: "",
-    authorizedToWorkUS: "",
-    requiresSponsorship: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    ssn: "",
+    usAuthorized: "",
+    phone: "",
+    email: "",
+    positionAppliedFor: "",
+    otherPosition: "",
+    workPreference: "",
+    shift: "",
+    dateAvailableToWork: "",
+    salaryDesired: "",
+    felonyConviction: "",
+    felonyExplanation: "",
+    appliedBefore: "",
+    currentlyEmployed: "",
+    mayContactEmployer: "",
+    highSchool: emptyEducationEntry(),
+    college: emptyEducationEntry(),
+    certificateLicense: emptyEducationEntry(),
+    employer1: emptyEmployerEntry(),
+    employer2: emptyEmployerEntry(),
+    employer3: emptyEmployerEntry(),
+    pediatricYearsTotal: "",
+    nonPediatricYearsTotal: "",
+    pediatricYearsLast2: "",
+    totalNursingYears: "",
+    pediatricSettings: [],
+    pediatricSettingsOther: "",
     mdNursingLicenseNumber: "",
     mdNursingLicenseExp: "",
     cprProvider: "",
     cprExp: "",
     otherLicense: "",
     otherLicenseExp: "",
-    pediatricYearsTotal: "",
-    pediatricYearsLast2: "",
-    nonPediatricYears: "",
-    totalNursingYears: "",
-    pediatricSettings: [],
-    pediatricSettingsOther: "",
-    highSchoolGed: "",
-    highSchoolYear: "",
-    nursingSchool: "",
-    nursingSchoolYearDegree: "",
-    additionalEducation: "",
-    additionalEducationYear: "",
-    employer1: emptyEmployerEntry(),
-    employer2: emptyEmployerEntry(),
-    employer3: emptyEmployerEntry(),
-    hasConviction: "",
-    convictionExplanation: "",
-    needsAccommodation: "",
-    accommodationDescription: "",
+    reference1: emptyReferenceEntry(),
+    reference2: emptyReferenceEntry(),
+    reference3: emptyReferenceEntry(),
     signatureName: "",
     signatureDate: ""
   };
@@ -197,19 +214,97 @@ export function mergeApplicationFormData(stored: unknown): ApplicationFormData {
   if (!stored || typeof stored !== "object") return empty;
   const obj = stored as Record<string, unknown>;
   const merged: ApplicationFormData = { ...empty };
+
+  // Migrate legacy fields from the old schema shape
+  if (obj.fullLegalName && typeof obj.fullLegalName === "string" && !obj.firstName) {
+    const parts = (obj.fullLegalName as string).split(",").map((s: string) => s.trim());
+    if (parts.length >= 2) {
+      merged.lastName = parts[0];
+      merged.firstName = parts[1];
+    } else {
+      const words = (obj.fullLegalName as string).trim().split(/\s+/);
+      merged.firstName = words.slice(0, -1).join(" ");
+      merged.lastName = words[words.length - 1] || "";
+    }
+  }
+  if (obj.mailingAddress && typeof obj.mailingAddress === "string" && !obj.address) {
+    merged.address = obj.mailingAddress as string;
+  }
+  if (obj.phoneMobile && typeof obj.phoneMobile === "string" && !obj.phone) {
+    merged.phone = obj.phoneMobile as string;
+  }
+  if (obj.emailAddress && typeof obj.emailAddress === "string" && !obj.email) {
+    merged.email = obj.emailAddress as string;
+  }
+  if (obj.authorizedToWorkUS && !obj.usAuthorized) {
+    merged.usAuthorized = obj.authorizedToWorkUS as "yes" | "no" | "";
+  }
+  if (obj.hasConviction && !obj.felonyConviction) {
+    merged.felonyConviction = obj.hasConviction as "yes" | "no" | "";
+  }
+  if (obj.convictionExplanation && typeof obj.convictionExplanation === "string" && !obj.felonyExplanation) {
+    merged.felonyExplanation = obj.convictionExplanation as string;
+  }
+  if (obj.salaryExpected && typeof obj.salaryExpected === "string" && !obj.salaryDesired) {
+    merged.salaryDesired = obj.salaryExpected as string;
+  }
+  if (obj.nonPediatricYears && typeof obj.nonPediatricYears === "string" && !obj.nonPediatricYearsTotal) {
+    merged.nonPediatricYearsTotal = obj.nonPediatricYears as string;
+  }
+  // Migrate old flat education fields
+  if (obj.highSchoolGed && typeof obj.highSchoolGed === "string") {
+    if (!merged.highSchool.nameAndLocation) merged.highSchool.nameAndLocation = obj.highSchoolGed as string;
+    if (obj.highSchoolYear && !merged.highSchool.dateGraduated) merged.highSchool.dateGraduated = obj.highSchoolYear as string;
+  }
+  if (obj.nursingSchool && typeof obj.nursingSchool === "string") {
+    if (!merged.college.nameAndLocation) merged.college.nameAndLocation = obj.nursingSchool as string;
+    if (obj.nursingSchoolYearDegree && !merged.college.degreeDiploma) merged.college.degreeDiploma = obj.nursingSchoolYearDegree as string;
+  }
+
+  function migrateEmployer(oldEmp: Record<string, unknown>): Partial<EmployerEntry> {
+    const patch: Record<string, unknown> = {};
+    if (oldEmp.positionTitle && !oldEmp.positionJobTitle) patch.positionJobTitle = oldEmp.positionTitle;
+    if (oldEmp.datesEmployed && typeof oldEmp.datesEmployed === "string") {
+      const dateParts = (oldEmp.datesEmployed as string).split(/[—–\-\/]/).map((s: string) => s.trim());
+      if (!oldEmp.from) patch.from = dateParts[0] || "";
+      if (!oldEmp.to) patch.to = dateParts[1] || "";
+    }
+    if (oldEmp.finalPayRate && !oldEmp.endPay) patch.endPay = oldEmp.finalPayRate as string;
+    return patch as Partial<EmployerEntry>;
+  }
+
+  const nestedKeys = ["highSchool", "college", "certificateLicense", "employer1", "employer2", "employer3", "reference1", "reference2", "reference3"] as const;
+
   for (const k of Object.keys(empty) as Array<keyof ApplicationFormData>) {
     const value = obj[k as string];
     if (value === undefined || value === null) continue;
-    // Employer entries: merge per field
-    if (k === "employer1" || k === "employer2" || k === "employer3") {
-      const emp = value as Partial<EmployerEntry>;
-      const base = emptyEmployerEntry();
-      for (const ek of Object.keys(base) as Array<keyof EmployerEntry>) {
-        if (emp[ek] !== undefined && emp[ek] !== null) {
-          (base as Record<string, unknown>)[ek] = emp[ek] as never;
+
+    if (nestedKeys.includes(k as (typeof nestedKeys)[number])) {
+      if (typeof value !== "object") continue;
+      const sub = value as Record<string, unknown>;
+      if (k === "employer1" || k === "employer2" || k === "employer3") {
+        const base = emptyEmployerEntry();
+        const migration = migrateEmployer(sub);
+        for (const ek of Object.keys(base) as Array<keyof EmployerEntry>) {
+          const mv = migration[ek];
+          const sv = sub[ek];
+          const val = sv !== undefined && sv !== null ? sv : mv;
+          if (val !== undefined && val !== null) (base as Record<string, unknown>)[ek] = val;
         }
+        (merged as Record<string, unknown>)[k] = base;
+      } else if (k === "highSchool" || k === "college" || k === "certificateLicense") {
+        const base = emptyEducationEntry();
+        for (const ek of Object.keys(base) as Array<keyof EducationEntry>) {
+          if (sub[ek] !== undefined && sub[ek] !== null) (base as Record<string, unknown>)[ek] = sub[ek];
+        }
+        (merged as Record<string, unknown>)[k] = base;
+      } else {
+        const base = emptyReferenceEntry();
+        for (const ek of Object.keys(base) as Array<keyof ReferenceEntry>) {
+          if (sub[ek] !== undefined && sub[ek] !== null) (base as Record<string, unknown>)[ek] = sub[ek];
+        }
+        (merged as Record<string, unknown>)[k] = base;
       }
-      (merged as Record<string, unknown>)[k] = base;
       continue;
     }
     (merged as Record<string, unknown>)[k] = value;
@@ -217,18 +312,41 @@ export function mergeApplicationFormData(stored: unknown): ApplicationFormData {
   return merged;
 }
 
+function hasEmployer(e: EmployerEntry): boolean {
+  return !!(e.employerName.trim() && e.positionJobTitle.trim() && e.from.trim());
+}
+
+function hasReference(r: ReferenceEntry): boolean {
+  return !!(r.name.trim() && r.phone.trim());
+}
+
 export function validateApplicationFormForCompletion(data: ApplicationFormData): string[] {
   const errors: string[] = [];
+  if (!data.firstName.trim()) errors.push("First name is required.");
+  if (!data.lastName.trim()) errors.push("Last name is required.");
+  if (!data.email.trim()) errors.push("Email address is required.");
+  if (!data.phone.trim()) errors.push("Phone number is required.");
+  if (!data.address.trim()) errors.push("Address is required.");
+  if (!data.city.trim()) errors.push("City is required.");
+  if (!data.state.trim()) errors.push("State is required.");
+  if (!data.zipCode.trim()) errors.push("Zip code is required.");
+  if (!/^\d{5}(-\d{4})?$/.test(data.zipCode.trim())) errors.push("Zip code must be 5 digits (or 5+4 format).");
+  if (!data.ssn.trim()) errors.push("Social Security Number is required.");
+  if (data.usAuthorized !== "yes" && data.usAuthorized !== "no") errors.push("Confirm US work authorization.");
   if (!data.positionAppliedFor.trim()) errors.push("Position applied for is required.");
-  if (!data.fullLegalName.trim()) errors.push("Full legal name is required.");
-  if (!data.emailAddress.trim()) errors.push("Email address is required.");
-  if (!data.phoneMobile.trim()) errors.push("Mobile phone is required.");
-  if (!data.mailingAddress.trim()) errors.push("Mailing address is required.");
-  if (data.isOver18 !== "yes" && data.isOver18 !== "no") errors.push("Confirm whether you are 18 or older.");
-  if (data.authorizedToWorkUS !== "yes" && data.authorizedToWorkUS !== "no") errors.push("Confirm US work authorization.");
-  if (data.hasConviction !== "yes" && data.hasConviction !== "no") errors.push("Answer the criminal history question.");
-  if (data.hasConviction === "yes" && !data.convictionExplanation.trim()) errors.push("Explain your criminal history disclosure.");
+  if (data.felonyConviction !== "yes" && data.felonyConviction !== "no") errors.push("Answer the felony conviction question.");
+  if (data.felonyConviction === "yes" && !data.felonyExplanation.trim()) errors.push("Explain your felony conviction.");
+
+  if (!data.highSchool.nameAndLocation.trim()) errors.push("High school name and location is required.");
+
+  if (!hasEmployer(data.employer1) && !hasEmployer(data.employer2) && !hasEmployer(data.employer3)) {
+    errors.push("At least one employer with name, job title, and start date is required.");
+  }
+
+  const refCount = [data.reference1, data.reference2, data.reference3].filter(hasReference).length;
+  if (refCount < 2) errors.push("At least two references with name and phone number are required.");
+
   if (!data.signatureName.trim()) errors.push("Sign the application by typing your full legal name.");
-  if (!data.signatureDate.trim()) errors.push("Sign date is required.");
+  if (!data.signatureDate.trim()) errors.push("Signature date is required.");
   return errors;
 }

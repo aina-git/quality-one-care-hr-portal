@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, AlertTriangle, CheckCircle2, ExternalLink, FileText } from "lucide-react";
+import { CgisPrefilledForm } from "@/components/CgisPrefilledForm";
 import { CreateVerificationButton } from "@/components/CreateVerificationButton";
 import { CrossValidationPanel } from "@/components/CrossValidationPanel";
 import { DashboardShell } from "@/components/DashboardShell";
 import { DocumentPreviewLink } from "@/components/DocumentPreviewLink";
+import { DuplicateApplicantAlert } from "@/components/DuplicateApplicantAlert";
+import { EmploymentGapAlert } from "@/components/EmploymentGapAlert";
 import { FinalReviewSheet } from "@/components/FinalReviewSheet";
 import { OigCheckButton } from "@/components/OigCheckButton";
+import { StalePendingAlert } from "@/components/StalePendingAlert";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { VerificationAssistantPanel } from "@/components/VerificationAssistantPanel";
 import {
@@ -294,6 +298,11 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
               </CardContent>
             </Card>
 
+            {/* Automated alerts */}
+            <DuplicateApplicantAlert applicationId={application.id} />
+            <EmploymentGapAlert applicationId={application.id} />
+            <StalePendingAlert applicationId={application.id} />
+
             {/* The 13-row Final Review Sheet — matches the paper form */}
             <FinalReviewSheet
               applicationId={application.id}
@@ -406,6 +415,19 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
                         <div className="mt-3 rounded-md border border-blue-200 bg-blue-50/40 p-3">
                           <p className="text-xs font-semibold text-blue-900 mb-2">Automated verification</p>
                           <OigCheckButton applicationId={application.id} />
+                        </div>
+                      )}
+                      {canEdit && item.category === cgisCategory && (
+                        <div className="mt-3 rounded-md border border-purple-200 bg-purple-50/40 p-3">
+                          <p className="text-xs font-semibold text-purple-900 mb-2">CGIS Background Check Form</p>
+                          <CgisPrefilledForm
+                            itemId={item.id}
+                            applicationId={application.id}
+                            applicantName={profile.user.name ?? profile.user.email}
+                            desiredRole={application.desiredRole}
+                            hrUserName={user.name ?? ""}
+                            hrUserEmail={user.email}
+                          />
                         </div>
                       )}
                       {canEdit && assistantConfig && (

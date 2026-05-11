@@ -96,6 +96,15 @@ export default async function DonFinalApprovalPrintPage({ params }: { params: Pr
           <p className="border-t pt-2">Date</p>
         </div>
       </section>
+
+      <div className="mt-6 flex gap-3 justify-center print:hidden" data-no-print>
+        <a
+          href={`/don/final-approval/${applicationId}/application-print`}
+          className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700"
+        >
+          Print QOC Employment Application
+        </a>
+      </div>
     </main>
   );
 }
