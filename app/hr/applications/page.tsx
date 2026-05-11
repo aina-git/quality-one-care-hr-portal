@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AIReviewStatus, ApplicationStatus, Prisma, RiskLevel } from "@prisma/client";
 import { DashboardShell } from "@/components/DashboardShell";
 import { HrApplicationsBulkActions } from "@/components/HrApplicationsBulkActions";
+import { QocCheckEmailsButton, QocRecentCredentialsButton } from "@/components/QocAutoButtons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
@@ -154,8 +155,12 @@ export default async function HrApplicationsPage({
       ]}
     >
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Applications</CardTitle>
+          <div className="flex items-center gap-2">
+            <QocCheckEmailsButton />
+            <QocRecentCredentialsButton />
+          </div>
         </CardHeader>
         <CardContent className="grid gap-4">
           <form className="grid gap-3 rounded-md border bg-slate-50 p-3 md:grid-cols-3 xl:grid-cols-7" action="/hr/applications">
