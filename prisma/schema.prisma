@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   applicant
   hr
+  hr_assistant
   admin
   super_admin_hr
   don_approver

@@ -68,6 +68,7 @@ export async function requireRole(roles: Role[]) {
 export function getRoleHome(role: Role) {
   if (role === "admin" || role === "super_admin_hr") return "/admin/dashboard";
   if (role === "hr" || role === "don_approver" || role === "executive_view_only") return "/hr/dashboard";
+  if (role === "hr_assistant") return "/hr-assistant/dashboard";
   if (role === "scheduler_limited") return "/scheduler/dashboard";
   return "/applicant/dashboard";
 }

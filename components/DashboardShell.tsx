@@ -31,7 +31,8 @@ type NavItem = {
 
 const roleLabels: Record<SessionUser["role"], string> = {
   applicant: "Applicant",
-  hr: "HR Operations",
+  hr: "HR Coordinator",
+  hr_assistant: "HR Assistant",
   admin: "Administrator",
   super_admin_hr: "Super Admin HR",
   don_approver: "DON Reviewer",
@@ -64,21 +65,25 @@ function iconFor(label: string, href: string) {
 }
 
 function primaryNav(user: SessionUser, provided: NavItem[]) {
-  const notificationHref = user.role === "applicant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
+  const notificationHref = user.role === "applicant" || user.role === "hr_assistant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
   const calendarHref = user.role === "applicant"
     ? "/applicant/calendar"
-    : user.role === "scheduler_limited"
-      ? "/scheduler/calendar"
-      : user.role === "super_admin_hr" || user.role === "admin"
-        ? "/admin/calendar"
-        : "/hr/calendar";
+    : user.role === "hr_assistant"
+      ? "/calendar"
+      : user.role === "scheduler_limited"
+        ? "/scheduler/calendar"
+        : user.role === "super_admin_hr" || user.role === "admin"
+          ? "/admin/calendar"
+          : "/hr/calendar";
   const tasksHref = user.role === "applicant"
     ? "/applicant/tasks"
-    : user.role === "scheduler_limited"
+    : user.role === "hr_assistant"
       ? "/tasks"
-      : user.role === "super_admin_hr" || user.role === "admin"
-        ? "/admin/tasks"
-        : "/hr/tasks";
+      : user.role === "scheduler_limited"
+        ? "/tasks"
+        : user.role === "super_admin_hr" || user.role === "admin"
+          ? "/admin/tasks"
+          : "/hr/tasks";
   const utility: NavItem[] = [
     { href: notificationHref, label: "Notifications" },
     { href: calendarHref, label: "Calendar" },
@@ -91,6 +96,7 @@ function primaryNav(user: SessionUser, provided: NavItem[]) {
 function shellBackground(role: SessionUser["role"]) {
   if (role === "don_approver") return "bg-pink-50";
   if (role === "hr" || role === "super_admin_hr") return "bg-sky-50";
+  if (role === "hr_assistant") return "bg-teal-50";
   return "bg-[#f7f9fb]";
 }
 
@@ -98,6 +104,7 @@ function mainBackground(role: SessionUser["role"], nav: NavItem[]) {
   const isDonArea = role === "don_approver" || nav.some((item) => item.href.startsWith("/don"));
   if (isDonArea) return "bg-pink-50/80";
   if (role === "hr" || role === "super_admin_hr" || role === "admin" || role === "executive_view_only") return "bg-sky-50/80";
+  if (role === "hr_assistant") return "bg-teal-50/80";
   return "";
 }
 
@@ -121,10 +128,10 @@ export async function DashboardShell({
   }).catch(() => 0);
   const items = primaryNav(user, nav);
   const workspaceBackground = mainBackground(user.role, nav);
-  const homeHref = user.role === "applicant" ? "/applicant/dashboard" : user.role === "scheduler_limited" ? "/scheduler/dashboard" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/dashboard" : "/hr/dashboard";
+  const homeHref = user.role === "applicant" ? "/applicant/dashboard" : user.role === "hr_assistant" ? "/hr-assistant/dashboard" : user.role === "scheduler_limited" ? "/scheduler/dashboard" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/dashboard" : "/hr/dashboard";
   const notificationHref = user.role === "applicant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
   const tasksHref = user.role === "applicant" ? "/applicant/tasks" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/tasks" : "/hr/tasks";
-  const searchHref = user.role === "applicant" || user.role === "scheduler_limited" || user.role === "don_approver" ? null : "/admin/search";
+  const searchHref = user.role === "applicant" || user.role === "hr_assistant" || user.role === "scheduler_limited" || user.role === "don_approver" ? null : "/admin/search";
 
   return (
     <div className={cn("min-h-screen text-slate-950", shellBackground(user.role))}>

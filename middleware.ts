@@ -10,10 +10,12 @@ const DEFAULT_SECRET = "development-only-change-me";
 
 const pageProtectedRoutes: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/applicant", roles: ["applicant"] },
-  { prefix: "/calendar", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
-  { prefix: "/tasks", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
-  { prefix: "/notifications", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
+  { prefix: "/calendar", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
+  { prefix: "/tasks", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
+  { prefix: "/notifications", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
+  { prefix: "/hr-assistant", roles: ["hr_assistant"] },
   { prefix: "/hr/log-review", roles: ["admin", "super_admin_hr"] },
+  { prefix: "/hr/applicants/live", roles: ["hr", "admin", "super_admin_hr"] },
   { prefix: "/hr", roles: ["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"] },
   { prefix: "/admin/users", roles: ["admin", "super_admin_hr"] },
   { prefix: "/admin", roles: ["admin", "super_admin_hr", "executive_view_only"] },
@@ -23,20 +25,23 @@ const pageProtectedRoutes: Array<{ prefix: string; roles: Role[] }> = [
 
 const apiProtectedRoutes: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/api/applicant", roles: ["applicant"] },
-  { prefix: "/api/calendar", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
-  { prefix: "/api/tasks", roles: ["applicant", "hr", "admin", "super_admin_hr", "scheduler_limited"] },
-  { prefix: "/api/reminders", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
-  { prefix: "/api/messages", roles: ["hr", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
-  { prefix: "/api/notifications", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
+  { prefix: "/api/calendar", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
+  { prefix: "/api/tasks", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "scheduler_limited"] },
+  { prefix: "/api/reminders", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
+  { prefix: "/api/messages", roles: ["hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
+  { prefix: "/api/notifications", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
   { prefix: "/api/application", roles: ["applicant"] },
-  { prefix: "/api/documents", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver"] },
+  { prefix: "/api/documents", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver"] },
   { prefix: "/api/intake", roles: ["applicant"] },
+  { prefix: "/api/hr/applications", roles: ["hr", "hr_assistant", "admin", "super_admin_hr"] },
+  { prefix: "/api/hr/documents", roles: ["hr", "hr_assistant", "admin", "super_admin_hr"] },
+  { prefix: "/api/hr/extracted-fields", roles: ["hr", "hr_assistant", "admin", "super_admin_hr"] },
   { prefix: "/api/hr", roles: ["hr", "admin", "super_admin_hr"] },
   { prefix: "/api/don", roles: ["admin", "super_admin_hr", "don_approver"] },
-  { prefix: "/api/todos", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
+  { prefix: "/api/todos", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"] },
   { prefix: "/api/admin/users", roles: ["admin", "super_admin_hr"] },
   { prefix: "/api/admin", roles: ["admin", "super_admin_hr"] },
-  { prefix: "/api/address", roles: ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] }
+  { prefix: "/api/address", roles: ["applicant", "hr", "hr_assistant", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] }
 ];
 
 const rateLimitRules = [
@@ -62,6 +67,7 @@ function getSecret() {
 function roleHome(role: Role) {
   if (role === "admin" || role === "super_admin_hr") return "/admin/dashboard";
   if (role === "hr" || role === "don_approver" || role === "executive_view_only") return "/hr/dashboard";
+  if (role === "hr_assistant") return "/hr-assistant/dashboard";
   if (role === "scheduler_limited") return "/scheduler/dashboard";
   return "/applicant/dashboard";
 }
@@ -204,6 +210,18 @@ export async function middleware(request: NextRequest) {
   }
   if (role === "applicant" && (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/hr") || request.nextUrl.pathname.startsWith("/don") || request.nextUrl.pathname.startsWith("/scheduler"))) {
     return redirectResponse("/applicant/dashboard", request);
+  }
+  if (role === "hr_assistant" && (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/hr/") || request.nextUrl.pathname.startsWith("/don") || request.nextUrl.pathname.startsWith("/scheduler"))) {
+    return redirectResponse("/hr-assistant/dashboard", request);
+  }
+  if (role === "don_approver" && (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/scheduler"))) {
+    return redirectResponse("/don/approval-queue", request);
+  }
+  if (role === "scheduler_limited" && (request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/hr") || request.nextUrl.pathname.startsWith("/don"))) {
+    return redirectResponse("/scheduler/dashboard", request);
+  }
+  if (role === "executive_view_only" && request.nextUrl.pathname.startsWith("/scheduler")) {
+    return redirectResponse("/hr/dashboard", request);
   }
 
   const apiMatch = apiProtectedRoutes.find((route) => request.nextUrl.pathname.startsWith(route.prefix));

@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.3.0";
+export const APP_VERSION = "2.4.0";
 
 export const APP_NAME = "Quality One Care HR Operations Portal";
 
@@ -18,6 +18,19 @@ export type VersionEntry = {
 };
 
 export const VERSION_HISTORY: VersionEntry[] = [
+  {
+    version: "2.4.0",
+    date: "2026-05-11",
+    title: "HR Assistant Role + Strict Access Control",
+    highlights: [
+      "New HR Assistant role with restricted read-only dashboard",
+      "HR Assistant sees only their own dashboard and application list",
+      "Strict role isolation: every role locked to their own section",
+      "Only HR Coordinator and Admin can manage users and system settings",
+      "DON, Scheduler, Executive each blocked from other role areas",
+      "HR Coordinator label updated across the portal"
+    ]
+  },
   {
     version: "2.3.0",
     date: "2026-05-11",

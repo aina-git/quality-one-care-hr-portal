@@ -7,7 +7,8 @@ import { getCsrfHeaders } from "@/lib/csrf-client";
 
 const roles: Array<[Role, string]> = [
   ["applicant", "Applicant"],
-  ["hr", "HR"],
+  ["hr_assistant", "HR Assistant"],
+  ["hr", "HR Coordinator"],
   ["admin", "Admin"],
   ["super_admin_hr", "Super Admin HR"],
   ["don_approver", "DON Approver"],

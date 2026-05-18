@@ -7,6 +7,7 @@ import { APP_COPYRIGHT, APP_NAME, APP_VERSION, VERSION_HISTORY } from "@/lib/ver
 
 function dashboardHref(role: string) {
   if (role === "applicant") return "/applicant/dashboard";
+  if (role === "hr_assistant") return "/hr-assistant/dashboard";
   if (role === "scheduler_limited") return "/scheduler/dashboard";
   if (role === "don_approver") return "/don/approval-queue";
   if (role === "admin" || role === "super_admin_hr") return "/admin/dashboard";
