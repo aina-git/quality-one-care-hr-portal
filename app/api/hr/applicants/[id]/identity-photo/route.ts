@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sanitizeText } from "@/lib/security";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const reason = sanitizeText(body.reason, 120);

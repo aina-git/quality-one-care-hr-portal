@@ -17,7 +17,7 @@ function priorityClass(priority: string) {
 }
 
 export default async function AdminNotificationsPage() {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const [groupedNotifications, systemAlerts, missingDocuments, expiringLicenses, queuedMessages, overdueTasks, readyForDon, pendingHrReviews] = await Promise.all([
     listGroupedNotifications(user.id, { take: 80 }),
     prisma.systemAlert.findMany({

@@ -21,7 +21,7 @@ function ageLabel(d: Date | null) {
 }
 
 export default async function DonApprovalQueuePage() {
-  const user = await requireRole(["admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "don_approver", "executive_view_only"]);
 
   const apps = await prisma.application.findMany({
     where: {

@@ -16,7 +16,7 @@ function readiness(application: {
 }
 
 export default async function SchedulerDashboardPage() {
-  const user = await requireRole(["scheduler_limited", "admin", "super_admin_hr"]);
+  const user = await requireRole(["scheduler_limited", "super_admin_hr"]);
   const applications = await prisma.application.findMany({
     where: { status: "approved" },
     include: {

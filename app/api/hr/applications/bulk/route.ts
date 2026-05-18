@@ -10,7 +10,7 @@ import { handleApiError } from "@/services/monitoring/errorService";
 import { startHrReviewWorkflow } from "@/services/workflow/hrReviewQueueService";
 
 export async function POST(request: Request) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         await createApplicantMessageWithEmail({
           applicationId: application.id,
           senderId: user.id,
-          senderRole: user.role as "hr" | "admin",
+          senderRole: user.role as "hr" | "super_admin_hr",
           templateKey: template.templateKey,
           subject: template.subject,
           body: template.body,

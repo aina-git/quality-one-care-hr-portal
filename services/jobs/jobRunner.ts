@@ -246,7 +246,7 @@ async function runStaleAnalysisRecovery() {
       title: "Stuck AI analysis recovered",
       message: `Application ${app.id} was stuck in ai_analysis_in_progress for >10 minutes and was automatically moved to ai_issues_found.`,
       applicationId: app.id,
-      targetRole: "admin"
+      targetRole: "super_admin_hr"
     });
   }
   return { processedCount: staleApps.length, details: { recovered: staleApps.length } };

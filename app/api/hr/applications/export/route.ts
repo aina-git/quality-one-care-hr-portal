@@ -4,7 +4,7 @@ import { exportApplicationsCsv } from "@/services/export/exportService";
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function GET(request: Request) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
 
   try {
     const url = new URL(request.url);

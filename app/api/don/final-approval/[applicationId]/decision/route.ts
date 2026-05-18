@@ -8,7 +8,7 @@ import { handleApiError } from "@/services/monitoring/errorService";
 const decisions = ["approved_for_hire", "not_approved", "returned_for_correction"];
 
 export async function POST(request: Request, { params }: { params: Promise<{ applicationId: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr", "don_approver"]);
+  const user = await requireRole(["super_admin_hr", "don_approver"]);
   const { applicationId } = await params;
 
   try {

@@ -11,7 +11,7 @@ import { sanitizeEmail, sanitizeText } from "@/lib/security";
 // If a user with the given email already exists and is an applicant, we
 // reuse them. Otherwise we create a fresh applicant account.
 export async function POST(request: Request) {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
   const body = await request.json().catch(() => ({}));
 
   const email = sanitizeEmail(body.email);

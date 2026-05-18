@@ -8,7 +8,7 @@ import { checkApplicantAgainstSam, refreshSamDataset, getSamDatasetMetadata } fr
 export const POST = withApi(
   { scope: "hr.verification.sam", entityType: "application", fallbackMessage: "SAM exclusion check failed." },
   async (_request: Request, { params }: { params: Promise<{ applicationId: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { applicationId } = await params;
 
     const application = await prisma.application.findUnique({

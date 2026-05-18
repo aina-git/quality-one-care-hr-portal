@@ -7,7 +7,7 @@ import { getOigDatasetMetadata } from "@/services/verification/oigService";
 export const GET = withApi(
   { scope: "admin.verification.providers", entityType: "verificationProvider", fallbackMessage: "Could not load providers." },
   async () => {
-    await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+    await requireRole(["super_admin_hr", "executive_view_only"]);
     const providers = summarizeProviders();
     const oigMeta = await getOigDatasetMetadata();
     return NextResponse.json({

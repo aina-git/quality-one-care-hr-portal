@@ -27,7 +27,7 @@ function priorityBadge(priority: string) {
 }
 
 export default async function HrTrainingPage() {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "executive_view_only"]);
   const recommendations = await prisma.trainingRecommendation.findMany({
     include: {
       application: {

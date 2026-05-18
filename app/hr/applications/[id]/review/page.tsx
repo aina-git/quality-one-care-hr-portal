@@ -47,7 +47,7 @@ function dataRow(rowLabel: string, value: string | null | undefined) {
 }
 
 export default async function HrApplicationReviewPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   const { id } = await params;
 
   // If application is just-submitted and pending, claim it for HR (existing behavior)

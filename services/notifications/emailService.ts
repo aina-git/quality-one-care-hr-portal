@@ -295,7 +295,7 @@ export async function createApplicantMessageWithEmail({
 }: {
   applicationId: string;
   senderId?: string | null;
-  senderRole: "applicant" | "hr" | "admin" | "system";
+  senderRole: "applicant" | "hr" | "super_admin_hr" | "system";
   templateKey?: string;
   subject: string;
   body: string;

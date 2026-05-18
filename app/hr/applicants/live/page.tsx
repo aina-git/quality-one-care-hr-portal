@@ -45,7 +45,7 @@ function activityTone(date: Date | null | undefined) {
 const TERMINAL_STATUSES = ["don_approved", "approved", "don_rejected", "rejected", "final_not_approved", "completed"];
 
 export default async function HrLiveApplicantsPage() {
-  const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
 
   // Pull every application that's in flight — not draft, not terminal.
   const applications = await prisma.application.findMany({

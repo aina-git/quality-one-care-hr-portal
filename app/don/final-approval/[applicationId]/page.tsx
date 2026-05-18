@@ -40,7 +40,7 @@ function VerificationStatusBadge({ status }: { status: string }) {
 }
 
 export default async function DonFinalApprovalPage({ params }: { params: Promise<{ applicationId: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "don_approver", "executive_view_only"]);
   const { applicationId } = await params;
   const checklist = await getVerificationChecklist(applicationId);
   if (!checklist) redirect("/don/approval-queue");
@@ -57,7 +57,7 @@ export default async function DonFinalApprovalPage({ params }: { params: Promise
   const profilePhoto = applicant.profilePhotoDocumentId
     ? await prisma.uploadedDocument.findUnique({ where: { id: applicant.profilePhotoDocumentId }, select: { id: true, fileName: true } })
     : null;
-  const canDecide = ["admin", "super_admin_hr", "don_approver"].includes(user.role);
+  const canDecide = ["super_admin_hr", "don_approver"].includes(user.role);
   const isReadOnly = user.role === "executive_view_only";
 
   return (

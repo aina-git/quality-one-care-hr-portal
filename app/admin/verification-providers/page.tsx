@@ -8,7 +8,7 @@ import { summarizeProviders } from "@/services/verification/externalVerifierFram
 import { getOigDatasetMetadata } from "@/services/verification/oigService";
 
 export default async function VerificationProvidersPage() {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const providers = summarizeProviders();
   const oigMeta = await getOigDatasetMetadata();
 

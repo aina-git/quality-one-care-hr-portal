@@ -10,7 +10,7 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const APPLICANT_ROLES: Role[] = ["applicant"];
-const STAFF_ROLES: Role[] = ["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"];
+const STAFF_ROLES: Role[] = ["hr", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"];
 
 const TABS = [
   { key: "applicants", label: "Applicants", roles: APPLICANT_ROLES },
@@ -21,7 +21,7 @@ const TABS = [
 type TabKey = typeof TABS[number]["key"];
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   const { tab } = await searchParams;
   const activeTab: TabKey = (TABS.find((t) => t.key === tab)?.key ?? "all") as TabKey;
   const activeRoles = TABS.find((t) => t.key === activeTab)!.roles as unknown as Role[];

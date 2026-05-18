@@ -21,7 +21,7 @@ const TABS = [
 type TabKey = typeof TABS[number]["key"];
 
 export default async function AdminDonApprovalQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const { tab } = await searchParams;
   const activeTab: TabKey = (TABS.find((t) => t.key === tab)?.key ?? "awaiting") as TabKey;
   const activeStatuses = TABS.find((t) => t.key === activeTab)!.statuses as unknown as FinalVerificationStatus[];

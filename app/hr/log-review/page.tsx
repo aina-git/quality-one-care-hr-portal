@@ -31,7 +31,7 @@ export default async function LogReviewPage({
     failed?: string;
   }>;
 }) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   const filters = await searchParams;
   const where: Prisma.AuditLogWhereInput = {};
   if (filters.user) {
@@ -119,7 +119,7 @@ export default async function LogReviewPage({
               <input name="action" defaultValue={filters.action ?? ""} placeholder="Action type" className="h-10 rounded-md border bg-white px-3 text-sm" />
               <select name="role" defaultValue={filters.role ?? ""} className="h-10 rounded-md border bg-white px-3 text-sm">
                 <option value="">All roles</option>
-                {["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"].map((role) => <option key={role} value={role}>{valueLabel(role)}</option>)}
+                {["applicant", "hr", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"].map((role) => <option key={role} value={role}>{valueLabel(role)}</option>)}
               </select>
               <input name="from" defaultValue={filters.from ?? ""} type="date" className="h-10 rounded-md border bg-white px-3 text-sm" />
               <input name="to" defaultValue={filters.to ?? ""} type="date" className="h-10 rounded-md border bg-white px-3 text-sm" />

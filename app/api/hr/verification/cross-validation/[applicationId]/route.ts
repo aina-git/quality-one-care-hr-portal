@@ -7,7 +7,7 @@ import { runCrossValidation } from "@/services/verification/crossValidationServi
 export const POST = withApi(
   { scope: "hr.verification.crossValidation", entityType: "application", fallbackMessage: "Cross-validation failed." },
   async (_request: Request, { params }: { params: Promise<{ applicationId: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+    const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
     const { applicationId } = await params;
     const report = await runCrossValidation(applicationId);
     await logAction(user.id, "cross_validation_run", "application", applicationId, {

@@ -4,7 +4,7 @@ import { logAction } from "@/lib/audit";
 import { getVerificationChecklist, refreshChecklistStatus, summarizeChecklist } from "@/services/verification/verificationService";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const checklist = await getVerificationChecklist(id);
   if (!checklist) return NextResponse.json({ error: "Verification checklist not found." }, { status: 404 });

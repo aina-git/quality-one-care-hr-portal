@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { scheduleOrUpdateInterview, updateInterviewStatus } from "@/services/interview/interviewService";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const scheduledAt = new Date(String(body.scheduledAt ?? ""));
@@ -20,7 +20,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       location: body.location ? String(body.location) : undefined,
       notes: body.notes ? String(body.notes) : undefined,
       userId: user.id,
-      userRole: user.role as "hr" | "admin"
+      userRole: user.role as "hr" | "super_admin_hr"
     });
     return NextResponse.json({ interview });
   } catch (error) {
@@ -30,7 +30,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const interviewId = String(body.interviewId ?? "");
@@ -46,7 +46,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       status,
       notes: body.notes ? String(body.notes) : undefined,
       userId: user.id,
-      userRole: user.role as "hr" | "admin"
+      userRole: user.role as "hr" | "super_admin_hr"
     });
     return NextResponse.json({ interview });
   } catch (error) {

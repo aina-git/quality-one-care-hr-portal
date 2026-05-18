@@ -23,7 +23,7 @@ import { ensureFinalVerificationChecklist, getVerificationChecklist } from "@/se
 export const POST = withApi(
   { scope: "hr.full_analysis", entityType: "application", fallbackMessage: "Could not run analysis." },
   async (_request: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { id } = await params;
 
     const application = await prisma.application.findUnique({

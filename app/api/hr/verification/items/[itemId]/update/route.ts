@@ -12,7 +12,7 @@ const itemStatuses = ["not_started", "pending", "pending_external_check", "verif
 const verificationTypes = ["maryland_board_of_nursing", "nursys", "maryland_case_search", "oig", "cgis", "nso", "cpr", "other"];
 
 export async function POST(request: Request, { params }: { params: Promise<{ itemId: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { itemId } = await params;
 
   try {

@@ -61,7 +61,7 @@ function VerificationStatusBadge({ status }: { status: string }) {
 const cgisCategory = "background_check_cgis";
 
 export default async function HrVerificationPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   const { id } = await params;
   const application = await prisma.application.findUnique({
     where: { id },
@@ -82,7 +82,7 @@ export default async function HrVerificationPage({ params }: { params: Promise<{
   const summary = checklist ? summarizeChecklist(checklist) : null;
   const documents = application.documents.map((d) => ({ id: d.id, fileName: d.fileName, documentType: d.documentType, detectedDocumentType: d.detectedDocumentType }));
   const matched = checklist ? splitMatchedAndUnmatchedDocuments(documents, checklist.items) : { matched: [], unmatched: documents };
-  const canEdit = ["hr", "admin", "super_admin_hr"].includes(user.role);
+  const canEdit = ["hr", "super_admin_hr"].includes(user.role);
   const isReadOnly = user.role === "executive_view_only" || user.role === "don_approver";
 
   return (

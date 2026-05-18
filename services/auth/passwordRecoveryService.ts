@@ -120,7 +120,7 @@ async function findStaff(input: RequestInput) {
   return prisma.user.findFirst({
     where: {
       email,
-      role: { in: ["hr", "admin", "super_admin_hr", "don_approver", "scheduler_limited"] },
+      role: { in: ["hr", "super_admin_hr", "don_approver", "scheduler_limited"] },
       isActive: true
     },
     include: { applicant: true }

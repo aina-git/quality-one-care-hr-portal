@@ -5,7 +5,7 @@ import { isEmailProviderConfigured, sendTestEmail } from "@/services/notificatio
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function POST(request: Request) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   try {
     if (!isEmailProviderConfigured()) {
       return NextResponse.json(

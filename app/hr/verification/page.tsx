@@ -41,7 +41,7 @@ export default async function VerificationQueuePage({
     result?: string;
   }>;
 }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   const filters = await searchParams;
   const where: Prisma.FinalVerificationChecklistWhereInput = {};
   if (filters.status && filters.status !== "all") where.status = filters.status as never;

@@ -10,7 +10,7 @@ import { AppError, handleApiError } from "@/services/monitoring/errorService";
 // set / change / clear which physical clinic processed an applicant's intake.
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireRole(["admin", "super_admin_hr", "hr"]);
+    const actor = await requireRole(["super_admin_hr", "hr"]);
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
 
@@ -53,7 +53,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 // per the Prisma relations on the Application model. HR-only. Audit logged.
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireRole(["admin", "super_admin_hr", "hr"]);
+    const actor = await requireRole(["super_admin_hr", "hr"]);
     const { id } = await params;
     const application = await prisma.application.findUnique({ where: { id } });
     if (!application) {

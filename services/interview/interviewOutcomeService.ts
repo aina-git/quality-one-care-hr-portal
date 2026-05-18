@@ -39,7 +39,7 @@ export async function recordInterviewOutcome({
   outcome: InterviewOutcome;
   hrNote: string;
   userId: string;
-  userRole: "hr" | "admin" | "super_admin_hr";
+  userRole: "hr" | "super_admin_hr" | "super_admin_hr";
 }) {
   if (!hrNote.trim()) {
     throw new Error("Interview outcome note is required.");
@@ -82,7 +82,7 @@ export async function recordInterviewOutcome({
   await createApplicantMessageWithEmail({
     applicationId,
     senderId: userId,
-    senderRole: userRole === "super_admin_hr" ? "admin" : userRole,
+    senderRole: userRole === "super_admin_hr" ? "super_admin_hr" : userRole,
     templateKey: `interview_outcome_${outcome}`,
     subject: messageSubject,
     body: messageBody,

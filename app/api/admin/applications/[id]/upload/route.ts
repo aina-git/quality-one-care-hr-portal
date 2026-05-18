@@ -71,7 +71,7 @@ function validateMagicBytes(buffer: Buffer, mimeType: string) {
 // Same validation + AI pipeline as the applicant-facing upload, but the
 // audit trail records the actor (admin/HR) and applicant separately.
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
   const { id: applicationId } = await context.params;
 
   try {

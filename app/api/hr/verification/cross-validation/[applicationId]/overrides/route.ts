@@ -9,7 +9,7 @@ const VALID_FIELDS = new Set(["name", "dateOfBirth", "licenseNumber", "licenseTy
 
 export async function POST(request: Request, ctx: { params: Promise<{ applicationId: string }> }) {
   try {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { applicationId } = await ctx.params;
     const body = await request.json().catch(() => ({}));
 
@@ -76,7 +76,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ applicatio
 
 export async function DELETE(request: Request, ctx: { params: Promise<{ applicationId: string }> }) {
   try {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { applicationId } = await ctx.params;
     const url = new URL(request.url);
     const overrideId = url.searchParams.get("id");

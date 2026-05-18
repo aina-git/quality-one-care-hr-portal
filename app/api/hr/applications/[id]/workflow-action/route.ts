@@ -36,7 +36,7 @@ function statusFor(action: WorkflowAction): ApplicationStatus | null {
 }
 
 export const POST = withApi({ scope: "hr.workflow_action", entityType: "application", fallbackMessage: "Could not perform workflow action." }, async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const actionValue = sanitizeText(body.action, 80);

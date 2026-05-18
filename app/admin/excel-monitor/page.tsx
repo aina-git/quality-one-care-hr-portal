@@ -12,7 +12,7 @@ const adminNav = [
 ];
 
 export default async function AdminExcelMonitorPage() {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
 
   return (
     <DashboardShell user={user} nav={adminNav}>

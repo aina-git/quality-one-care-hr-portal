@@ -23,7 +23,7 @@ export async function scheduleOrUpdateInterview({
   location?: string;
   notes?: string;
   userId: string;
-  userRole: "hr" | "admin";
+  userRole: "hr" | "super_admin_hr";
 }) {
   const application = await prisma.application.findUnique({ where: { id: applicationId } });
   if (!application) throw new Error("Application not found.");
@@ -85,7 +85,7 @@ export async function updateInterviewStatus({
   status: InterviewStatus;
   notes?: string;
   userId: string;
-  userRole: "hr" | "admin";
+  userRole: "hr" | "super_admin_hr";
 }) {
   const interview = await prisma.interviewRecord.findUnique({ where: { id: interviewId } });
   if (!interview || interview.applicationId !== applicationId) throw new Error("Interview not found.");

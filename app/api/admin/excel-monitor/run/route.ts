@@ -5,7 +5,7 @@ import { runExcelCredentialMonitor } from "@/services/excel/excelCredentialMonit
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function POST(request: Request) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   try {
     const body = await request.json().catch(() => ({}));
     const force = Boolean(body.force);

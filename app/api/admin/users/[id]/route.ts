@@ -7,10 +7,10 @@ import { prisma } from "@/lib/prisma";
 import { sanitizeText } from "@/lib/security";
 import { withApi } from "@/services/monitoring/errorService";
 
-const roles = ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"];
+const roles = ["applicant", "hr", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"];
 
 export const DELETE = withApi({ scope: "admin.users", entityType: "user", fallbackMessage: "Could not delete user." }, async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
   const { id } = await params;
   if (id === actor.id) {
     return NextResponse.json({ error: "You cannot delete your own account." }, { status: 400 });
@@ -56,7 +56,7 @@ export const DELETE = withApi({ scope: "admin.users", entityType: "user", fallba
 });
 
 export const PATCH = withApi({ scope: "admin.users", entityType: "user", fallbackMessage: "Could not update user." }, async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const role = body.role === undefined ? undefined : String(body.role) as Role;

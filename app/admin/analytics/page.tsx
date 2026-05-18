@@ -22,7 +22,7 @@ function statusLabel(s: string) {
 }
 
 export default async function AdminAnalyticsPage() {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const [analytics, pipeline, licenseCalendar] = await Promise.all([
     getAdminAnalyticsData(),
     getPipelineAnalytics(),

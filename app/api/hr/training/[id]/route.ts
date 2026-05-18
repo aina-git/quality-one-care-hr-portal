@@ -10,7 +10,7 @@ const ALLOWED_STATUSES: TrainingRecommendationStatus[] = ["recommended", "assign
 export const PATCH = withApi(
   { scope: "hr.training", entityType: "trainingRecommendation", fallbackMessage: "Could not update training." },
   async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const status = String(body.status ?? "") as TrainingRecommendationStatus;

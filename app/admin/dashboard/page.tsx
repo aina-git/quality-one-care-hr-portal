@@ -17,7 +17,7 @@ import { getAdminMetrics } from "@/services/applicationService";
 import { repairHrReviewWorkflowIntegrity } from "@/services/workflow/hrReviewQueueService";
 
 export default async function AdminDashboardPage() {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   if (user.role !== "executive_view_only") {
     await repairHrReviewWorkflowIntegrity(user.id);
   }

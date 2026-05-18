@@ -6,9 +6,9 @@ import { createApplicantMessageWithEmail, queueOrSendEmail } from "@/services/no
 import { queueSms, queueWhatsApp } from "@/services/notifications/channelProviders";
 import { createNotification } from "@/services/operations/notificationService";
 
-function senderRoleFor(role: string): "applicant" | "hr" | "admin" | "system" {
+function senderRoleFor(role: string): "applicant" | "hr" | "super_admin_hr" | "system" {
   if (role === "applicant") return "applicant";
-  if (role === "admin" || role === "super_admin_hr") return "admin";
+  if (role === "super_admin_hr") return "super_admin_hr";
   if (role === "system") return "system";
   return "hr";
 }

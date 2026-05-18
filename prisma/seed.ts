@@ -395,13 +395,13 @@ async function seedRejectedDemoApplicant(adminUserId: string) {
 // ─── Main ───────────────────────────────────────────────────────────────────
 async function main() {
   // Role lineup (per Q1C decision 2026-05-04):
-  //   HR  - full operational control (mapped to internal "admin" role)
+  //   HR  - full operational control (mapped to super_admin_hr (HR Coordinator))
   //   DON - final-approval workflow only
   //   CEO - read-only oversight
   //   Applicant - standard applicant access
   // Super Admin HR is intentionally NOT seeded.
-  const hrManager = await upsertStaff("hr@qualityonecare.local", "Hr123!", "Quality One Care HR Manager", "admin");
-  await upsertStaff("admin@qualityonecare.local", "Admin123!", "Quality One Care HR (alt login)", "admin");
+  const hrManager = await upsertStaff("hr@qualityonecare.local", "Hr123!", "Quality One Care HR Manager", "super_admin_hr");
+  await upsertStaff("admin@qualityonecare.local", "Admin123!", "Quality One Care HR (alt login)", "super_admin_hr");
   await upsertStaff("don@qualityonecare.local", "Don123!", "Quality One Care DON", "don_approver");
   await upsertStaff("ceo@qualityonecare.local", "Ceo123!", "Quality One Care CEO", "executive_view_only");
 

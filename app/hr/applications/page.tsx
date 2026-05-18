@@ -68,7 +68,7 @@ export default async function HrApplicationsPage({
     page?: string;
   }>;
 }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   const filters = await searchParams;
   const statusFilter = statusOptions.includes(filters.status ?? "") ? filters.status ?? "all" : "all";
   const reviewFilter = reviewOptions.includes(filters.review ?? "") ? filters.review ?? "all" : "all";

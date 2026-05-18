@@ -34,7 +34,7 @@ export async function createHRDecision({
   action: HRDecisionAction;
   note: string;
   userId: string;
-  userRole: "hr" | "admin";
+  userRole: "hr" | "super_admin_hr";
 }) {
   const cleanNote = note.trim();
   if (!cleanNote) throw new Error("Decision note is required.");

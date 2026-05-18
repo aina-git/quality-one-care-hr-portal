@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { adminNav } from "@/lib/adminNav";
 
 export default async function AdminApplicationsPage() {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const applications = await prisma.application.findMany({
     where: { status: { not: "draft" } },
     include: {

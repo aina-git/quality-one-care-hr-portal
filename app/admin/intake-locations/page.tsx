@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { adminNav } from "@/lib/adminNav";
 
 export default async function AdminIntakeLocationsPage() {
-  const user = await requireRole(["admin", "super_admin_hr", "hr"]);
+  const user = await requireRole(["super_admin_hr", "hr"]);
   const locations = await prisma.intakeLocation.findMany({
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
     include: { _count: { select: { applications: true } } }

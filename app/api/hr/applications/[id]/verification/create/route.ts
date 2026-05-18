@@ -4,7 +4,7 @@ import { ensureFinalVerificationChecklist } from "@/services/verification/verifi
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
 
   try {

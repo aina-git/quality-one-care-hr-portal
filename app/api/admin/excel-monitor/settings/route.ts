@@ -17,12 +17,12 @@ function splitEmails(value: unknown) {
 }
 
 export async function GET() {
-  await requireRole(["admin", "super_admin_hr"]);
+  await requireRole(["super_admin_hr"]);
   return NextResponse.json({ settings: await getExcelCredentialMonitorSettings() });
 }
 
 export async function POST(request: Request) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   try {
     const body = await request.json().catch(() => ({}));
     const settings = await saveExcelCredentialMonitorSettings({

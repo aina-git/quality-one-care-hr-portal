@@ -21,7 +21,7 @@ type ControlledTransitionInput = {
   taskPriority?: TaskPriority;
 };
 
-const staffRoles: Role[] = ["super_admin_hr", "admin", "hr"];
+const staffRoles: Role[] = ["super_admin_hr", "hr"];
 const applicantActionStatuses: ApplicationStatus[] = [
   "applicant_correction_required",
   "applicant_response_required",
@@ -147,7 +147,7 @@ export async function transitionApplication({
     await sendCommunication({
       applicationId,
       senderId: userId ?? application.applicantProfile.userId,
-      senderRole: userId ? "admin" : "system",
+      senderRole: userId ? "super_admin_hr" : "system",
       channel: "in_app",
       subject: "Action needed on your Quality One Care application",
       body: note ?? "Please review your application portal for the next required action.",

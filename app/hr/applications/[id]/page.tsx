@@ -21,7 +21,7 @@ function label(value: string | null | undefined) {
 }
 
 export default async function ApplicationCaseFilePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   const { id } = await params;
   const { tab = "summary" } = await searchParams;
   const application = await prisma.application.findUnique({
@@ -45,7 +45,7 @@ export default async function ApplicationCaseFilePage({ params, searchParams }: 
   if (!application) redirect("/hr/applications");
   await logAction(user.id, "application_case_file_viewed", "application", id);
   const audit = await prisma.auditLog.findMany({ where: { entityId: id }, orderBy: { createdAt: "desc" }, take: 30 });
-  const canEdit = ["hr", "admin", "super_admin_hr"].includes(user.role);
+  const canEdit = ["hr", "super_admin_hr"].includes(user.role);
   const progress = await getApplicationProgress(application.id);
   const tabs = ["summary", "documents", "messages", "tasks", "calendar", "onboarding", "training", "audit_history"];
   const activeTab = tabs.includes(tab) ? tab : "summary";

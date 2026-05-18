@@ -13,7 +13,7 @@ function label(value: string | null | undefined) {
 }
 
 export default async function HrEmployeeOnboardingPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const onboarding = await prisma.employeeOnboarding.findUnique({
     where: { id },

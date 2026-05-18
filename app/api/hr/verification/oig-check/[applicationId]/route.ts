@@ -9,7 +9,7 @@ import { getVerificationChecklist } from "@/services/verification/verificationSe
 export const POST = withApi(
   { scope: "hr.verification.oig", entityType: "verificationChecklistItem", fallbackMessage: "Could not run OIG check." },
   async (_request: Request, { params }: { params: Promise<{ applicationId: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { applicationId } = await params;
 
     const application = await prisma.application.findUnique({

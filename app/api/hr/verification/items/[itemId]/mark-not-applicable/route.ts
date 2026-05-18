@@ -5,7 +5,7 @@ import { updateVerificationItem } from "@/services/verification/verificationServ
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function POST(request: Request, { params }: { params: Promise<{ itemId: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { itemId } = await params;
 
   try {

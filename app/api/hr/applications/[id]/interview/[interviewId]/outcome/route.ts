@@ -9,7 +9,7 @@ const ALLOWED: InterviewOutcome[] = ["passed", "failed", "no_show", "rescheduled
 export const POST = withApi(
   { scope: "hr.interview.outcome", entityType: "interview", fallbackMessage: "Could not record interview outcome." },
   async (request: Request, { params }: { params: Promise<{ id: string; interviewId: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { id, interviewId } = await params;
     const body = await request.json().catch(() => ({}));
     const outcome = String(body.outcome ?? "") as InterviewOutcome;
@@ -23,7 +23,7 @@ export const POST = withApi(
       outcome,
       hrNote,
       userId: user.id,
-      userRole: user.role as "hr" | "admin" | "super_admin_hr"
+      userRole: user.role as "hr" | "super_admin_hr" | "super_admin_hr"
     });
     return NextResponse.json({ ok: true, interview: updated });
   }

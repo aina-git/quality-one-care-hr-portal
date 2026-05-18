@@ -9,7 +9,7 @@ const HR_MANAGER_NAME = "Aaina";
 const TEMP_PASSWORD = "QOC2026!hr";
 
 export async function POST() {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
 
   const applicants = await prisma.user.findMany({ where: { role: "applicant" } });
   for (const u of applicants) {

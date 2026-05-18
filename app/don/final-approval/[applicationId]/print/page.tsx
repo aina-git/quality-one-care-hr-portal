@@ -9,7 +9,7 @@ function label(value: string | null | undefined) {
 }
 
 export default async function DonFinalApprovalPrintPage({ params }: { params: Promise<{ applicationId: string }> }) {
-  await requireRole(["admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  await requireRole(["super_admin_hr", "don_approver", "executive_view_only"]);
   const { applicationId } = await params;
   const checklist = await getVerificationChecklist(applicationId);
   if (!checklist) redirect("/admin/dashboard");

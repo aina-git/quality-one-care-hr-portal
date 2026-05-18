@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { createHRDecision, decisionStatusMap } from "@/services/workflow/decisionService";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const action = String(body.action ?? "") as HRDecisionAction;
@@ -15,7 +15,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   try {
-    const decision = await createHRDecision({ applicationId: id, action, note, userId: user.id, userRole: user.role as "hr" | "admin" });
+    const decision = await createHRDecision({ applicationId: id, action, note, userId: user.id, userRole: user.role as "hr" | "super_admin_hr" });
     return NextResponse.json({ decision });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Decision could not be saved.";

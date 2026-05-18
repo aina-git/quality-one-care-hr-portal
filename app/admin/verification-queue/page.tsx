@@ -22,7 +22,7 @@ const TABS = [
 type TabKey = typeof TABS[number]["key"];
 
 export default async function AdminVerificationQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const { tab } = await searchParams;
   const activeTab: TabKey = (TABS.find((t) => t.key === tab)?.key ?? "pending") as TabKey;
   const activeStatuses = TABS.find((t) => t.key === activeTab)!.statuses as unknown as FinalVerificationStatus[];

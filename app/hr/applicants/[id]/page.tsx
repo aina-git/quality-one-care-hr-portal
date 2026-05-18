@@ -20,7 +20,7 @@ function label(value: string | null | undefined) {
 }
 
 export default async function ApplicantProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   const { id } = await params;
   const applicant = await prisma.applicantProfile.findUnique({
     where: { id },
@@ -67,7 +67,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
     orderBy: { createdAt: "desc" },
     take: 30
   });
-  const canEdit = ["hr", "admin", "super_admin_hr"].includes(user.role);
+  const canEdit = ["hr", "super_admin_hr"].includes(user.role);
 
   return (
     <DashboardShell user={user} nav={[

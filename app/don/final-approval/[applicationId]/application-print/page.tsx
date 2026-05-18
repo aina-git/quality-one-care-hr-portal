@@ -30,7 +30,7 @@ function check(v: boolean) {
 }
 
 export default async function QocApplicationPrintPage({ params }: { params: Promise<{ applicationId: string }> }) {
-  await requireRole(["admin", "super_admin_hr", "don_approver", "hr", "executive_view_only"]);
+  await requireRole(["super_admin_hr", "don_approver", "hr", "executive_view_only"]);
   const { applicationId } = await params;
 
   const step = await prisma.intakeStep.findUnique({

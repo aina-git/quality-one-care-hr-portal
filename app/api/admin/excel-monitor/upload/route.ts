@@ -9,7 +9,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
 const ALLOWED_EXT = [".xlsx", ".xlsm", ".xls"];
 
 export async function POST(request: Request) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   try {
     const form = await request.formData();
     const entry = form.get("file");
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   try {
     const settings = await clearUploadedWorkbook();
     await logAction(user.id, "excel_monitor_workbook_cleared", "excel_monitor", null);

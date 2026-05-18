@@ -7,7 +7,7 @@ import { mapConfirmedField } from "@/services/intake/mappingService";
 import { validateApplication } from "@/services/validation/applicationValidationService";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const fieldKey = String(body.fieldKey ?? "");

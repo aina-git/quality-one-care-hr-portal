@@ -32,7 +32,7 @@ function formatDate(d: Date | string | null | undefined) {
 }
 
 export default async function AdminApplicationReviewPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const { id } = await params;
   const application = await prisma.application.findUnique({
     where: { id },

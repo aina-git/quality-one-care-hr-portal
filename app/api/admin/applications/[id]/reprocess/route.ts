@@ -18,7 +18,7 @@ const AUTO_MAP_THRESHOLD = Number(process.env.AUTO_MAP_CONFIDENCE_THRESHOLD ?? 0
 //  - ?mode=remap-only: skip OCR; just re-run auto-mapping over already-extracted fields
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireRole(["admin", "super_admin_hr", "hr"]);
+    const actor = await requireRole(["super_admin_hr", "hr"]);
     const { id } = await params;
     const url = new URL(request.url);
     const mode = url.searchParams.get("mode") === "remap-only" ? "remap-only" : "full";

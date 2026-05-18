@@ -25,7 +25,7 @@ const REQUIRED_CONFIRMATION = "DELETE ALL OTHER USERS";
 export const POST = withApi(
   { scope: "admin.users.cleanup", entityType: "user", fallbackMessage: "Cleanup failed." },
   async (request: Request) => {
-    const actor = await requireRole(["admin", "super_admin_hr"]);
+    const actor = await requireRole(["super_admin_hr"]);
     const body = await request.json().catch(() => ({}));
     const confirmation = String(body.confirmation ?? "").trim();
 

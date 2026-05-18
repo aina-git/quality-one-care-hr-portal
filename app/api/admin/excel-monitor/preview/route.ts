@@ -4,7 +4,7 @@ import { readCredentialAlerts } from "@/services/excel/excelCredentialMonitorSer
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function GET() {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   try {
     const result = await readCredentialAlerts();
     return NextResponse.json(result);

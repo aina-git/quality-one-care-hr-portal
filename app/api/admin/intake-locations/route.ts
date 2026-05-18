@@ -9,7 +9,7 @@ import { AppError, handleApiError } from "@/services/monitoring/errorService";
 // applicants and HR can pick from when submitting or processing applications.
 export async function POST(request: Request) {
   try {
-    const actor = await requireRole(["admin", "super_admin_hr", "hr"]);
+    const actor = await requireRole(["super_admin_hr", "hr"]);
     const body = await request.json().catch(() => ({}));
     const name = sanitizeText(body.name, 120);
     if (!name) {

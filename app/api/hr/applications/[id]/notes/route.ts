@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/auth";
 import { createHRNote } from "@/services/workflow/decisionService";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const note = String(body.note ?? "");

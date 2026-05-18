@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { updateOnboardingItem } from "@/services/onboarding/onboardingService";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const status = String(body.status ?? "") as OnboardingItemStatus;

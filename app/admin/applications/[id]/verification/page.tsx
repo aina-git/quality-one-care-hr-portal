@@ -50,7 +50,7 @@ function VerificationStatusBadge({ status }: { status: string }) {
 const cgisCategory = "background_check_cgis";
 
 export default async function AdminVerificationPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["super_admin_hr", "executive_view_only"]);
   const { id } = await params;
   const application = await prisma.application.findUnique({
     where: { id },

@@ -46,7 +46,7 @@ function bottleneck(status: string, lastActionAt: Date | null) {
 }
 
 export default async function HrDashboardPage() {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "don_approver", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "don_approver", "executive_view_only"]);
   if (!["don_approver", "executive_view_only"].includes(user.role)) {
     await repairHrReviewWorkflowIntegrity(user.id);
   }

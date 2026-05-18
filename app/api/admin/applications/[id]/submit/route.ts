@@ -12,7 +12,7 @@ import { AppError, handleApiError } from "@/services/monitoring/errorService";
 // HR Review Queue. Bypasses the applicant-facing submit validation since
 // HR has already reviewed the documents on intake.
 export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
   const { id: applicationId } = await context.params;
 
   try {

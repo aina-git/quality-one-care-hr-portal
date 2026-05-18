@@ -38,7 +38,7 @@ function actionLabel(status: ApplicationStatus) {
 }
 
 export default async function AdminHrReviewQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   const { tab } = await searchParams;
   const activeTab: TabKey = (TABS.find((t) => t.key === tab)?.key ?? "pending") as TabKey;
   const activeStatuses = TABS.find((t) => t.key === activeTab)!.statuses as unknown as ApplicationStatus[];

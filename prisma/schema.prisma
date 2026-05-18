@@ -126,6 +126,7 @@ enum MessageSenderRole {
   applicant
   hr
   admin
+  super_admin_hr
   system
 }
 

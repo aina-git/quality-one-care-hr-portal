@@ -4,7 +4,7 @@ import { generateLicenseAlerts } from "@/services/license/licenseAlertService";
 import { handleApiError } from "@/services/monitoring/errorService";
 
 export async function POST() {
-  const user = await requireRole(["hr", "admin"]);
+  const user = await requireRole(["hr", "super_admin_hr"]);
   try {
     const alerts = await generateLicenseAlerts(user.id);
     return NextResponse.json({ alerts });

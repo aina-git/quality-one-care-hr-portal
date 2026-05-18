@@ -568,7 +568,7 @@ export async function submitDonDecision({
     await sendCommunication({
       applicationId,
       senderId: userId,
-      senderRole: "admin",
+      senderRole: "super_admin_hr",
       channel: "email",
       subject: "Quality One Care application update",
       body: "Final outcome: Not Suitable. Please review your applicant portal for details.",
@@ -586,7 +586,7 @@ export async function submitDonDecision({
     await sendCommunication({
       applicationId,
       senderId: userId,
-      senderRole: "admin",
+      senderRole: "super_admin_hr",
       channel: "email",
       subject: "Quality One Care application update",
       body: "Final outcome: About to be Hired. Please review your applicant portal for onboarding details.",
@@ -603,7 +603,7 @@ export async function submitDonDecision({
     await sendCommunication({
       applicationId,
       senderId: userId,
-      senderRole: "admin",
+      senderRole: "super_admin_hr",
       channel: "email",
       subject: "More information required",
       body: cleanComment || "Final review requires more information. Please review your applicant portal.",

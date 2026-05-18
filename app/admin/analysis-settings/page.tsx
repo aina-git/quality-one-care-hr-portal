@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getAnalysisSettings, isCloudProvider } from "@/services/analysis/documentAnalysisProvider";
 
 export default async function AnalysisSettingsPage({ searchParams }: { searchParams: Promise<{ tested?: string }> }) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   const params = await searchParams;
   const settings = await getAnalysisSettings();
   const stored = await prisma.documentAnalysisSetting.findFirst({ orderBy: { updatedAt: "desc" } });

@@ -38,7 +38,7 @@ const ACTION_BY_OUTCOME: Record<Outcome, string> = {
 export const POST = withApi(
   { scope: "hr.outcome", entityType: "application", fallbackMessage: "Could not record outcome." },
   async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const outcome = sanitizeText(body.outcome, 20) as Outcome;

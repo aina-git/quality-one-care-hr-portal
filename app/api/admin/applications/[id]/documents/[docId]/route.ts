@@ -8,7 +8,7 @@ import { AppError, handleApiError } from "@/services/monitoring/errorService";
 // missing-field issues without guessing at regex.
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string; docId: string }> }) {
   try {
-    await requireRole(["admin", "super_admin_hr", "hr"]);
+    await requireRole(["super_admin_hr", "hr"]);
     const { id, docId } = await params;
     const doc = await prisma.uploadedDocument.findFirst({
       where: { id: docId, applicationId: id }

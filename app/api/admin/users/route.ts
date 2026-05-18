@@ -6,10 +6,10 @@ import { logAction } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { sanitizeEmail, sanitizeText } from "@/lib/security";
 
-const roles = ["applicant", "hr", "admin", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"];
+const roles = ["applicant", "hr", "super_admin_hr", "don_approver", "executive_view_only", "scheduler_limited"];
 
 export async function POST(request: Request) {
-  const actor = await requireRole(["admin", "super_admin_hr"]);
+  const actor = await requireRole(["super_admin_hr"]);
   const body = await request.json().catch(() => ({}));
   const email = sanitizeEmail(body.email);
   const password = sanitizeText(body.password, 256);

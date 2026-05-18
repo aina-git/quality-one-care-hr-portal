@@ -6,7 +6,7 @@ import { sanitizeText } from "@/lib/security";
 import { publicUrl } from "@/lib/publicUrl";
 
 export async function POST(request: Request) {
-  const user = await requireRole(["admin", "super_admin_hr"]);
+  const user = await requireRole(["super_admin_hr"]);
   const form = await request.formData();
   const provider = sanitizeText(form.get("provider"), 40) || "none";
   const data = {

@@ -16,7 +16,7 @@ function parseDate(v: unknown): Date | null {
 // required. issuer, issueDate, expiresAt are optional.
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireRole(["admin", "super_admin_hr", "hr"]);
+    const actor = await requireRole(["super_admin_hr", "hr"]);
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
 

@@ -25,7 +25,7 @@ import { AppError, handleApiError } from "@/services/monitoring/errorService";
 // with /reprocess afterward to re-run OCR with new field-extractor patterns.
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const actor = await requireRole(["admin", "super_admin_hr"]);
+    const actor = await requireRole(["super_admin_hr"]);
     const { id } = await params;
 
     const application = await prisma.application.findUnique({

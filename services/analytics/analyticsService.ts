@@ -130,7 +130,7 @@ export async function getAdminAnalyticsData() {
     orderBy: { createdAt: "asc" }
   });
   const hrUsers = await prisma.user.findMany({
-    where: { role: { in: ["hr", "admin"] } },
+    where: { role: { in: ["hr", "super_admin_hr"] } },
     select: { id: true, email: true, name: true, role: true }
   });
 

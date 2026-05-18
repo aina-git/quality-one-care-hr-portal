@@ -9,7 +9,7 @@ import { getVerificationChecklist } from "@/services/verification/verificationSe
 export const POST = withApi(
   { scope: "hr.verification.external", entityType: "verificationChecklistItem", fallbackMessage: "External verification failed." },
   async (_request: Request, { params }: { params: Promise<{ verifierId: string; applicationId: string }> }) => {
-    const user = await requireRole(["hr", "admin", "super_admin_hr"]);
+    const user = await requireRole(["hr", "super_admin_hr"]);
     const { verifierId, applicationId } = await params;
 
     const verifier = getVerifier(verifierId);

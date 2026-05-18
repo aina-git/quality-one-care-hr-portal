@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 const RESULTS_PER_GROUP = 15;
 
 export default async function AdminSearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const user = await requireRole(["hr", "admin", "super_admin_hr", "executive_view_only"]);
+  const user = await requireRole(["hr", "super_admin_hr", "executive_view_only"]);
   const { q = "" } = await searchParams;
   const query = q.trim();
 

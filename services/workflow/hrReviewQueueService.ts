@@ -5,7 +5,7 @@ import { createSystemAlert } from "@/services/alerts/systemAlertService";
 import { createNotification } from "@/services/operations/notificationService";
 
 const hrReviewStatuses: ApplicationStatus[] = ["hr_review_pending", "hr_review_started"];
-const staffRoles: Role[] = ["hr", "admin", "super_admin_hr"];
+const staffRoles: Role[] = ["hr", "super_admin_hr"];
 
 export function isHrReviewWorkflowStatus(status: ApplicationStatus) {
   return hrReviewStatuses.includes(status);
