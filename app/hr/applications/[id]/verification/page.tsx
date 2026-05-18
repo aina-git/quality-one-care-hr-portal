@@ -34,7 +34,7 @@ const HR_NAV = [
   { href: "/hr/dashboard", label: "Dashboard" },
   { href: "/hr/applications", label: "Applications" },
   { href: "/hr/verification", label: "Verification Queue" },
-  { href: "/don/approval-queue", label: "DON Queue" }
+  { href: "/hr/training", label: "Training" }
 ];
 
 function label(value: string | null | undefined) {

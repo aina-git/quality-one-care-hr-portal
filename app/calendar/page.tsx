@@ -31,9 +31,26 @@ const ADMIN_NAV = [
   { href: "/admin/don-approval-queue", label: "DON Approval Queue" }
 ];
 
+const DON_NAV = [
+  { href: "/don/approval-queue", label: "DON Queue" }
+];
+
+const ASSISTANT_NAV = [
+  { href: "/hr-assistant/dashboard", label: "Dashboard" },
+  { href: "/hr-assistant/applications", label: "Applications" }
+];
+
+const SCHEDULER_NAV = [
+  { href: "/scheduler/dashboard", label: "Dashboard" }
+];
+
 function navFor(user: SessionUser) {
   if (user.role === "applicant") return APPLICANT_NAV;
-  if (user.role === "admin" || user.role === "super_admin_hr") return ADMIN_NAV;
+  if (user.role === "super_admin_hr" || user.role === "admin") return ADMIN_NAV;
+  if (user.role === "don_approver") return DON_NAV;
+  if (user.role === "hr_assistant") return ASSISTANT_NAV;
+  if (user.role === "scheduler_limited") return SCHEDULER_NAV;
+  if (user.role === "executive_view_only") return ADMIN_NAV;
   return HR_NAV;
 }
 

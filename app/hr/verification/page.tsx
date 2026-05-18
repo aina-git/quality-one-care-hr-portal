@@ -112,7 +112,7 @@ export default async function VerificationQueuePage({
       { href: "/hr/dashboard", label: "Dashboard" },
       { href: "/hr/applications", label: "Applications" },
       { href: "/hr/verification", label: "Final Verification" },
-      { href: "/don/approval-queue", label: "Ready for DON Review" }
+      { href: "/hr/training", label: "Training" }
     ]}>
       <div className="grid gap-6">
         <section className="rounded-xl border bg-white p-6 shadow-sm">

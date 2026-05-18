@@ -39,7 +39,7 @@ export async function recordInterviewOutcome({
   outcome: InterviewOutcome;
   hrNote: string;
   userId: string;
-  userRole: "hr" | "super_admin_hr" | "super_admin_hr";
+  userRole: "hr" | "super_admin_hr";
 }) {
   if (!hrNote.trim()) {
     throw new Error("Interview outcome note is required.");

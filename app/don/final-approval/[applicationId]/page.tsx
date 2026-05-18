@@ -16,8 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { getVerificationChecklist, summarizeChecklist } from "@/services/verification/verificationService";
 
 const DON_NAV = [
-  { href: "/don/approval-queue", label: "Approval Queue" },
-  { href: "/admin/dashboard", label: "Operations" }
+  { href: "/don/approval-queue", label: "Approval Queue" }
 ];
 
 function label(value: string | null | undefined) {

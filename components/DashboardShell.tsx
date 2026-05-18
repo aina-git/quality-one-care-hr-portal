@@ -64,30 +64,30 @@ function iconFor(label: string, href: string) {
   return key ? navIcons[key] : LayoutDashboard;
 }
 
+function roleNotificationHref(role: SessionUser["role"]) {
+  if (role === "super_admin_hr" || role === "admin") return "/admin/notifications";
+  return "/notifications";
+}
+
+function roleCalendarHref(role: SessionUser["role"]) {
+  if (role === "applicant") return "/applicant/calendar";
+  if (role === "super_admin_hr" || role === "admin") return "/admin/calendar";
+  if (role === "scheduler_limited") return "/scheduler/calendar";
+  if (role === "hr") return "/hr/calendar";
+  return "/calendar";
+}
+
+function roleTasksHref(role: SessionUser["role"]) {
+  if (role === "applicant") return "/applicant/tasks";
+  if (role === "super_admin_hr" || role === "admin") return "/admin/tasks";
+  return "/tasks";
+}
+
 function primaryNav(user: SessionUser, provided: NavItem[]) {
-  const notificationHref = user.role === "applicant" || user.role === "hr_assistant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
-  const calendarHref = user.role === "applicant"
-    ? "/applicant/calendar"
-    : user.role === "hr_assistant"
-      ? "/calendar"
-      : user.role === "scheduler_limited"
-        ? "/scheduler/calendar"
-        : user.role === "super_admin_hr" || user.role === "admin"
-          ? "/admin/calendar"
-          : "/hr/calendar";
-  const tasksHref = user.role === "applicant"
-    ? "/applicant/tasks"
-    : user.role === "hr_assistant"
-      ? "/tasks"
-      : user.role === "scheduler_limited"
-        ? "/tasks"
-        : user.role === "super_admin_hr" || user.role === "admin"
-          ? "/admin/tasks"
-          : "/hr/tasks";
   const utility: NavItem[] = [
-    { href: notificationHref, label: "Notifications" },
-    { href: calendarHref, label: "Calendar" },
-    { href: tasksHref, label: "Tasks" }
+    { href: roleNotificationHref(user.role), label: "Notifications" },
+    { href: roleCalendarHref(user.role), label: "Calendar" },
+    { href: roleTasksHref(user.role), label: "Tasks" }
   ];
   const merged = [...provided, ...utility];
   return merged.filter((item, index) => merged.findIndex((candidate) => candidate.href === item.href) === index);
@@ -128,10 +128,16 @@ export async function DashboardShell({
   }).catch(() => 0);
   const items = primaryNav(user, nav);
   const workspaceBackground = mainBackground(user.role, nav);
-  const homeHref = user.role === "applicant" ? "/applicant/dashboard" : user.role === "hr_assistant" ? "/hr-assistant/dashboard" : user.role === "scheduler_limited" ? "/scheduler/dashboard" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/dashboard" : "/hr/dashboard";
-  const notificationHref = user.role === "applicant" ? "/notifications" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/notifications" : "/notifications";
-  const tasksHref = user.role === "applicant" ? "/applicant/tasks" : user.role === "super_admin_hr" || user.role === "admin" ? "/admin/tasks" : "/hr/tasks";
-  const searchHref = user.role === "applicant" || user.role === "hr_assistant" || user.role === "scheduler_limited" || user.role === "don_approver" ? null : "/admin/search";
+  const homeHref =
+    user.role === "applicant" ? "/applicant/dashboard" :
+    user.role === "hr_assistant" ? "/hr-assistant/dashboard" :
+    user.role === "scheduler_limited" ? "/scheduler/dashboard" :
+    user.role === "don_approver" ? "/don/approval-queue" :
+    user.role === "super_admin_hr" || user.role === "admin" ? "/admin/dashboard" :
+    "/hr/dashboard";
+  const notificationHref = roleNotificationHref(user.role);
+  const tasksHref = roleTasksHref(user.role);
+  const searchHref = user.role === "super_admin_hr" || user.role === "admin" || user.role === "executive_view_only" ? "/admin/search" : null;
 
   return (
     <div className={cn("min-h-screen text-slate-950", shellBackground(user.role))}>

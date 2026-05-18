@@ -40,7 +40,7 @@ export default async function QocApplicationPrintPage({ params }: { params: Prom
     where: { id: applicationId },
     include: { applicantProfile: { include: { user: true } } }
   });
-  if (!application) redirect("/admin/dashboard");
+  if (!application) redirect("/don/approval-queue");
 
   const form: ApplicationFormData = mergeApplicationFormData(step?.data);
   const emp1 = form.employer1;

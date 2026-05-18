@@ -12,7 +12,7 @@ export default async function DonFinalApprovalPrintPage({ params }: { params: Pr
   await requireRole(["super_admin_hr", "don_approver", "executive_view_only"]);
   const { applicationId } = await params;
   const checklist = await getVerificationChecklist(applicationId);
-  if (!checklist) redirect("/admin/dashboard");
+  if (!checklist) redirect("/don/approval-queue");
 
   const summary = summarizeChecklist(checklist);
   const application = checklist.application;

@@ -74,7 +74,7 @@ export default async function ApplicantProfilePage({ params }: { params: Promise
       { href: "/hr/dashboard", label: "Dashboard" },
       { href: "/hr/applications", label: "Applications" },
       { href: "/hr/verification", label: "Final Verification" },
-      { href: "/don/approval-queue", label: "DON Queue" }
+      { href: "/hr/training", label: "Training" }
     ]}>
       <div className="grid gap-6">
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

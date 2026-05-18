@@ -9,8 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { outcomeColorFor, colorClasses, colorLabel, stageLabel } from "@/lib/outcomeColor";
 
 const DON_NAV = [
-  { href: "/don/approval-queue", label: "DON Queue" },
-  { href: "/admin/dashboard", label: "Operations" }
+  { href: "/don/approval-queue", label: "DON Queue" }
 ];
 
 function ageLabel(d: Date | null) {
