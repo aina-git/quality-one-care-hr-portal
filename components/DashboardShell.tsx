@@ -30,13 +30,13 @@ type NavItem = {
 };
 
 const roleLabels: Record<SessionUser["role"], string> = {
-  applicant: "Applicant",
+  applicant: "Nurse (Portal)",
   hr: "HR Coordinator",
   hr_assistant: "HR Assistant",
-  admin: "Administrator",
-  super_admin_hr: "Super Admin HR",
-  don_approver: "DON Reviewer",
-  executive_view_only: "Executive Read Only",
+  admin: "HR Coordinator",
+  super_admin_hr: "HR Coordinator",
+  don_approver: "Director of Nursing",
+  executive_view_only: "CEO / Executive",
   scheduler_limited: "Scheduler"
 };
 

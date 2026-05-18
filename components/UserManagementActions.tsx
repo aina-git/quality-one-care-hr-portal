@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { getCsrfHeaders } from "@/lib/csrf-client";
 
 const roles: Array<[Role, string]> = [
-  ["applicant", "Applicant"],
+  ["applicant", "Applicant / Nurse"],
   ["hr_assistant", "HR Assistant"],
-  ["hr", "HR Coordinator"],
-  ["admin", "Admin"],
-  ["super_admin_hr", "Super Admin HR"],
-  ["don_approver", "DON Approver"],
-  ["executive_view_only", "Executive View Only"],
-  ["scheduler_limited", "Scheduler Limited"]
+  ["super_admin_hr", "HR Coordinator"],
+  ["don_approver", "Director of Nursing"],
+  ["executive_view_only", "CEO / Executive"],
+  ["scheduler_limited", "Scheduler"]
 ];
 
 export function CreateUserForm() {
